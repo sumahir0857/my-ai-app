@@ -82,11 +82,12 @@
         </div>
     </section>
 
-        <!-- ========================================= -->
+    <!-- ========================================= -->
     <!-- LAYANAN 1: TEXT TO VIDEO (6 VIDEO) -->
     <!-- ========================================= -->
     <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
+        <!-- PERBAIKAN: Menambahkan max-w-6xl mx-auto agar sejajar dengan kolom di atas -->
+        <div class="max-w-6xl mx-auto px-4 mb-4 text-center md:text-left">
             <h2 class="text-2xl font-bold text-blue-400 mb-1">1. Ubah Teks Jadi Video</h2>
             <p class="text-gray-400 text-sm">Cukup ketik kalimat, jadi video nyata (Looping Gallery).</p>
         </div>
@@ -133,7 +134,8 @@
     <!-- LAYANAN 2: ANIME CONVERTER (6 VIDEO) -->
     <!-- ========================================= -->
     <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
+        <!-- PERBAIKAN: Alignment -->
+        <div class="max-w-6xl mx-auto px-4 mb-4 text-center md:text-left">
             <h2 class="text-2xl font-bold text-purple-400 mb-1">2. Ubah Jadi Anime</h2>
             <p class="text-gray-400 text-sm">Video biasa jadi kartun Jepang otomatis.</p>
         </div>
@@ -154,7 +156,8 @@
     <!-- LAYANAN 3: VOICE CLONING (6 VIDEO) -->
     <!-- ========================================= -->
     <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
+        <!-- PERBAIKAN: Alignment -->
+        <div class="max-w-6xl mx-auto px-4 mb-4 text-center md:text-left">
             <h2 class="text-2xl font-bold text-green-400 mb-1">3. Tiru Suara (Voice Cloning)</h2>
             <p class="text-gray-400 text-sm">Kloning suara tokoh atau temanmu.</p>
         </div>
@@ -175,7 +178,8 @@
     <!-- LAYANAN 4: FOTO RESTORASI (6 VIDEO) -->
     <!-- ========================================= -->
     <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
+        <!-- PERBAIKAN: Alignment -->
+        <div class="max-w-6xl mx-auto px-4 mb-4 text-center md:text-left">
             <h2 class="text-2xl font-bold text-yellow-400 mb-1">4. Perjelas Foto Buram</h2>
             <p class="text-gray-400 text-sm">Foto jadul atau blur jadi HD seketika.</p>
         </div>
@@ -196,7 +200,8 @@
     <!-- LAYANAN 5: HAPUS BACKGROUND (6 VIDEO) -->
     <!-- ========================================= -->
     <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
+        <!-- PERBAIKAN: Alignment -->
+        <div class="max-w-6xl mx-auto px-4 mb-4 text-center md:text-left">
             <h2 class="text-2xl font-bold text-pink-400 mb-1">5. Hapus Latar Belakang</h2>
             <p class="text-gray-400 text-sm">Buat foto produk atau stiker transparan.</p>
         </div>
@@ -223,29 +228,7 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <!-- SCRIPT UTAMA (JANTUNG ANIMASI) -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script>
-        var swiper = new Swiper(".service-swiper", {
-            effect: "coverflow", // Efek 3D Buku
-            loop: true,          // Loop Tanpa Henti (Infinity)
-            grabCursor: true,    // Kursor berubah jadi tangan
-            centeredSlides: true,// Slide aktif di tengah
-            slidesPerView: "auto", // Ukuran slide menyesuaikan CSS
-            
-            // Pengaturan Efek 3D Coverflow (Awal Tadi)
-            coverflowEffect: {
-                rotate: 50,      // Kemiringan slide samping
-                stretch: 0,      // Jarak tarik
-                depth: 100,      // Kedalaman 3D
-                modifier: 1,     // Kekuatan efek
-                slideShadows: true, // Bayangan slide
-            },
-            
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true, // Titik-titik bisa diklik
-    <!-- MODAL LOGIN POPUP -->
+    <!-- MODAL LOGIN POPUP (PERBAIKAN: Dipindah ke luar script agar berfungsi) -->
     <div id="loginModal" class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-700 p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
             <button onclick="closeLogin()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
@@ -269,7 +252,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT LOGIC -->
+    <!-- SCRIPT UTAMA (ANIMASI & LOGIC) -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         // --- 1. SETUP SUPABASE ---
@@ -326,17 +309,29 @@
             }
         }
 
-        // UI Functions
+        // --- 5. UI Functions (MODAL) ---
         function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
         function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
 
-        // Swiper Init
+        // --- 6. SWIPER INIT ---
         var swiper = new Swiper(".service-swiper", {
-            effect: "coverflow", loop: true, grabCursor: true, centeredSlides: true, slidesPerView: "auto",
-            coverflowEffect: { rotate: 50, stretch: 0, depth: 100, modifier: 1, slideShadows: true },
-            pagination: { el: ".swiper-pagination", clickable: true },
+            effect: "coverflow", 
+            loop: true,          
+            grabCursor: true,    
+            centeredSlides: true,
+            slidesPerView: "auto", 
+            coverflowEffect: {
+                rotate: 50,      
+                stretch: 0,      
+                depth: 100,      
+                modifier: 1,     
+                slideShadows: true, 
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true, 
+            }
         });
     </script>
 </body>
 </html>
-
