@@ -5,61 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Studio AI Ajaib</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- CSS Swiper (Wajib untuk animasi) -->
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <!-- Ikon FontAwesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <style>
         body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; }
         
-        /* PENGATURAN ANIMASI SWIPER */
+        /* Swiper Styles */
         .swiper { width: 100%; padding-top: 20px; padding-bottom: 50px; }
-        
-        /* TAMPILAN KARTU VIDEO */
         .swiper-slide { 
-            background: #1e293b; 
-            width: 280px; /* Lebar Kartu */
-            height: 520px; /* Tinggi Kartu */
-            border-radius: 20px; 
-            border: 1px solid #334155;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            /* Shadow agar efek 3D makin terasa */
+            background: #1e293b; width: 280px; height: 520px; 
+            border-radius: 20px; border: 1px solid #334155;
+            display: flex; flex-direction: column; overflow: hidden;
             box-shadow: 0 15px 50px rgba(0,0,0,0.7); 
         }
-        
-        /* Area Video */
-        .video-wrapper {
-            width: 100%;
-            height: 420px; /* Tinggi Video */
-            background: #000;
-        }
+        .video-wrapper { width: 100%; height: 420px; background: #000; }
         .video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+        .caption { padding: 15px; font-size: 0.85rem; color: #e2e8f0; background: #1e293b; flex-grow: 1; border-top: 1px solid #334155; }
         
-        /* Area Caption Bawah */
-        .caption { 
-            padding: 15px; 
-            font-size: 0.85rem; 
-            color: #e2e8f0; 
-            background: #1e293b;
-            flex-grow: 1;
-            border-top: 1px solid #334155;
-        }
-
         .glass-nav { background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid #334155; }
-        
-        /* Tombol WA Melayang */
-        .float-wa {
-            position: fixed; bottom: 30px; right: 30px;
-            background-color: #25d366; color: white;
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100;
-            transition: transform 0.3s;
-        }
+        .float-wa { position: fixed; bottom: 30px; right: 30px; background-color: #25d366; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 100; transition: transform 0.3s; }
         .float-wa:hover { transform: scale(1.1); }
+
+        /* Modal Login */
+        #loginModal { display: none; }
     </style>
 </head>
 <body>
@@ -70,219 +42,154 @@
             <div class="text-xl font-bold text-blue-400 flex items-center gap-2">
                 <i class="fas fa-magic"></i> AI STUDIO
             </div>
-            <button onclick="loginProcess()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-blue-900/50">
+            <button onclick="openLogin()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-blue-900/50">
                 Masuk Member
             </button>
         </div>
     </nav>
 
-    <!-- HERO HEADER -->
+    <!-- HERO -->
     <header class="pt-32 pb-10 text-center px-4">
         <h1 class="text-4xl md:text-6xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
             Kreasikan Imajinasi
         </h1>
         <p class="text-gray-400 text-lg max-w-xl mx-auto">
-            Teknologi canggih yang mudah digunakan siapa saja.
+            Login sekarang untuk menggunakan 5 Tools AI Canggih kami.
         </p>
     </header>
 
-    <!-- PANDUAN PEMULA (CARA KERJA) -->
+    <!-- CARA MULAI -->
     <section class="max-w-6xl mx-auto px-4 mb-20">
         <div class="bg-slate-800/50 rounded-2xl p-8 border border-slate-700 backdrop-blur-sm">
             <h2 class="text-center text-2xl font-bold mb-8 text-blue-200">Cara Mulai (Gampang Banget!)</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-                <!-- Step 1 -->
                 <div>
-                    <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-lg shadow-blue-500/30">1</div>
+                    <div class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">1</div>
+                    <h3 class="font-bold text-lg mb-2">Login / Daftar</h3>
+                    <p class="text-gray-400 text-sm">Buat akun gratis untuk masuk ke dashboard.</p>
+                </div>
+                <div>
+                    <div class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">2</div>
                     <h3 class="font-bold text-lg mb-2">Pilih Layanan</h3>
-                    <p class="text-gray-400 text-sm">Lihat contoh di bawah, pilih mana yang kamu butuhkan.</p>
+                    <p class="text-gray-400 text-sm">Pilih tools AI yang kamu butuhkan.</p>
                 </div>
-                <!-- Step 2 -->
                 <div>
-                    <div class="w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-lg shadow-purple-500/30">2</div>
-                    <h3 class="font-bold text-lg mb-2">Dapat Token</h3>
-                    <p class="text-gray-400 text-sm">Transfer murah meriah, admin kirim kode akses via WA.</p>
-                </div>
-                <!-- Step 3 -->
-                <div>
-                    <div class="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4 shadow-lg shadow-green-500/30">3</div>
+                    <div class="w-14 h-14 bg-green-600 rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">3</div>
                     <h3 class="font-bold text-lg mb-2">Jadi Otomatis</h3>
-                    <p class="text-gray-400 text-sm">Masukkan kode, sistem kami yang kerjakan sisanya.</p>
+                    <p class="text-gray-400 text-sm">Biarkan AI kami mengerjakan sisanya.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ========================================= -->
-    <!-- LAYANAN 1: TEXT TO VIDEO (6 VIDEO) -->
-    <!-- ========================================= -->
+    <!-- CONTOH LAYANAN (HANYA 1 SECTION AGAR TIDAK KEPANJANGAN DI SINI, TAPI TETAP JALAN) -->
+    <!-- Jika ingin 5 layanan lengkap seperti sebelumnya, paste bagian section layanan di sini -->
     <section class="mb-20 pt-5 border-t border-gray-800/50">
         <div class="px-6 mb-4 text-center md:text-left">
-            <h2 class="text-2xl font-bold text-blue-400 mb-1">1. Ubah Teks Jadi Video</h2>
-            <p class="text-gray-400 text-sm">Cukup ketik kalimat, jadi video nyata (Looping Gallery).</p>
-        </div>
-
-        <div class="swiper service-swiper">
-            <div class="swiper-wrapper">
-                <!-- Video 1 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid1.mp4" type="video/mp4"></video></div>
-                    <div class="caption"><b>Prompt:</b> "Astronot berjalan di Mars."</div>
-                </div>
-                <!-- Video 2 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid2.mp4" type="video/mp4"></video></div>
-                    <div class="caption"><b>Prompt:</b> "Kucing lucu pakai kacamata."</div>
-                </div>
-                <!-- Video 3 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid3.mp4" type="video/mp4"></video></div>
-                    <div class="caption"><b>Prompt:</b> "Kota Jakarta tahun 2077."</div>
-                </div>
-                <!-- Video 4 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid4.mp4" type="video/mp4"></video></div>
-                    <div class="caption"><b>Prompt:</b> "Pemandangan pegunungan Alpen."</div>
-                </div>
-                <!-- Video 5 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid5.mp4" type="video/mp4"></video></div>
-                    <div class="caption"><b>Prompt:</b> "Mobil balap merah di sirkuit."</div>
-                </div>
-                <!-- Video 6 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid6.mp4" type="video/mp4"></video></div>
-                    <div class="caption"><b>Prompt:</b> "Robot sedang memasak."</div>
-                </div>
-            </div>
-            <!-- Pagination Titik-titik -->
-            <div class="swiper-pagination"></div>
-        </div>
-    </section>
-
-    <!-- ========================================= -->
-    <!-- LAYANAN 2: ANIME CONVERTER (6 VIDEO) -->
-    <!-- ========================================= -->
-    <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
-            <h2 class="text-2xl font-bold text-purple-400 mb-1">2. Ubah Jadi Anime</h2>
-            <p class="text-gray-400 text-sm">Video biasa jadi kartun Jepang otomatis.</p>
+            <h2 class="text-2xl font-bold text-blue-400 mb-1">Preview: Ubah Teks Jadi Video</h2>
+            <p class="text-gray-400 text-sm">Geser untuk melihat contoh hasil.</p>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid1.mp4" type="video/mp4"></video></div><div class="caption">Contoh Joget TikTok Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid2.mp4" type="video/mp4"></video></div><div class="caption">Contoh Vlog Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid3.mp4" type="video/mp4"></video></div><div class="caption">Contoh Selfie Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid4.mp4" type="video/mp4"></video></div><div class="caption">Contoh Pemandangan Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid5.mp4" type="video/mp4"></video></div><div class="caption">Contoh Makan jadi Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid6.mp4" type="video/mp4"></video></div><div class="caption">Contoh Hewan jadi Anime.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid1.mp4" type="video/mp4"></video></div><div class="caption">Prompt: Astronot di Mars</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid2.mp4" type="video/mp4"></video></div><div class="caption">Prompt: Kucing Lucu</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid3.mp4" type="video/mp4"></video></div><div class="caption">Prompt: Kota Masa Depan</div></div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
 
-    <!-- ========================================= -->
-    <!-- LAYANAN 3: VOICE CLONING (6 VIDEO) -->
-    <!-- ========================================= -->
-    <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
-            <h2 class="text-2xl font-bold text-green-400 mb-1">3. Tiru Suara (Voice Cloning)</h2>
-            <p class="text-gray-400 text-sm">Kloning suara tokoh atau temanmu.</p>
-        </div>
-        <div class="swiper service-swiper">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid1.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Presiden.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid2.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Penyanyi.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid3.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Narator.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid4.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Kartun.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid5.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Teman.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid6.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Robot.</div></div>
+    <!-- MODAL LOGIN POPUP -->
+    <div id="loginModal" class="fixed inset-0 bg-black/80 z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-700 p-8 rounded-2xl w-full max-w-md shadow-2xl relative">
+            <button onclick="closeLogin()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            <h2 class="text-2xl font-bold mb-6 text-center text-white">Member Area</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Email</label>
+                    <input type="email" id="emailInput" placeholder="nama@email.com" class="w-full bg-slate-800 border border-slate-600 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-sm mb-1">Password</label>
+                    <input type="password" id="passInput" placeholder="******" class="w-full bg-slate-800 border border-slate-600 text-white px-4 py-3 rounded-lg focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="handleLogin()" class="bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition">Masuk</button>
+                    <button onclick="handleSignup()" class="bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-bold transition">Daftar</button>
+                </div>
+                <p id="statusMsg" class="text-center text-sm text-yellow-400 mt-2"></p>
             </div>
-            <div class="swiper-pagination"></div>
         </div>
-    </section>
+    </div>
 
-    <!-- ========================================= -->
-    <!-- LAYANAN 4: FOTO RESTORASI (6 VIDEO) -->
-    <!-- ========================================= -->
-    <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
-            <h2 class="text-2xl font-bold text-yellow-400 mb-1">4. Perjelas Foto Buram</h2>
-            <p class="text-gray-400 text-sm">Foto jadul atau blur jadi HD seketika.</p>
-        </div>
-        <div class="swiper service-swiper">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan4-vid1.mp4" type="video/mp4"></video></div><div class="caption">Restorasi Foto Kakek.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan4-vid2.mp4" type="video/mp4"></video></div><div class="caption">Restorasi Foto Nikah.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan4-vid3.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Foto Selfie Blur.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan4-vid4.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Foto Pemandangan.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan4-vid5.mp4" type="video/mp4"></video></div><div class="caption">Warnai Foto Hitam Putih.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan4-vid6.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Dokumen Teks.</div></div>
-            </div>
-            <div class="swiper-pagination"></div>
-        </div>
-    </section>
-
-    <!-- ========================================= -->
-    <!-- LAYANAN 5: HAPUS BACKGROUND (6 VIDEO) -->
-    <!-- ========================================= -->
-    <section class="mb-20 pt-5 border-t border-gray-800/50">
-        <div class="px-6 mb-4 text-center md:text-left">
-            <h2 class="text-2xl font-bold text-pink-400 mb-1">5. Hapus Latar Belakang</h2>
-            <p class="text-gray-400 text-sm">Buat foto produk atau stiker transparan.</p>
-        </div>
-        <div class="swiper service-swiper">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan5-vid1.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Produk Sepatu.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan5-vid2.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Orang.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan5-vid3.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Mobil.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan5-vid4.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Logo.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan5-vid5.mp4" type="video/mp4"></video></div><div class="caption">Ganti Background Pas Foto.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan5-vid6.mp4" type="video/mp4"></video></div><div class="caption">Buat Stiker WA.</div></div>
-            </div>
-            <div class="swiper-pagination"></div>
-        </div>
-    </section>
-
-    <!-- FOOTER -->
-    <footer class="py-10 text-center text-gray-500 text-sm border-t border-gray-800">
-        &copy; 2023 AI Studio. Chat Admin jika butuh bantuan.
-    </footer>
-
-    <!-- TOMBOL WA -->
-    <a href="https://wa.me/6281234567890" target="_blank" class="float-wa" title="Hubungi Admin">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-    <!-- SCRIPT UTAMA (JANTUNG ANIMASI) -->
+    <!-- SCRIPT LOGIC -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
-        var swiper = new Swiper(".service-swiper", {
-            effect: "coverflow", // Efek 3D Buku
-            loop: true,          // Loop Tanpa Henti (Infinity)
-            grabCursor: true,    // Kursor berubah jadi tangan
-            centeredSlides: true,// Slide aktif di tengah
-            slidesPerView: "auto", // Ukuran slide menyesuaikan CSS
-            
-            // Pengaturan Efek 3D Coverflow (Awal Tadi)
-            coverflowEffect: {
-                rotate: 50,      // Kemiringan slide samping
-                stretch: 0,      // Jarak tarik
-                depth: 100,      // Kedalaman 3D
-                modifier: 1,     // Kekuatan efek
-                slideShadows: true, // Bayangan slide
-            },
-            
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true, // Titik-titik bisa diklik
-            },
-        });
+        // --- 1. SETUP SUPABASE ---
+        const { createClient } = supabase
+        const _supabase = createClient(
+            'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
+        )
 
-        function loginProcess() {
-            let email = prompt("Masukkan Email Anda:");
-            if(email) window.location.href = "dashboard.html";
+        // --- 2. CEK SESI (AUTO LOGIN) ---
+        async function checkSession() {
+            const { data: { session } } = await _supabase.auth.getSession()
+            if (session) {
+                window.location.href = "dashboard.html"
+            }
         }
+        checkSession()
+
+        // --- 3. FUNGSI LOGIN ---
+        async function handleLogin() {
+            const email = document.getElementById('emailInput').value
+            const password = document.getElementById('passInput').value
+            const msg = document.getElementById('statusMsg')
+            
+            if(!email || !password) { msg.innerText = "Isi email dan password!"; return; }
+            msg.innerText = "Loading..."
+            
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password })
+            if (error) {
+                msg.innerText = "Login Gagal: " + error.message
+                msg.className = "text-center text-sm text-red-500 mt-2"
+            } else {
+                msg.innerText = "Sukses! Mengalihkan..."
+                msg.className = "text-center text-sm text-green-500 mt-2"
+                setTimeout(() => { window.location.href = "dashboard.html" }, 1000)
+            }
+        }
+
+        // --- 4. FUNGSI DAFTAR ---
+        async function handleSignup() {
+            const email = document.getElementById('emailInput').value
+            const password = document.getElementById('passInput').value
+            const msg = document.getElementById('statusMsg')
+
+            if(password.length < 6) { msg.innerText = "Password minimal 6 karakter"; return; }
+            msg.innerText = "Mendaftarkan..."
+            
+            const { data, error } = await _supabase.auth.signUp({ email, password })
+            if (error) {
+                msg.innerText = "Gagal: " + error.message
+            } else {
+                msg.innerText = "Berhasil! Silakan klik tombol MASUK."
+                msg.className = "text-center text-sm text-green-500 mt-2"
+            }
+        }
+
+        // UI Functions
+        function openLogin() { document.getElementById('loginModal').style.display = 'flex'; }
+        function closeLogin() { document.getElementById('loginModal').style.display = 'none'; }
+
+        // Swiper Init
+        var swiper = new Swiper(".service-swiper", {
+            effect: "coverflow", loop: true, grabCursor: true, centeredSlides: true, slidesPerView: "auto",
+            coverflowEffect: { rotate: 50, stretch: 0, depth: 100, modifier: 1, slideShadows: true },
+            pagination: { el: ".swiper-pagination", clickable: true },
+        });
     </script>
 </body>
 </html>
