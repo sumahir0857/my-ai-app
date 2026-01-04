@@ -3,40 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tool - Studio Ajaib</title>
+    <title>AI Tool Workspace - Studio Ajaib</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- FontAwesome & Google Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #0B0F19; }
-        iframe { width: 100%; height: 100%; border: none; }
-        
-        /* Tombol Kembali yang Melayang */
-        .float-back {
-            position: fixed; top: 20px; left: 20px; z-index: 50;
-            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px);
-            border: 1px solid rgba(255,255,255,0.1); color: white;
-            padding: 10px 20px; border-radius: 50px;
-            font-family: sans-serif; font-size: 14px; font-weight: bold;
-            display: flex; align-items: center; gap: 8px;
-            cursor: pointer; transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        /* Desain Utama Selaras dengan Dashboard */
+        body { 
+            background-color: #0B0F19; 
+            color: white; 
+            font-family: 'Outfit', sans-serif; 
+            overflow: hidden; /* Hilangkan scrollbar window utama */
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
-        .float-back:hover { background: #3B82F6; transform: translateX(5px); }
+
+        /* Container Iframe dengan Efek Monitor Neon */
+        .iframe-container {
+            flex-grow: 1;
+            margin: 10px;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
+            position: relative;
+            background: #000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            /* Trik Visual: Sedikit menggelapkan agar tidak terlalu silau kontrasnya */
+            filter: contrast(1.1) brightness(0.95);
+        }
+
+        /* 2. TOMBOL POJOK KANAN ATAS (Floating & Expandable) */
+        .float-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ef4444; /* Warna Merah Warning */
+            border-radius: 50px;
+            height: 45px;
+            width: 45px; /* Awalnya bulat kecil */
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .float-nav:hover {
+            width: 200px; /* Melebar saat di-hover */
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .float-nav i {
+            font-size: 18px;
+            min-width: 45px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .float-nav span {
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateX(10px);
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .float-nav:hover span {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* 1. CUSTOM MODAL (Peringatan Refresh/Exit) */
+        #warningModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 15, 25, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid #ef4444;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-center;
+            box-shadow: 0 0 50px rgba(239, 68, 68, 0.2);
+            transform: scale(0.95);
+            animation: popUp 0.3s forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes popUp { to { transform: scale(1); } }
+
     </style>
 </head>
 <body>
 
-    <!-- Tombol Kembali ke Dashboard -->
-    <a href="dashboard.html" class="float-back">
-        <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
-    </a>
+    <!-- Tombol Kembali (Floating Top Right) -->
+    <div onclick="triggerExit()" class="float-nav" title="Kembali ke Dashboard">
+        <i class="fas fa-times"></i>
+        <span>Tutup & Kembali</span>
+    </div>
 
-    <!-- Container Iframe -->
-    <iframe id="toolFrame" src="" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; webcam; microphone" allowfullscreen></iframe>
+    <!-- Container Utama -->
+    <div class="iframe-container">
+        <!-- Iframe Hugging Face -->
+        <iframe id="toolFrame" src="" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; webcam; microphone" allowfullscreen></iframe>
+    </div>
+
+    <!-- MODAL PERINGATAN (Custom Popup) -->
+    <div id="warningModal">
+        <div class="modal-content">
+            <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle text-red-500 text-3xl animate-pulse"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white mb-2">Peringatan Data Hilang</h2>
+            <p class="text-slate-400 text-sm mb-6">
+                Jika Anda keluar atau refresh halaman ini, file hasil generate yang belum disimpan <b>akan hilang permanen</b>.
+            </p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeModal()" class="py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 font-semibold transition">
+                    Batal
+                </button>
+                <button onclick="confirmExit()" class="py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-900/40 transition">
+                    Ya, Keluar
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // 1. CEK LOGIN (Keamanan: Hanya member yang bisa akses tool ini)
+        // --- 1. SETUP SUPABASE & SECURITY ---
         const { createClient } = supabase
         const _supabase = createClient(
             'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
@@ -49,25 +180,49 @@
         }
         checkAccess()
 
-        // 2. LOGIC URL PARSER
-        // Mengambil URL dari parameter ?src=...
+        // --- 2. LOAD TOOL (URL PARSER) ---
         const urlParams = new URLSearchParams(window.location.search);
         let targetUrl = urlParams.get('src');
 
         if(targetUrl) {
-            // Trik agar tampilan bersih (Direct Embed)
-            // Jika user memasukkan link normal HF: https://huggingface.co/spaces/user/space
-            // Kita ubah jadi mode embed: https://user-space.hf.space
-            if (targetUrl.includes('huggingface.co/spaces/')) {
-                // Jangan ubah jika URL sudah benar, tapi ini opsional
-                // Jika ingin tampilan Full Clean tanpa header HF, gunakan URL "Direct" dari HF Space
-                // Tapi iframe biasa pun sudah cukup oke.
-            }
             document.getElementById('toolFrame').src = targetUrl;
         } else {
-            alert("Tool tidak ditemukan!");
+            alert("Error: Tool URL not found.");
             window.location.href = "dashboard.html";
         }
+
+        // --- 3. LOGIC ANTI-REFRESH & MODAL ---
+        
+        // A. Mencegah Refresh Browser (F5 / Tombol Reload)
+        window.addEventListener('beforeunload', function (e) {
+            // Modern browser requires this standard pattern
+            e.preventDefault(); 
+            e.returnValue = 'Data generate akan hilang jika direfresh.'; 
+        });
+
+        // B. Logic Tombol Kembali (Custom Modal)
+        const modal = document.getElementById('warningModal');
+
+        function triggerExit() {
+            modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        function confirmExit() {
+            // Bypass beforeunload check agar bisa keluar mulus
+            window.removeEventListener('beforeunload', () => {}); 
+            window.location.href = "dashboard.html";
+        }
+
+        // Tutup modal jika klik di luar area
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
