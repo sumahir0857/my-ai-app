@@ -16,7 +16,7 @@
     <div class="glass-box max-w-md w-full p-8 rounded-2xl shadow-2xl">
         <div class="text-center mb-8">
             <h1 class="text-2xl font-bold mb-2">Selesaikan Pembayaran</h1>
-            <p class="text-gray-400 text-sm">Transfer untuk mendapatkan Token Akses.</p>
+            <p class="text-gray-400 text-sm">Transfer sesuai nominal di bawah ini.</p>
         </div>
 
         <!-- Detail Pesanan -->
@@ -26,17 +26,16 @@
                 <p class="font-bold text-lg text-white" id="namaPaket">Loading...</p>
             </div>
             <div class="text-right">
-                <p class="text-xs text-blue-400 font-bold uppercase">Total</p>
-                <p class="font-bold text-lg text-white" id="hargaPaket">...</p>
+                <p class="text-xs text-blue-400 font-bold uppercase">Total Bayar</p>
+                <p class="font-bold text-lg text-yellow-400" id="hargaPaket">...</p>
             </div>
         </div>
 
         <!-- Rekening -->
         <div class="space-y-4 mb-8">
-            <div class="flex items-center gap-4 border border-slate-600 p-4 rounded-xl hover:border-blue-500 transition cursor-pointer bg-slate-900/50">
-                <div class="w-12 h-8 bg-white rounded flex items-center justify-center">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" class="h-4">
-                </div>
+            <!-- BANK JAGO -->
+            <div class="flex items-center gap-4 border border-slate-600 p-4 rounded-xl hover:border-yellow-500 transition cursor-pointer bg-slate-900/50">
+                <div class="w-12 h-8 bg-yellow-500 rounded flex items-center justify-center text-black font-bold text-xs">JAGO</div>
                 <div>
                     <p class="text-xs text-gray-400">Bank JAGO</p>
                     <p class="font-bold text-lg tracking-wide">1005-5384-2165</p>
@@ -44,6 +43,7 @@
                 </div>
             </div>
             
+            <!-- DANA -->
             <div class="flex items-center gap-4 border border-slate-600 p-4 rounded-xl hover:border-blue-500 transition cursor-pointer bg-slate-900/50">
                 <div class="w-12 h-8 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">DANA</div>
                 <div>
@@ -63,21 +63,25 @@
     </div>
 
     <script>
+        // LOGIKA PINTAR: Mengambil data dari Link tombol yang diklik user
         const params = new URLSearchParams(window.location.search);
+        
+        // Ambil nama paket & harga, jika kosong isi default
         const paket = params.get('paket') || 'Paket Tidak Diketahui';
         const harga = params.get('harga') || '0';
+        
+        // Ubah angka menjadi format Rupiah (Rp 50.000)
         const formatRupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(harga);
 
-        document.getElementById('namaPaket').innerText = paket.replace(/-/g, " ");
+        // Tampilkan di layar
+        document.getElementById('namaPaket').innerText = paket.replace(/-/g, " "); // Hapus tanda strip (-) jadi spasi
         document.getElementById('hargaPaket').innerText = formatRupiah;
 
-        // GANTI NOMOR WA DI SINI (Pakai 62)
+        // DATA WHATSAPP ADMIN
         const nomorWA = "6285841244290"; 
-        const pesan = `Halo Admin, saya sudah transfer sebesar ${formatRupiah} untuk paket: %0A📦 ${paket} %0A%0AMohon kirimkan Token Aksesnya.`;
+        const pesan = `Halo Admin, saya mau beli paket: %0A📦 *${paket.replace(/-/g, " ")}* %0A💰 Harga: *${formatRupiah}* %0A%0ASaya sudah transfer, mohon dicek dan kirim Token Aksesnya.`;
         
         document.getElementById('waButton').href = `https://wa.me/${nomorWA}?text=${pesan}`;
     </script>
 </body>
-
 </html>
-
