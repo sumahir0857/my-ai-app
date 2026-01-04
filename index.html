@@ -16,7 +16,7 @@
     
     <!-- Icons & Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -26,19 +26,29 @@
                     colors: {
                         'brand-dark': '#0B0F19',
                         'brand-card': '#151B2B',
+                        'brand-border': '#2A3241',
                         'accent-blue': '#3B82F6',
-                    },
-                    backgroundImage: {
-                        'grid-pattern': "linear-gradient(to right, #1e293b 1px, transparent 1px), linear-gradient(to bottom, #1e293b 1px, transparent 1px)",
+                        'accent-glow': '#60A5FA'
                     },
                     animation: {
+                        'blob': 'blob 7s infinite',
+                        'fade-up': 'fadeUp 0.8s ease-out forwards',
                         'marquee': 'marquee 25s linear infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     },
                     keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        },
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
                         marquee: {
                             '0%': { transform: 'translateX(100%)' },
-                            '100%': { transform: 'translateX(-100%)' }
+                            '100%': { transform: 'translateX(-100%)' },
                         }
                     }
                 }
@@ -48,283 +58,361 @@
 
     <style>
         body { 
-            background-color: #020617; 
+            background-color: #0B0F19; 
             color: #E2E8F0; 
-            /* Grid Background untuk mengisi kekosongan visual */
-            background-image: linear-gradient(to right, #1e293b20 1px, transparent 1px), linear-gradient(to bottom, #1e293b20 1px, transparent 1px);
-            background-size: 40px 40px;
             overflow-x: hidden; 
+            /* Grid Pattern */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Glass Components */
-        .glass-nav { background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .glass-card { background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8)); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3); }
+        /* Glassmorphism Styles */
+        .glass-nav { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .glass-card { background: rgba(21, 27, 43, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
         
-        /* Swiper Fix */
-        .swiper { width: 100%; padding-top: 10px; padding-bottom: 40px; }
+        /* Swiper Custom */
+        .swiper { width: 100%; padding-top: 20px; padding-bottom: 50px; }
         .swiper-slide { 
-            background: #0f172a; width: 300px; height: 500px; /* Lebar slide diperbesar dikit */
-            border-radius: 16px; border: 1px solid #334155;
+            background: #1e293b; width: 280px; height: 500px; 
+            border-radius: 24px; border: 1px solid #334155;
             display: flex; flex-direction: column; overflow: hidden;
-            transition: all 0.3s;
+            transition: transform 0.3s;
+            flex-shrink: 0; 
         }
-        .swiper-slide-active { border-color: #3B82F6; box-shadow: 0 0 25px rgba(59, 130, 246, 0.15); transform: scale(1.02); }
+        .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         
-        .video-wrapper { width: 100%; height: 80%; background: #000; position: relative; }
+        .video-wrapper { width: 100%; height: 400px; background: #000; position: relative; }
         .video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
-        .caption { padding: 12px; font-size: 0.9rem; color: #cbd5e1; background: #0f172a; flex-grow: 1; border-top: 1px solid #1e293b; display: flex; align-items: center; justify-content: center; text-align: center; }
-
-        /* FAQ Accordion Styles */
-        details > summary { list-style: none; cursor: pointer; transition: all 0.3s; }
-        details > summary::-webkit-details-marker { display: none; }
-        details[open] > summary { color: #60A5FA; }
-        details[open] > div { animation: slideDown 0.3s ease-out forwards; }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .caption { padding: 15px; font-size: 0.9rem; color: #cbd5e1; background: #151b2b; flex-grow: 1; border-top: 1px solid #334155; display: flex; align-items: center; }
 
         /* Floating WA */
-        .float-wa { position: fixed; bottom: 25px; right: 25px; background: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); z-index: 50; transition: transform 0.2s; }
-        .float-wa:hover { transform: scale(1.1); }
+        .float-wa { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #25d366, #128c7e); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); z-index: 50; transition: all 0.3s; }
+        .float-wa:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 10px 30px rgba(37, 211, 102, 0.6); }
+
+        /* Scroll Reveal Utility */
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        
+        /* Tech Badge Glow & Accordion */
+        .tech-badge { position: relative; overflow: hidden; }
+        .tech-badge::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); transform: rotate(45deg); animation: shine 3s infinite; }
+        @keyframes shine { 0% { left: -100%; } 100% { left: 100%; } }
+
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] summary ~ * { animation: sweep .5s ease-in-out; }
+        @keyframes sweep { 0%    {opacity: 0; transform: translateY(-10px)} 100%  {opacity: 1; transform: translateY(0)} }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- RUNNING TEXT (TOP BAR) -->
-    <div class="bg-blue-900/40 border-b border-blue-800/30 text-xs font-semibold py-2 overflow-hidden relative z-50 backdrop-blur-sm">
-        <div class="whitespace-nowrap animate-marquee flex gap-10 text-blue-200">
-            <span>🔥 NEW UPDATE: Engine VEO 3.1 & Seedance 1.5 Pro telah aktif!</span>
-            <span>⚡ Render 2x Lebih Cepat di jam malam (00:00 - 06:00).</span>
-            <span>🎁 Promo Member Baru: Diskon 50% berlaku sampai akhir bulan ini.</span>
-            <span>🚀 COMING SOON: Sora 2 Integration (No Watermark).</span>
-            <!-- Duplikat agar nyambung -->
-            <span>🔥 NEW UPDATE: Engine VEO 3.1 & Seedance 1.5 Pro telah aktif!</span>
-            <span>⚡ Render 2x Lebih Cepat di jam malam (00:00 - 06:00).</span>
+    <!-- RUNNING TEXT NOTIFICATION -->
+    <div class="fixed top-0 w-full z-[60] bg-blue-900/90 border-b border-blue-500/30 text-xs font-bold text-blue-100 py-2 overflow-hidden whitespace-nowrap backdrop-blur-sm">
+        <div class="animate-marquee inline-block">
+            🚀 UPDATE: Server VEO 3.1 & Kling AI kini 2x lebih cepat! — 🎉 Diskon Member Pro 50% hanya hari ini — ⚡ Fitur Text-to-Video sekarang mendukung durasi hingga 10 detik tanpa putus. — 🤖 Gunakan AI dengan bijak.
         </div>
     </div>
 
+    <!-- BACKGROUND AMBIENT -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-blob"></div>
+        <div class="absolute top-1/2 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-blob animation-delay-2000"></div>
+    </div>
+
     <!-- NAVIGASI -->
-    <nav class="sticky top-0 w-full z-40 glass-nav">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
-            <div class="text-xl font-bold text-white flex items-center gap-2">
-                <span class="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30"><i class="fas fa-magic"></i></span>
-                AI STUDIO
+    <nav class="fixed top-8 w-full z-50 glass-nav transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 flex items-center gap-3">
+                <i class="fas fa-cube text-blue-500"></i> AI STUDIO
             </div>
             
-            <!-- Tombol Dinamis (Berubah jika login) -->
-            <div id="nav-auth-container">
-                <button onclick="openLogin()" class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-full font-semibold text-sm border border-slate-700 transition shadow-lg flex items-center gap-2">
+            <!-- Tombol Auth (Logic di JS) -->
+            <button id="authBtn" onclick="openLogin()" class="group relative px-6 py-2.5 rounded-full bg-slate-800 text-white font-semibold border border-slate-700 overflow-hidden hover:border-blue-500 transition-all shadow-lg hover:shadow-blue-500/20">
+                <span id="authBtnText" class="relative z-10 group-hover:text-blue-400 transition-colors flex items-center gap-2">
                     <i class="fas fa-user-circle"></i> Masuk Member
-                </button>
-            </div>
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
         </div>
     </nav>
 
-    <!-- HERO SECTION (LEBIH PADAT) -->
-    <header class="pt-16 pb-12 text-center px-4 relative">
-        <!-- Glow Effect Belakang -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-blue-600/10 rounded-full blur-[100px] -z-10"></div>
-
-        <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold mb-6 animate-fade-up">
-            <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> SYSTEM ONLINE V3.0
+    <!-- HERO SECTION -->
+    <header class="pt-48 pb-20 text-center px-4 relative">
+        <!-- V2.0 BADGE WITH GREEN LIGHT ANIMATION -->
+        <span class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-xs font-bold mb-6 tracking-wider animate-fade-up shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            V2.0 STABLE RELEASE
         </span>
         
-        <h1 class="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight leading-tight">
-            Kreasikan Imajinasi<br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Tanpa Batas Teknis</span>
+        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight animate-fade-up drop-shadow-2xl" style="animation-delay: 0.1s;">
+            <span class="text-white">Wujudkan Ide Liar</span><br>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Tanpa Batas Teknis</span>
         </h1>
-        
-        <p class="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-            Platform All-in-One untuk Generative AI. Gunakan VEO 3.1, Kling Pro, dan Seedance dalam satu dashboard terintegrasi.
+        <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-up" style="animation-delay: 0.2s;">
+            Akses 5 Tools AI premium dalam satu dashboard. Cukup ketik, biarkan algoritma kami merender imajinasi Anda menjadi realitas visual yang menakjubkan.
         </p>
+    </header>
 
-        <!-- CORE ENGINE STATUS (GRID PADAT) -->
-        <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 px-2">
-            <div class="bg-slate-900/50 border border-slate-800 p-3 rounded-xl flex items-center gap-3 backdrop-blur-md">
-                <i class="fas fa-video text-blue-500"></i>
-                <div class="text-left">
-                    <div class="text-[10px] text-slate-500 font-bold uppercase">Video Engine</div>
-                    <div class="text-xs font-bold text-white">VEO 3.1 & Kling</div>
-                </div>
-            </div>
-            <div class="bg-slate-900/50 border border-slate-800 p-3 rounded-xl flex items-center gap-3 backdrop-blur-md">
-                <i class="fas fa-music text-green-500"></i>
-                <div class="text-left">
-                    <div class="text-[10px] text-slate-500 font-bold uppercase">Audio Engine</div>
-                    <div class="text-xs font-bold text-white">Seedance 1.5</div>
-                </div>
-            </div>
-            <div class="bg-slate-900/50 border border-slate-800 p-3 rounded-xl flex items-center gap-3 backdrop-blur-md">
-                <i class="fas fa-wand-magic-sparkles text-purple-500"></i>
-                <div class="text-left">
-                    <div class="text-[10px] text-slate-500 font-bold uppercase">Anime Engine</div>
-                    <div class="text-xs font-bold text-white">NanoBanana Pro</div>
-                </div>
-            </div>
-            <div class="bg-gradient-to-r from-yellow-900/20 to-transparent border border-yellow-700/30 p-3 rounded-xl flex items-center gap-3 relative overflow-hidden">
-                <div class="absolute inset-0 bg-yellow-500/5 animate-pulse-slow"></div>
-                <i class="fas fa-bolt text-yellow-500"></i>
-                <div class="text-left">
-                    <div class="text-[10px] text-yellow-500 font-bold uppercase">Coming Soon</div>
-                    <div class="text-xs font-bold text-white">SORA 2 (No Watermark)</div>
+    <!-- TECH SPECS -->
+    <section class="max-w-6xl mx-auto px-4 mb-24 reveal">
+        <div class="glass-card rounded-3xl p-1 overflow-hidden">
+            <div class="bg-slate-900/80 p-8 rounded-[20px]">
+                <div class="flex flex-col md:flex-row gap-8 items-stretch">
+                    
+                    <!-- LEFT: CURRENT ENGINE -->
+                    <div class="flex-1 space-y-6">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-microchip text-blue-400 text-xl"></i>
+                            <h3 class="text-xl font-bold text-white">Active Neural Engines</h3>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                                <span class="font-semibold text-sm">VEO 3.1</span>
+                            </div>
+                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                                <span class="font-semibold text-sm">Seedance 1.5 Pro</span>
+                            </div>
+                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                                <span class="font-semibold text-sm">Kling 2.5 Pro</span>
+                            </div>
+                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                                <span class="font-semibold text-sm">NanoBanana Pro</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DIVIDER -->
+                    <div class="hidden md:block w-px bg-slate-700/50"></div>
+
+                    <!-- RIGHT: COMING SOON -->
+                    <div class="flex-1 relative overflow-hidden rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-900/10 to-transparent p-6 group">
+                        <div class="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMING SOON</div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fas fa-bolt text-yellow-400 text-xl animate-pulse"></i>
+                            <h3 class="text-xl font-bold text-white group-hover:text-yellow-400 transition">Sora 2 Integration</h3>
+                        </div>
+                        <ul class="space-y-2 text-sm text-slate-300">
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> No Watermark</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> Ultra HD Quality Output</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> 12 Seconds / Generation</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> Cinematic Depth & Color</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-    </header>
+    </section>
+
+    <!-- CARA MULAI -->
+    <section class="max-w-6xl mx-auto px-4 mb-24 reveal">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-white mb-2">Workflow Otomatis</h2>
+            <p class="text-slate-500">3 Langkah mudah dari ide ke hasil.</p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-slate-800/30 border border-slate-700 hover:border-blue-500/50 p-8 rounded-2xl text-center transition duration-300 group hover:-translate-y-2">
+                <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg group-hover:scale-110 transition text-blue-400 border border-slate-700">1</div>
+                <h3 class="font-bold text-lg mb-2 text-white">Akses Akun</h3>
+                <p class="text-slate-400 text-sm">Daftar gratis dan login ke dashboard member.</p>
+            </div>
+            <div class="bg-slate-800/30 border border-slate-700 hover:border-purple-500/50 p-8 rounded-2xl text-center transition duration-300 group hover:-translate-y-2">
+                <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg group-hover:scale-110 transition text-purple-400 border border-slate-700">2</div>
+                <h3 class="font-bold text-lg mb-2 text-white">Pilih Engine</h3>
+                <p class="text-slate-400 text-sm">Pilih tools sesuai kebutuhan (Video/Anime/Suara).</p>
+            </div>
+            <div class="bg-slate-800/30 border border-slate-700 hover:border-green-500/50 p-8 rounded-2xl text-center transition duration-300 group hover:-translate-y-2">
+                <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6 shadow-lg group-hover:scale-110 transition text-green-400 border border-slate-700">3</div>
+                <h3 class="font-bold text-lg mb-2 text-white">Generate</h3>
+                <p class="text-slate-400 text-sm">Tunggu proses render dan download hasilnya.</p>
+            </div>
+        </div>
+    </section>
 
     <!-- ========================================= -->
-    <!-- SERVICES SECTION (SWIPER LOOP FIX) -->
+    <!-- SERVICES SECTION -->
     <!-- ========================================= -->
 
     <!-- LAYANAN 1 -->
-    <section class="py-10 border-t border-slate-800/50 bg-slate-900/20">
-        <div class="max-w-7xl mx-auto px-4 mb-4 flex items-center justify-between">
+    <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
+        <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-white">1. Text to Video</h2>
-                <p class="text-slate-400 text-xs">Prompt text jadi video realistis.</p>
+                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-blue-500">01.</span> Text to Video</h2>
+                <p class="text-slate-400 text-sm">Realism Engine: VEO 3.1 & Kling 2.5 Pro</p>
             </div>
-            <a href="#" onclick="openLogin()" class="text-blue-400 text-xs hover:text-white transition">Lihat Semua <i class="fas fa-arrow-right ml-1"></i></a>
+            <div class="hidden md:block w-1/3 h-px bg-gradient-to-r from-blue-500/50 to-transparent mb-4"></div>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid1.mp4" type="video/mp4"></video></div><div class="caption">Prompt: "Astronot di Mars"</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid2.mp4" type="video/mp4"></video></div><div class="caption">Prompt: "Kucing Cyberpunk"</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid3.mp4" type="video/mp4"></video></div><div class="caption">Prompt: "Jakarta 2077"</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid4.mp4" type="video/mp4"></video></div><div class="caption">Prompt: "Pegunungan Alpen"</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid5.mp4" type="video/mp4"></video></div><div class="caption">Prompt: "Balapan F1"</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan1-vid6.mp4" type="video/mp4"></video></div><div class="caption">Prompt: "Robot Koki"</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid1.mp4" type="video/mp4"></video></div><div class="caption"><b>Prompt:</b> "Astronot berjalan di Mars."</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid2.mp4" type="video/mp4"></video></div><div class="caption"><b>Prompt:</b> "Kucing lucu pakai kacamata."</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid3.mp4" type="video/mp4"></video></div><div class="caption"><b>Prompt:</b> "Kota Jakarta tahun 2077."</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid4.mp4" type="video/mp4"></video></div><div class="caption"><b>Prompt:</b> "Pemandangan pegunungan Alpen."</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid5.mp4" type="video/mp4"></video></div><div class="caption"><b>Prompt:</b> "Mobil balap merah di sirkuit."</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid6.mp4" type="video/mp4"></video></div><div class="caption"><b>Prompt:</b> "Robot sedang memasak."</div></div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
 
     <!-- LAYANAN 2 -->
-    <section class="py-10 border-t border-slate-800/50">
-        <div class="max-w-7xl mx-auto px-4 mb-4">
-            <h2 class="text-2xl font-bold text-white">2. Anime Converter</h2>
-            <p class="text-slate-400 text-xs">Ubah video nyata jadi style Anime Jepang.</p>
+    <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
+        <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-purple-500">02.</span> Anime Converter</h2>
+                <p class="text-slate-400 text-sm">Stylization Engine: NanoBanana Pro</p>
+            </div>
+            <div class="hidden md:block w-1/3 h-px bg-gradient-to-r from-purple-500/50 to-transparent mb-4"></div>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid1.mp4" type="video/mp4"></video></div><div class="caption">Style: Ghibli</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid2.mp4" type="video/mp4"></video></div><div class="caption">Style: Attack on Titan</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid3.mp4" type="video/mp4"></video></div><div class="caption">Style: Naruto</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid4.mp4" type="video/mp4"></video></div><div class="caption">Style: Makoto Shinkai</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid5.mp4" type="video/mp4"></video></div><div class="caption">Style: Classic 90s</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan2-vid6.mp4" type="video/mp4"></video></div><div class="caption">Style: Modern Anime</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid1.mp4" type="video/mp4"></video></div><div class="caption">Contoh Joget TikTok Anime.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid2.mp4" type="video/mp4"></video></div><div class="caption">Contoh Vlog Anime.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid3.mp4" type="video/mp4"></video></div><div class="caption">Contoh Selfie Anime.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid4.mp4" type="video/mp4"></video></div><div class="caption">Contoh Pemandangan Anime.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid5.mp4" type="video/mp4"></video></div><div class="caption">Contoh Makan jadi Anime.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid6.mp4" type="video/mp4"></video></div><div class="caption">Contoh Hewan jadi Anime.</div></div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
 
     <!-- LAYANAN 3 -->
-    <section class="py-10 border-t border-slate-800/50 bg-slate-900/20">
-        <div class="max-w-7xl mx-auto px-4 mb-4">
-            <h2 class="text-2xl font-bold text-white">3. Voice Cloning</h2>
-            <p class="text-slate-400 text-xs">Kloning suara siapapun dengan durasi sampel 5 detik.</p>
+    <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
+        <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
+            <div>
+                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-green-500">03.</span> Voice Cloning</h2>
+                <p class="text-slate-400 text-sm">Audio Engine: Seedance 1.5 Pro</p>
+            </div>
+            <div class="hidden md:block w-1/3 h-px bg-gradient-to-r from-green-500/50 to-transparent mb-4"></div>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid1.mp4" type="video/mp4"></video></div><div class="caption">Suara Presiden</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid2.mp4" type="video/mp4"></video></div><div class="caption">Suara Artis</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid3.mp4" type="video/mp4"></video></div><div class="caption">Suara Narator Film</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid4.mp4" type="video/mp4"></video></div><div class="caption">Suara Kartun</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid5.mp4" type="video/mp4"></video></div><div class="caption">Suara Teman</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop><source src="assets/layanan3-vid6.mp4" type="video/mp4"></video></div><div class="caption">Suara Robot</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid1.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Presiden.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid2.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Penyanyi.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid3.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Narator.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid4.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Kartun.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid5.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Teman.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid6.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Robot.</div></div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
 
-    <!-- LAYANAN 4 & 5 (DIGABUNG BIAR COMPACT TAPI TETAP ADA) -->
-    <section class="py-12 border-t border-slate-800/50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <!-- PHOTO RESTORATION -->
-                <div>
-                    <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fas fa-magic text-yellow-500"></i> HD Restoration</h2>
-                    <div class="relative rounded-2xl overflow-hidden border border-slate-700 group h-64">
-                         <video class="w-full h-full object-cover" controls muted loop><source src="assets/layanan4-vid1.mp4" type="video/mp4"></video>
-                         <div class="absolute bottom-0 left-0 w-full bg-black/70 p-2 text-center text-xs text-white">Contoh: Memperjelas Foto Buram</div>
-                    </div>
-                </div>
-                <!-- BG REMOVER -->
-                <div>
-                    <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fas fa-eraser text-pink-500"></i> Background Remover</h2>
-                    <div class="relative rounded-2xl overflow-hidden border border-slate-700 group h-64">
-                        <video class="w-full h-full object-cover" controls muted loop><source src="assets/layanan5-vid1.mp4" type="video/mp4"></video>
-                        <div class="absolute bottom-0 left-0 w-full bg-black/70 p-2 text-center text-xs text-white">Contoh: Hapus Latar Produk</div>
-                    </div>
-                </div>
+    <!-- LAYANAN 4 -->
+    <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
+        <div class="max-w-6xl mx-auto px-4 mb-6 text-left">
+            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-yellow-500">04.</span> HD Restoration</h2>
+            <p class="text-slate-400 text-sm">Upscale Engine: ClarityAI v4</p>
+        </div>
+        <div class="swiper service-swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid1.mp4" type="video/mp4"></video></div><div class="caption">Restorasi Foto Kakek.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid2.mp4" type="video/mp4"></video></div><div class="caption">Restorasi Foto Nikah.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid3.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Foto Selfie Blur.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid4.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Foto Pemandangan.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid5.mp4" type="video/mp4"></video></div><div class="caption">Warnai Foto Hitam Putih.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid6.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Dokumen Teks.</div></div>
             </div>
+            <div class="swiper-pagination"></div>
         </div>
     </section>
 
-    <!-- FAQ SECTION (BARU) -->
-    <section class="max-w-4xl mx-auto px-4 py-16">
-        <h2 class="text-3xl font-bold text-center text-white mb-8">Pertanyaan Umum</h2>
+    <!-- LAYANAN 5 -->
+    <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
+        <div class="max-w-6xl mx-auto px-4 mb-6 text-left">
+            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-pink-500">05.</span> Background Remover</h2>
+            <p class="text-slate-400 text-sm">Segmentation Engine: Precision Cut</p>
+        </div>
+        <div class="swiper service-swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid1.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Produk Sepatu.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid2.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Orang.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid3.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Mobil.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid4.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Logo.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid5.mp4" type="video/mp4"></video></div><div class="caption">Ganti Background Pas Foto.</div></div>
+                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid6.mp4" type="video/mp4"></video></div><div class="caption">Buat Stiker WA.</div></div>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section class="max-w-4xl mx-auto px-4 mb-32 reveal">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-white mb-2">Pertanyaan Umum</h2>
+            <p class="text-slate-500">Jawaban untuk rasa penasaran Anda.</p>
+        </div>
         <div class="space-y-4">
-            <!-- FAQ 1 -->
-            <details class="group bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-                <summary class="flex justify-between items-center p-5 font-medium text-slate-200 hover:bg-slate-800 transition select-none">
-                    Apakah layanan ini gratis?
-                    <span class="transition group-open:rotate-180"><i class="fas fa-chevron-down text-sm"></i></span>
+            <!-- FAQ ITEM 1 -->
+            <details class="group bg-slate-800/30 border border-slate-700 rounded-xl overflow-hidden hover:bg-slate-800/50 transition">
+                <summary class="flex justify-between items-center p-5 cursor-pointer font-semibold text-white">
+                    <span>Apakah layanan ini gratis?</span>
+                    <i class="fas fa-chevron-down text-slate-500 transition-transform group-open:rotate-180"></i>
                 </summary>
-                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-                    Anda bisa mendaftar gratis dan mendapatkan kredit percobaan. Untuk fitur pro seperti render HD dan tanpa watermark, kami menyediakan paket berlangganan yang terjangkau.
+                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50 pt-3">
+                    Kami menyediakan paket Free Trial untuk pengguna baru. Untuk akses fitur premium seperti HD Video dan durasi panjang, Anda perlu berlangganan member Pro.
                 </div>
             </details>
-
-            <!-- FAQ 2 -->
-            <details class="group bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-                <summary class="flex justify-between items-center p-5 font-medium text-slate-200 hover:bg-slate-800 transition select-none">
-                    Berapa lama proses pembuatan video?
-                    <span class="transition group-open:rotate-180"><i class="fas fa-chevron-down text-sm"></i></span>
+            <!-- FAQ ITEM 2 -->
+            <details class="group bg-slate-800/30 border border-slate-700 rounded-xl overflow-hidden hover:bg-slate-800/50 transition">
+                <summary class="flex justify-between items-center p-5 cursor-pointer font-semibold text-white">
+                    <span>Bagaimana cara kerja sistem kredit?</span>
+                    <i class="fas fa-chevron-down text-slate-500 transition-transform group-open:rotate-180"></i>
                 </summary>
-                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-                    Tergantung antrian server. Rata-rata untuk Text to Video (5 detik) membutuhkan waktu sekitar 2-5 menit. Member premium mendapatkan prioritas antrian (Fast Lane).
+                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50 pt-3">
+                    Setiap generate membutuhkan 1-5 kredit tergantung kompleksitas. Kredit akan direset setiap bulan atau Anda bisa top-up kapan saja.
                 </div>
             </details>
-
-            <!-- FAQ 3 -->
-            <details class="group bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-                <summary class="flex justify-between items-center p-5 font-medium text-slate-200 hover:bg-slate-800 transition select-none">
-                    Apakah hasil video ada watermark?
-                    <span class="transition group-open:rotate-180"><i class="fas fa-chevron-down text-sm"></i></span>
+            <!-- FAQ ITEM 3 -->
+            <details class="group bg-slate-800/30 border border-slate-700 rounded-xl overflow-hidden hover:bg-slate-800/50 transition">
+                <summary class="flex justify-between items-center p-5 cursor-pointer font-semibold text-white">
+                    <span>Apakah hasilnya boleh dikomersilkan?</span>
+                    <i class="fas fa-chevron-down text-slate-500 transition-transform group-open:rotate-180"></i>
                 </summary>
-                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-                    Untuk pengguna gratis, terdapat watermark kecil di pojok. Pengguna Premium dapat mengunduh hasil bersih tanpa watermark dan resolusi hingga 4K.
+                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50 pt-3">
+                    Ya! Seluruh hasil karya yang Anda buat dengan akun Premium sepenuhnya menjadi hak milik Anda dan bebas digunakan untuk komersial (Youtube, Iklan, dll).
                 </div>
             </details>
-            
-            <!-- FAQ 4 -->
-            <details class="group bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
-                <summary class="flex justify-between items-center p-5 font-medium text-slate-200 hover:bg-slate-800 transition select-none">
-                    Metode pembayaran apa yang tersedia?
-                    <span class="transition group-open:rotate-180"><i class="fas fa-chevron-down text-sm"></i></span>
+            <!-- FAQ ITEM 4 -->
+            <details class="group bg-slate-800/30 border border-slate-700 rounded-xl overflow-hidden hover:bg-slate-800/50 transition">
+                <summary class="flex justify-between items-center p-5 cursor-pointer font-semibold text-white">
+                    <span>Berapa lama proses generatenya?</span>
+                    <i class="fas fa-chevron-down text-slate-500 transition-transform group-open:rotate-180"></i>
                 </summary>
-                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-                    Kami menerima Transfer Bank (BCA, Mandiri, BRI), E-Wallet (GoPay, OVO, Dana), dan QRIS untuk kemudahan transaksi otomatis.
+                <div class="px-5 pb-5 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50 pt-3">
+                    Rata-rata text-to-video memakan waktu 30-60 detik. Untuk gambar dan suara biasanya kurang dari 10 detik.
                 </div>
             </details>
         </div>
     </section>
 
     <!-- FOOTER -->
-    <footer class="py-10 bg-black border-t border-slate-900 text-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-blue-900/5 z-0"></div>
-        <div class="relative z-10">
-            <h3 class="font-bold text-xl text-white mb-2">AI STUDIO</h3>
-            <p class="text-slate-500 text-xs mb-6">Membangun masa depan konten digital dengan AI.</p>
-            <div class="flex justify-center gap-6 text-slate-400 text-lg">
-                <a href="#" class="hover:text-blue-500 transition"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="hover:text-blue-500 transition"><i class="fab fa-tiktok"></i></a>
-                <a href="#" class="hover:text-blue-500 transition"><i class="fab fa-twitter"></i></a>
+    <footer class="py-12 bg-slate-900 border-t border-slate-800 relative overflow-hidden">
+        <div class="absolute inset-0 bg-blue-900/5 bg-grid-white/[0.05]"></div>
+        <div class="max-w-6xl mx-auto px-4 text-center relative z-10">
+            <div class="text-2xl font-bold text-white mb-4 flex justify-center items-center gap-2">
+                <i class="fas fa-cube text-blue-500"></i> AI STUDIO
             </div>
-            <p class="text-slate-600 text-[10px] mt-8">&copy; 2026 AI Studio. All systems operational.</p>
+            <p class="text-slate-500 text-sm mb-6">&copy; 2026 AI Studio Inc. All Rights Reserved.<br>Powered by VEO, Kling, & Seedance Technologies.</p>
+            <div class="flex justify-center gap-6">
+                <a href="#" class="text-slate-400 hover:text-white hover:scale-110 transition"><i class="fab fa-instagram text-xl"></i></a>
+                <a href="#" class="text-slate-400 hover:text-white hover:scale-110 transition"><i class="fab fa-tiktok text-xl"></i></a>
+                <a href="#" class="text-slate-400 hover:text-white hover:scale-110 transition"><i class="fab fa-youtube text-xl"></i></a>
+            </div>
         </div>
     </footer>
 
@@ -333,26 +421,38 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <!-- MODAL LOGIN -->
-    <div id="loginModal" class="fixed inset-0 bg-black/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-700 p-8 rounded-2xl w-full max-w-sm shadow-2xl relative">
-            <button onclick="closeLogin()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
-            <h2 class="text-xl font-bold mb-1 text-center text-white">Member Area</h2>
-            <p class="text-center text-slate-500 text-xs mb-6">Masuk untuk mulai generate AI.</p>
+    <!-- MODAL LOGIN POPUP -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-950/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl w-full max-w-md shadow-2xl relative transform scale-95 opacity-0 transition-all duration-300" id="loginContent">
+            <button onclick="closeLogin()" class="absolute top-5 right-5 text-slate-500 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
             
-            <div class="space-y-3">
-                <input type="email" id="emailInput" placeholder="Email Address" class="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded-lg text-sm focus:outline-none focus:border-blue-500">
-                <input type="password" id="passInput" placeholder="Password" class="w-full bg-slate-950 border border-slate-800 text-white px-4 py-3 rounded-lg text-sm focus:outline-none focus:border-blue-500">
-                
-                <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold text-sm transition">Masuk Sekarang</button>
-                <button onclick="handleSignup()" class="w-full bg-transparent border border-slate-700 text-slate-400 hover:text-white hover:border-slate-500 py-3 rounded-lg font-bold text-sm transition">Daftar Akun Baru</button>
-                
-                <p id="statusMsg" class="text-center text-xs text-yellow-500 mt-2 h-4"></p>
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
+                    <i class="fas fa-user-astronaut text-blue-400 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Welcome Back</h2>
+                <p class="text-slate-400 text-sm">Akses dashboard creator Anda.</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Email Address</label>
+                    <input type="email" id="emailInput" placeholder="creator@example.com" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
+                </div>
+                <div>
+                    <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" id="passInput" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
+                </div>
+                <div class="grid grid-cols-2 gap-3 pt-4">
+                    <button onclick="handleLogin()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/50 hover:scale-[1.02]">Masuk</button>
+                    <button onclick="handleSignup()" class="bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold transition border border-slate-700 hover:scale-[1.02]">Daftar</button>
+                </div>
+                <p id="statusMsg" class="text-center text-sm text-yellow-400 mt-2 h-5"></p>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
+    <!-- SCRIPT UTAMA -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script>
         // --- 1. SETUP SUPABASE ---
@@ -362,45 +462,40 @@
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
         )
 
-        // --- 2. LOGIC TOMBOL LOGIN / DASHBOARD ---
+        // --- 2. LOGIC LOGIN STATE ---
         async function checkSession() {
             const { data: { session } } = await _supabase.auth.getSession();
-            const navContainer = document.getElementById('nav-auth-container');
-
+            const authBtn = document.getElementById('authBtn');
+            const authText = document.getElementById('authBtnText');
+            
             if (session) {
-                // Jika sudah login, ubah tombol jadi "Dashboard"
-                navContainer.innerHTML = `
-                    <button onclick="window.location.href='dashboard.html'" class="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-green-900/30 flex items-center gap-2">
-                        <i class="fas fa-rocket"></i> Ke Dashboard
-                    </button>
-                `;
-            } else {
-                // Jika belum login, tombol default
-                navContainer.innerHTML = `
-                    <button onclick="openLogin()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-full font-bold text-sm transition shadow-lg shadow-blue-900/30">
-                        Masuk Member
-                    </button>
-                `;
+                // User sedang login
+                authText.innerHTML = '<i class="fas fa-gauge-high"></i> Dashboard';
+                authBtn.onclick = function() {
+                    window.location.href = "dashboard.html";
+                };
+                authBtn.classList.remove('bg-slate-800');
+                authBtn.classList.add('bg-blue-600', 'border-blue-500');
             }
         }
         checkSession();
 
-        // --- 3. FUNGSI AUTH (LOGIN/SIGNUP) ---
+        // --- 3. LOGIN & SIGNUP LOGIC ---
         async function handleLogin() {
             const email = document.getElementById('emailInput').value
             const password = document.getElementById('passInput').value
             const msg = document.getElementById('statusMsg')
             
-            if(!email || !password) { msg.innerText = "Isi semua data!"; return; }
-            msg.innerText = "Memproses..."
+            if(!email || !password) { msg.innerText = "Isi email dan password!"; return; }
+            msg.innerText = "Authenticating..."
             
             const { data, error } = await _supabase.auth.signInWithPassword({ email, password })
             if (error) {
-                msg.innerText = error.message
-                msg.className = "text-center text-xs text-red-500 mt-2 h-4"
+                msg.innerText = "Error: " + error.message
+                msg.className = "text-center text-sm text-red-400 mt-2 h-5"
             } else {
-                msg.innerText = "Sukses! Mengalihkan..."
-                msg.className = "text-center text-xs text-green-500 mt-2 h-4"
+                msg.innerText = "Login Sukses! Mengalihkan..."
+                msg.className = "text-center text-sm text-green-400 mt-2 h-5"
                 setTimeout(() => { window.location.href = "dashboard.html" }, 1000)
             }
         }
@@ -409,38 +504,80 @@
             const email = document.getElementById('emailInput').value
             const password = document.getElementById('passInput').value
             const msg = document.getElementById('statusMsg')
+
             if(password.length < 6) { msg.innerText = "Password min 6 karakter"; return; }
-            msg.innerText = "Mendaftar..."
+            msg.innerText = "Creating Account..."
+            
             const { data, error } = await _supabase.auth.signUp({ email, password })
-            if (error) { msg.innerText = error.message } 
-            else { msg.innerText = "Cek email untuk verifikasi!"; msg.className = "text-center text-xs text-green-500 mt-2 h-4" }
+            if (error) {
+                msg.innerText = "Gagal: " + error.message
+            } else {
+                msg.innerText = "Cek email Anda untuk konfirmasi!"
+                msg.className = "text-center text-sm text-green-400 mt-2 h-5"
+            }
         }
 
-        // --- 4. SWIPER CONFIG (LOOP FIX) ---
-        var swiper = new Swiper(".service-swiper", {
-            effect: "coverflow",
-            grabCursor: true,
-            centeredSlides: true,
-            slidesPerView: "auto", // Responsive width
-            loop: true,            // Infinity Loop ON
-            loopedSlides: 6,       // PENTING: Buffer slide agar tidak mentok saat digeser
-            coverflowEffect: {
-                rotate: 0,
-                stretch: 0,
-                depth: 100,
-                modifier: 2,
-                slideShadows: true,
-            },
-            pagination: { el: ".swiper-pagination", clickable: true },
-        });
-
-        // --- 5. UI MODAL ---
+        // --- 4. UI UTILS ---
         function openLogin() { 
-            const m = document.getElementById('loginModal'); m.classList.remove('hidden'); m.classList.add('flex'); 
+            const modal = document.getElementById('loginModal');
+            const content = document.getElementById('loginContent');
+            modal.style.display = 'flex';
+            void modal.offsetWidth; // Trigger reflow
+            modal.classList.remove('hidden');
+            content.classList.remove('scale-95', 'opacity-0');
+            content.classList.add('scale-100', 'opacity-100');
         }
+
         function closeLogin() { 
-            const m = document.getElementById('loginModal'); m.classList.add('hidden'); m.classList.remove('flex'); 
+            const modal = document.getElementById('loginModal');
+            const content = document.getElementById('loginContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
         }
+
+        window.addEventListener('scroll', reveal);
+        function reveal(){
+            var reveals = document.querySelectorAll('.reveal');
+            for(var i = 0; i < reveals.length; i++){
+                var windowheight = window.innerHeight;
+                var revealtop = reveals[i].getBoundingClientRect().top;
+                var revealpoint = 150;
+                if(revealtop < windowheight - revealpoint){
+                    reveals[i].classList.add('active');
+                }
+            }
+        }
+        reveal();
+
+        // --- 5. SWIPER CONFIG (FIXED LOOP) ---
+        var swiper = new Swiper(".service-swiper", {
+            effect: "coverflow", 
+            loop: true,
+            loopedSlides: 6, 
+            grabCursor: true,    
+            centeredSlides: true,
+            slidesPerView: "auto", 
+            coverflowEffect: {
+                rotate: 0,      
+                stretch: 0,      
+                depth: 120,      
+                modifier: 1.5,     
+                slideShadows: true, 
+            },
+            autoplay: {
+                delay: 2500,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true, 
+            },
+            keyboard: {
+                enabled: true,
+            },
+        });
     </script>
 </body>
 </html>
