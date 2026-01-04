@@ -9,79 +9,169 @@
     <style>
         body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; }
         .glass-box { background: #1e293b; border: 1px solid #334155; }
+        
+        /* Animasi Transisi */
+        .plan-card { transition: all 0.3s ease; }
+        .plan-card:hover { transform: translateY(-2px); border-color: #3b82f6; }
+        .plan-card.active { 
+            border-color: #3b82f6; 
+            background-color: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+        .check-icon { display: none; }
+        .plan-card.active .check-icon { display: block; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
 
-    <div class="glass-box max-w-md w-full p-8 rounded-2xl shadow-2xl">
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold mb-2">Selesaikan Pembayaran</h1>
-            <p class="text-gray-400 text-sm">Transfer sesuai nominal di bawah ini.</p>
+    <div class="glass-box max-w-md w-full p-6 rounded-2xl shadow-2xl relative">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold mb-1">Pilih Paket Langganan</h1>
+            <p class="text-gray-400 text-sm">Pilih durasi yang sesuai kebutuhan Anda</p>
         </div>
 
-        <!-- Detail Pesanan -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-6 flex justify-between items-center">
-            <div>
-                <p class="text-xs text-blue-400 font-bold uppercase">Paket Pilihan</p>
-                <p class="font-bold text-lg text-white" id="namaPaket">Loading...</p>
+        <!-- Pilihan Paket (Ganti Detail Pesanan Lama) -->
+        <div class="space-y-3 mb-6">
+            
+            <!-- PAKET TESTER -->
+            <div onclick="pilihPaket('TESTER', 29000, '3 Hari')" id="btn-tester"
+                 class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-blue-400">TESTER <span class="text-xs text-gray-400 font-normal ml-1 bg-slate-700 px-2 py-0.5 rounded-full">3 Hari</span></h3>
+                        <p class="text-xs text-gray-400 mt-1">Untuk orang iseng/penasaran.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg">Rp 29k</p>
+                        <i class="fas fa-check-circle text-blue-500 check-icon absolute top-4 right-4 text-xl"></i>
+                    </div>
+                </div>
             </div>
-            <div class="text-right">
-                <p class="text-xs text-blue-400 font-bold uppercase">Total Bayar</p>
-                <p class="font-bold text-lg text-yellow-400" id="hargaPaket">...</p>
+
+            <!-- PAKET CREATOR -->
+            <div onclick="pilihPaket('CREATOR', 89000, '7 Hari')" id="btn-creator"
+                 class="plan-card active border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-yellow-400">CREATOR <span class="text-xs text-white font-normal ml-1 bg-yellow-600 px-2 py-0.5 rounded-full">7 Hari</span></h3>
+                        <p class="text-xs text-gray-400 mt-1">User proyek jangka pendek.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg">Rp 89k</p>
+                        <i class="fas fa-check-circle text-blue-500 check-icon absolute top-4 right-4 text-xl"></i>
+                    </div>
+                </div>
             </div>
+
+            <!-- PAKET PRO -->
+            <div onclick="pilihPaket('PRO', 249000, '30 Hari')" id="btn-pro"
+                 class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-purple-400">PRO <span class="text-xs text-white font-normal ml-1 bg-purple-600 px-2 py-0.5 rounded-full">30 Hari</span></h3>
+                        <p class="text-xs text-gray-400 mt-1">Content Creator serius/Agensi.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg">Rp 249k</p>
+                        <i class="fas fa-check-circle text-blue-500 check-icon absolute top-4 right-4 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Rekening -->
-        <div class="space-y-4 mb-8">
+        <!-- Metode Pembayaran (Dari Screenshot Anda) -->
+        <div class="mb-2">
+            <p class="text-xs text-gray-400 uppercase font-bold mb-3 tracking-wider">Metode Pembayaran</p>
+        </div>
+        
+        <div class="space-y-3 mb-8">
             <!-- BANK JAGO -->
-            <div class="flex items-center gap-4 border border-slate-600 p-4 rounded-xl hover:border-yellow-500 transition cursor-pointer bg-slate-900/50">
+            <div class="flex items-center gap-4 border border-slate-600 p-3 rounded-xl hover:border-yellow-500 transition cursor-pointer bg-slate-900/50" onclick="copyText('1234567890')">
                 <div class="w-12 h-8 bg-yellow-500 rounded flex items-center justify-center text-black font-bold text-xs">JAGO</div>
                 <div>
-                    <p class="text-xs text-gray-400">Bank JAGO</p>
-                    <p class="font-bold text-lg tracking-wide">1005-5384-2165</p>
+                    <p class="text-xs text-gray-400">Bank Jago</p>
+                    <p class="font-bold text-md tracking-wide">1042 1245 2291</p>
                     <p class="text-xs text-gray-500">a.n Sumahir Hidayanto</p>
                 </div>
             </div>
-            
+
             <!-- DANA -->
-            <div class="flex items-center gap-4 border border-slate-600 p-4 rounded-xl hover:border-blue-500 transition cursor-pointer bg-slate-900/50">
+            <div class="flex items-center gap-4 border border-slate-600 p-3 rounded-xl hover:border-blue-500 transition cursor-pointer bg-slate-900/50" onclick="copyText('085841244290')">
                 <div class="w-12 h-8 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">DANA</div>
                 <div>
                     <p class="text-xs text-gray-400">E-Wallet DANA</p>
-                    <p class="font-bold text-lg tracking-wide">0858-4124-4290</p>
+                    <p class="font-bold text-md tracking-wide">0858-4124-4290</p>
                     <p class="text-xs text-gray-500">a.n Sumahir Hidayanto</p>
                 </div>
             </div>
         </div>
 
-        <!-- Tombol WA -->
-        <a id="waButton" href="#" target="_blank" class="block w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-xl text-center shadow-lg shadow-green-900/50 transition transform hover:-translate-y-1">
-            <i class="fab fa-whatsapp mr-2"></i> Konfirmasi Pembayaran
+        <!-- Tombol Konfirmasi WA -->
+        <a id="waButton" href="#" target="_blank" 
+           class="block w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl text-center shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2">
+            <i class="fab fa-whatsapp text-xl"></i> 
+            <span id="btnText">Konfirmasi Bayar (Rp 89.000)</span>
         </a>
-        
-        <a href="javascript:history.back()" class="block text-center mt-6 text-gray-500 hover:text-white text-sm transition">Batal / Kembali</a>
+
+        <a href="javascript:history.back()" class="block text-center mt-4 text-gray-500 hover:text-white text-sm transition">Batal / Kembali</a>
     </div>
 
     <script>
-        // LOGIKA PINTAR: Mengambil data dari Link tombol yang diklik user
-        const params = new URLSearchParams(window.location.search);
-        
-        // Ambil nama paket & harga, jika kosong isi default
-        const paket = params.get('paket') || 'Paket Tidak Diketahui';
-        const harga = params.get('harga') || '0';
-        
-        // Ubah angka menjadi format Rupiah (Rp 50.000)
-        const formatRupiah = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(harga);
+        // Data Variabel Global
+        let paketTerpilih = 'CREATOR';
+        let hargaTerpilih = 89000;
+        let durasiTerpilih = '7 Hari';
+        const nomorWA = "6285841244290"; // Nomor Admin Anda
 
-        // Tampilkan di layar
-        document.getElementById('namaPaket').innerText = paket.replace(/-/g, " "); // Hapus tanda strip (-) jadi spasi
-        document.getElementById('hargaPaket').innerText = formatRupiah;
+        // Fungsi Memilih Paket
+        function pilihPaket(nama, harga, durasi) {
+            // Update Data
+            paketTerpilih = nama;
+            hargaTerpilih = harga;
+            durasiTerpilih = durasi;
 
-        // DATA WHATSAPP ADMIN
-        const nomorWA = "6285841244290"; 
-        const pesan = `Halo Admin, saya mau beli paket: %0A📦 *${paket.replace(/-/g, " ")}* %0A💰 Harga: *${formatRupiah}* %0A%0ASaya sudah transfer, mohon dicek dan kirim Token Aksesnya.`;
-        
-        document.getElementById('waButton').href = `https://wa.me/${nomorWA}?text=${pesan}`;
+            // Update Tampilan Kartu (Visual Active State)
+            document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('active'));
+            
+            if(nama === 'TESTER') document.getElementById('btn-tester').classList.add('active');
+            if(nama === 'CREATOR') document.getElementById('btn-creator').classList.add('active');
+            if(nama === 'PRO') document.getElementById('btn-pro').classList.add('active');
+
+            // Format Rupiah
+            const formatRupiah = new Intl.NumberFormat('id-ID', { 
+                style: 'currency', currency: 'IDR', minimumFractionDigits: 0 
+            }).format(harga);
+
+            // Update Tombol WhatsApp
+            const btnText = document.getElementById('btnText');
+            btnText.innerText = `Konfirmasi Bayar (${formatRupiah})`;
+            
+            updateLinkWA(formatRupiah);
+        }
+
+        // Fungsi Update Link WA
+        function updateLinkWA(hargaFormatted) {
+            const pesan = `Halo Admin, saya mau beli paket: 
+📦 *${paketTerpilih}* (${durasiTerpilih})
+💰 Harga: *${hargaFormatted}*
+
+Saya sudah transfer ke rekening yang tertera. Mohon diproses. Terima kasih!`;
+            
+            const link = `https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`;
+            document.getElementById('waButton').href = link;
+        }
+
+        // Fungsi Copy Rekening (Tambahan fitur kecil)
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            alert('Nomor berhasil disalin!');
+        }
+
+        // Jalankan sekali saat loading untuk set default (Creator)
+        pilihPaket('CREATOR', 89000, '7 Hari');
     </script>
 </body>
 </html>
