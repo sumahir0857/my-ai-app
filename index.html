@@ -538,9 +538,9 @@
         <div class="absolute inset-0 bg-blue-900/5 bg-grid-white/[0.05]"></div>
         <div class="max-w-6xl mx-auto px-4 text-center relative z-10">
             <div class="text-2xl font-bold text-white mb-4 flex justify-center items-center gap-2">
-                <i class="fas fa-cube text-blue-500"></i> AI STUDIO
+                <i class="fas fa-cube text-blue-500"></i> ORBITBOT
             </div>
-            <p class="text-slate-500 text-sm mb-6">&copy; 2026 AI Studio Inc. All Rights Reserved.<br>Powered by VEO, Kling, & Seedance Technologies.</p>
+            <p class="text-slate-500 text-sm mb-6">&copy; 2026 ORBITBOT Inc. All Rights Reserved.<br>Powered by VEO, Kling, & Seedance Technologies.</p>
             <div class="flex justify-center gap-6">
                 <a href="#" class="text-slate-400 hover:text-white hover:scale-110 transition"><i class="fab fa-instagram text-xl"></i></a>
                 <a href="#" class="text-slate-400 hover:text-white hover:scale-110 transition"><i class="fab fa-tiktok text-xl"></i></a>
@@ -550,7 +550,7 @@
     </footer>
 
     <!-- TOMBOL WA -->
-    <a href="https://wa.me/6281234567890" target="_blank" class="float-wa" title="Hubungi Admin">
+    <a href="https://wa.me/6285841244290" target="_blank" class="float-wa" title="Hubungi Admin">
         <i class="fab fa-whatsapp"></i>
     </a>
 
@@ -683,106 +683,94 @@
         }
         reveal();
 
-        // --- 5. SWIPER CONFIG (FIXED LOOP) ---
-        var swiper = new Swiper(".service-swiper", {
-            effect: "coverflow", 
-            loop: true,
-            loopedSlides: 6, 
-            grabCursor: true,    
-            centeredSlides: true,
-            slidesPerView: "auto", 
-            coverflowEffect: {
-                rotate: 0,      
-                stretch: 0,      
-                depth: 120,      
-                modifier: 1.5,     
-                slideShadows: true, 
-            },
-            autoplay: {
-                delay: 2500,
-                disableOnInteraction: false,
-                pauseOnMouseEnter: true
-            },
-            pagination: {
-                el: ".swiper-pagination",
-                clickable: true, 
-            },
-            keyboard: {
-                enabled: true,
-            },
-        });
-   </script>
-        <!-- Script Baru (Thumbnail Mode + Stop Slider) -->
+    <!-- LOGIC GABUNGAN (TAMPILAN KEREN + VIDEO PINTAR) -->
     <script>
-        // 1. Setup Slider agar bisa distop
+        // 1. Setup Slider (Menggunakan Settingan Coverflow Abang)
         const swipers = document.querySelectorAll('.service-swiper');
         const swiperInstances = [];
         
         swipers.forEach(sw => {
             const s = new Swiper(sw, {
-                slidesPerView: 'auto', 
-                spaceBetween: 20, 
-                centeredSlides: true, 
+                // --- SETTINGAN TAMPILAN ABANG ---
+                effect: "coverflow", 
                 loop: true,
-                // Autoplay nyala di awal
-                autoplay: { delay: 2500, disableOnInteraction: false },
-                pagination: { el: ".swiper-pagination", clickable: true },
+                loopedSlides: 6, 
+                grabCursor: true,    
+                centeredSlides: true,
+                slidesPerView: "auto", 
+                coverflowEffect: {
+                    rotate: 0,      
+                    stretch: 0,      
+                    depth: 120,      
+                    modifier: 1.5,     
+                    slideShadows: true, 
+                },
+                pagination: {
+                    el: ".swiper-pagination",
+                    clickable: true, 
+                },
+                keyboard: { enabled: true },
+                
+                // --- SETTINGAN AUTOPLAY (Penting buat Video) ---
+                autoplay: {
+                    delay: 2500,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true
+                }
             });
+            // Simpan slider ke dalam list biar bisa kita kontrol nanti
             swiperInstances.push(s);
         });
 
-        // 2. Fungsi Load Video (Jalankan saat klik)
+        // 2. Fungsi Load Video (Saat Klik Play)
         function loadVideo(wrapper, videoId) {
-            // Jika video sudah jalan, diam saja
             if (wrapper.querySelector('iframe')) return; 
 
-            // STOP SEMUA SLIDER BERGESER
-            swiperInstances.forEach(s => s.autoplay.stop());
+            // === KUNCI: STOP SEMUA SLIDER ===
+            // Kita panggil list slider tadi, lalu suruh berhenti total
+            swiperInstances.forEach(instance => {
+                instance.autoplay.stop(); 
+            });
 
-            // Matikan video lain jika ada yang sedang nyala
+            // Reset video lain (biar gak bentrok)
             document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
                 resetVideo(frame.parentElement);
             });
 
-            // Buat Iframe Youtube Baru
+            // Buat Iframe Youtube
             const iframe = document.createElement('iframe');
             iframe.className = 'yt-iframe';
-            // Setting: Autoplay, Ada Suara (mute=0), Ada Kontrol
             iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0&showinfo=0&modestbranding=1`;
             iframe.allow = "autoplay; encrypted-media";
             iframe.allowFullscreen = true;
 
-            // Masukkan iframe ke layar
             wrapper.appendChild(iframe);
             
-            // Sembunyikan tombol play & thumbnail
             const playBtn = wrapper.querySelector('.play-button');
             if(playBtn) playBtn.style.display = 'none';
         }
 
-        // 3. Fungsi Reset (Balik ke Thumbnail & Hapus Video)
+        // 3. Fungsi Reset (Balik ke Thumbnail)
         function resetVideo(wrapper) {
             const iframe = wrapper.querySelector('iframe');
             const playBtn = wrapper.querySelector('.play-button');
             
             if (iframe) {
-                iframe.remove(); // Hapus video biar ringan
-                if(playBtn) playBtn.style.display = 'flex'; // Munculkan tombol play lagi
+                iframe.remove();
+                if(playBtn) playBtn.style.display = 'flex';
             }
             
-            // Opsional: Kalau mau slider jalan lagi setelah video mati, buka komen di bawah ini:
-            // swiperInstances.forEach(s => s.autoplay.start());
+            // Opsi: Kalau mau slider jalan lagi setelah video mati, aktifkan baris bawah ini:
+            // swiperInstances.forEach(instance => instance.autoplay.start());
         }
 
         // 4. Auto Stop Video saat Scroll Jauh
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                // Jika video keluar layar, reset!
                 if (!entry.isIntersecting) resetVideo(entry.target);
             });
         }, { threshold: 0.1 });
 
-        // Pasang pengawas ke semua video
         document.querySelectorAll('.video-wrapper').forEach(w => observer.observe(w));
         
         // 5. Auto Stop saat Pindah Tab Browser
@@ -792,9 +780,5 @@
     </script>
 </body>
 </html>
-
-
-
-
 
 
