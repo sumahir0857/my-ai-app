@@ -561,35 +561,128 @@
     </a>
 
     <!-- MODAL LOGIN POPUP -->
-    <div id="loginModal" class="fixed inset-0 bg-slate-950/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl w-full max-w-md shadow-2xl relative transform scale-95 opacity-0 transition-all duration-300" id="loginContent">
-            <button onclick="closeLogin()" class="absolute top-5 right-5 text-slate-500 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
-            
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                    <i class="fas fa-user-astronaut text-blue-400 text-2xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white">Welcome Back</h2>
-                <p class="text-slate-400 text-sm">Akses dashboard creator Anda.</p>
+<div id="loginModal" class="fixed inset-0 bg-slate-950/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
+    <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl w-full max-w-md shadow-2xl relative transform scale-95 opacity-0 transition-all duration-300" id="loginContent">
+        <button onclick="closeLogin()" class="absolute top-5 right-5 text-slate-500 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
+                <i class="fas fa-user-astronaut text-blue-400 text-2xl"></i>
             </div>
-            
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Email Address</label>
-                    <input type="email" id="emailInput" placeholder="creator@example.com" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
+            <!-- Judul berubah dinamis via ID -->
+            <h2 id="modalTitle" class="text-2xl font-bold text-white">Welcome Back</h2>
+            <p id="modalDesc" class="text-slate-400 text-sm">Akses dashboard creator Anda.</p>
+        </div>
+        
+        <div class="space-y-4">
+            <!-- Input Email (Selalu Muncul) -->
+            <div>
+                <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Email Address</label>
+                <input type="email" id="emailInput" placeholder="creator@example.com" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
+            </div>
+
+            <!-- Bagian Password (Bisa Disembunyikan) -->
+            <div id="passwordSection">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider">Password</label>
+                    <!-- TOMBOL LUPA PASSWORD -->
+                    <button onclick="switchMode('reset')" class="text-xs text-blue-400 hover:text-blue-300 transition">Lupa Password?</button>
                 </div>
-                <div>
-                    <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Password</label>
-                    <input type="password" id="passInput" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
-                </div>
-                <div class="grid grid-cols-2 gap-3 pt-4">
+                <input type="password" id="passInput" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="pt-4">
+                <!-- Tombol Login & Daftar (Default) -->
+                <div id="loginButtons" class="grid grid-cols-2 gap-3">
                     <button onclick="handleLogin()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/50 hover:scale-[1.02]">Masuk</button>
                     <button onclick="handleSignup()" class="bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold transition border border-slate-700 hover:scale-[1.02]">Daftar</button>
                 </div>
-                <p id="statusMsg" class="text-center text-sm text-yellow-400 mt-2 h-5"></p>
+
+                <!-- Tombol Reset Password (Hidden by Default) -->
+                <div id="resetButtons" class="hidden flex-col gap-3">
+                    <button onclick="handleResetPassword()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/50 hover:scale-[1.02]">Kirim Link Reset</button>
+                    <button onclick="switchMode('login')" class="w-full text-slate-400 hover:text-white text-sm py-2">Kembali ke Login</button>
+                </div>
             </div>
+
+            <p id="statusMsg" class="text-center text-sm text-yellow-400 mt-2 min-h-[20px]"></p>
         </div>
     </div>
+</div>
+
+<script>
+    // --- 1. INISIALISASI SUPABASE ---
+    // Ganti dengan URL dan Key dari Dashboard Supabase kamu
+    const supabaseUrl = 'URL_SUPABASE_KAMU'
+    const supabaseKey = 'ANON_KEY_SUPABASE_KAMU'
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey)
+
+    // --- 2. LOGIKA GANTI TAMPILAN ---
+    function switchMode(mode) {
+        const passSection = document.getElementById('passwordSection');
+        const loginBtns = document.getElementById('loginButtons');
+        const resetBtns = document.getElementById('resetButtons');
+        const title = document.getElementById('modalTitle');
+        const desc = document.getElementById('modalDesc');
+        const msg = document.getElementById('statusMsg');
+
+        msg.innerText = ""; // Bersihkan pesan error
+
+        if (mode === 'reset') {
+            // Sembunyikan Password & Tombol Login, Munculkan Tombol Reset
+            passSection.classList.add('hidden');
+            loginBtns.classList.add('hidden');
+            resetBtns.classList.remove('hidden');
+            resetBtns.classList.add('flex');
+            
+            title.innerText = "Reset Password";
+            desc.innerText = "Masukkan email untuk mendapatkan link reset.";
+        } else {
+            // Kembali ke Mode Login Normal
+            passSection.classList.remove('hidden');
+            loginBtns.classList.remove('hidden');
+            resetBtns.classList.add('hidden');
+            resetBtns.classList.remove('flex');
+
+            title.innerText = "Welcome Back";
+            desc.innerText = "Akses dashboard creator Anda.";
+        }
+    }
+
+    // --- 3. LOGIKA KIRIM EMAIL RESET ---
+    async function handleResetPassword() {
+        const email = document.getElementById('emailInput').value;
+        const msg = document.getElementById('statusMsg');
+
+        if (!email) {
+            msg.innerText = "Harap isi email terlebih dahulu!";
+            return;
+        }
+
+        msg.innerText = "Mengirim email...";
+        msg.className = "text-center text-sm text-blue-400 mt-2";
+
+        // GANTI URL DI BAWAH dengan lokasi file update-password.html kamu
+        // Contoh: http://localhost:5500/update-password.html
+        // Atau: https://namawebsite.com/update-password.html
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'http://localhost:5500/update-password.html', 
+        })
+
+        if (error) {
+            msg.innerText = error.message;
+            msg.className = "text-center text-sm text-red-500 mt-2";
+        } else {
+            msg.innerText = "Cek email kamu! Link reset telah dikirim.";
+            msg.className = "text-center text-sm text-green-400 mt-2";
+        }
+    }
+
+    // --- FUNGSI LOGIN & SIGNUP LAMA KAMU ---
+    // Pastikan function handleLogin, handleSignup, closeLogin tetap ada di sini atau file JS terpisah
+</script>
 
     <!-- SCRIPT UTAMA -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
@@ -784,6 +877,7 @@
     </script>
 </body>
 </html>
+
 
 
 
