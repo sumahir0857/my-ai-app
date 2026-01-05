@@ -294,7 +294,6 @@
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
                 <!-- Slide 1 -->
-                <!-- Contoh Slide -->
 <div class="swiper-slide">
     <!-- GANTI 'LXb3EKWsInQ' DENGAN ID YOUTUBE ABANG -->
     <div class="video-wrapper" onclick="loadVideo(this, 'T3Bqj9v_imE')">
@@ -309,13 +308,20 @@
     <div class="caption"><b>Tema:</b> Balapan mobil dakar di hutan lebat indonesia</div>
 </div>
                 <!-- Slide 2 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper" onclick="toggleYoutube(this, 'ScMzIvxBSi4')">
-                        <div class="yt-overlay"></div>
-                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/ScMzIvxBSi4?autoplay=1&mute=1&controls=0&loop=1&playlist=ScMzIvxBSi4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="caption"><b>Tema:</b> Kucing Kacamata</div>
-                </div>
+               <div class="swiper-slide">
+    <!-- GANTI 'LXb3EKWsInQ' DENGAN ID YOUTUBE ABANG -->
+    <div class="video-wrapper" onclick="loadVideo(this, 'r3kLS7sZ67A')">
+        
+        <!-- 1. Gambar Thumbnail (Otomatis ambil dari Youtube) -->
+        <img src="https://img.youtube.com/vi/r3kLS7sZ67A/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/r3kLS7sZ67A/hqdefault.jpg'">
+        
+        <!-- 2. Tombol Play -->
+        <div class="play-button"><i class="fas fa-play"></i></div>
+
+    </div>
+    <div class="caption"><b>Tema:</b> Balapan mobil dakar di hutan lebat indonesia</div>
+</div>
+         
                 <!-- Slide 3 -->
                 <div class="swiper-slide">
                     <div class="video-wrapper" onclick="toggleYoutube(this, 'LXb3EKWsInQ')">
@@ -669,6 +675,7 @@
             setTimeout(() => { modal.style.display = 'none'; }, 300);
         }
 
+                // --- 1. UI UTILS (SCROLL REVEAL) - PENTING JANGAN DIHAPUS ---
         window.addEventListener('scroll', reveal);
         function reveal(){
             var reveals = document.querySelectorAll('.reveal');
@@ -681,17 +688,16 @@
                 }
             }
         }
+        // Jalankan sekali di awal biar header langsung muncul
         reveal();
 
-    <!-- LOGIC GABUNGAN (TAMPILAN KEREN + VIDEO PINTAR) -->
-    <script>
-        // 1. Setup Slider (Menggunakan Settingan Coverflow Abang)
+
+        // --- 2. SETUP SLIDER (TAMPILAN KEREN ABANG) ---
         const swipers = document.querySelectorAll('.service-swiper');
-        const swiperInstances = [];
-        
+        const swiperInstances = []; 
+
         swipers.forEach(sw => {
             const s = new Swiper(sw, {
-                // --- SETTINGAN TAMPILAN ABANG ---
                 effect: "coverflow", 
                 loop: true,
                 loopedSlides: 6, 
@@ -711,28 +717,27 @@
                 },
                 keyboard: { enabled: true },
                 
-                // --- SETTINGAN AUTOPLAY (Penting buat Video) ---
+                // Autoplay (pauseOnMouseEnter: true)
                 autoplay: {
                     delay: 2500,
                     disableOnInteraction: false,
                     pauseOnMouseEnter: true
                 }
             });
-            // Simpan slider ke dalam list biar bisa kita kontrol nanti
             swiperInstances.push(s);
         });
 
-        // 2. Fungsi Load Video (Saat Klik Play)
+
+        // --- 3. LOGIC VIDEO YOUTUBE (STOP GESER SAAT PLAY) ---
         function loadVideo(wrapper, videoId) {
             if (wrapper.querySelector('iframe')) return; 
 
-            // === KUNCI: STOP SEMUA SLIDER ===
-            // Kita panggil list slider tadi, lalu suruh berhenti total
+            // STOP SLIDER AGAR TIDAK GESER SENDIRI
             swiperInstances.forEach(instance => {
                 instance.autoplay.stop(); 
             });
 
-            // Reset video lain (biar gak bentrok)
+            // Reset video lain
             document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
                 resetVideo(frame.parentElement);
             });
@@ -740,6 +745,7 @@
             // Buat Iframe Youtube
             const iframe = document.createElement('iframe');
             iframe.className = 'yt-iframe';
+            // Setting: Autoplay, Suara ON, Controls ON
             iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0&showinfo=0&modestbranding=1`;
             iframe.allow = "autoplay; encrypted-media";
             iframe.allowFullscreen = true;
@@ -750,7 +756,6 @@
             if(playBtn) playBtn.style.display = 'none';
         }
 
-        // 3. Fungsi Reset (Balik ke Thumbnail)
         function resetVideo(wrapper) {
             const iframe = wrapper.querySelector('iframe');
             const playBtn = wrapper.querySelector('.play-button');
@@ -759,12 +764,11 @@
                 iframe.remove();
                 if(playBtn) playBtn.style.display = 'flex';
             }
-            
-            // Opsi: Kalau mau slider jalan lagi setelah video mati, aktifkan baris bawah ini:
+            // Uncomment bawah ini kalau mau slider jalan lagi setelah video mati
             // swiperInstances.forEach(instance => instance.autoplay.start());
         }
 
-        // 4. Auto Stop Video saat Scroll Jauh
+        // Auto Stop saat Scroll
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (!entry.isIntersecting) resetVideo(entry.target);
@@ -773,12 +777,15 @@
 
         document.querySelectorAll('.video-wrapper').forEach(w => observer.observe(w));
         
-        // 5. Auto Stop saat Pindah Tab Browser
+        // Auto Stop saat Pindah Tab
         document.addEventListener("visibilitychange", () => {
             if (document.hidden) document.querySelectorAll('.video-wrapper').forEach(w => resetVideo(w));
         });
     </script>
 </body>
 </html>
+
+
+
 
 
