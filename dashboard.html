@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Member - Orbit Botb</title>
-    <!-- Favicon (Logo Sendiri) -->
+    <!-- Favicon -->
    <link rel="shortcut icon" href="assets/logo.png" type="image/png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,22 +60,30 @@
 
         /* Glassmorphism */
         .glass-nav { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .glass-card { background: rgba(21, 27, 43, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s ease; }
+        .glass-card { background: rgba(21, 27, 43, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s ease; }
         
         /* Card Hover Effects */
         .glass-card:hover { 
             transform: translateY(-5px); 
             border-color: rgba(96, 165, 250, 0.4); 
             box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.3);
+            background: rgba(21, 27, 43, 0.9);
         }
 
         .card-img { 
-            height: 180px; width: 100%; object-fit: cover; object-position: center; 
-            border-radius: 16px; margin-bottom: 1.5rem;
+            height: 160px; width: 100%; object-fit: cover; object-position: center; 
+            border-radius: 12px; margin-bottom: 1rem;
             transition: transform 0.5s ease;
         }
         .glass-card:hover .card-img { transform: scale(1.03); }
+
+        /* Custom Scrollbar Hide for Carousel */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
+        /* Smooth Scroll Behavior */
+        .scroll-smooth-x { scroll-behavior: smooth; }
+
         /* Loader Screen */
         #loadingScreen { position: fixed; inset: 0; background: #0B0F19; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
         .loader-spinner { width: 40px; height: 40px; border: 4px solid #1e293b; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
@@ -103,221 +111,221 @@
                 <div class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 flex items-center gap-2">
                     <i class="fas fa-cube text-blue-500"></i> ORBITBOT
                 </div>
-                
-                <!-- TOMBOL KE HOME (INDEX) -->
                 <a href="index.html" class="hidden md:flex items-center gap-2 text-sm text-slate-400 hover:text-white transition py-2 px-4 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10">
                     <i class="fas fa-home"></i> Ke Beranda
                 </a>
             </div>
 
             <div class="flex items-center gap-4">
-                <!-- User Info Small (Mobile) -->
                 <div class="hidden md:flex flex-col items-end mr-2">
                     <span class="text-xs text-slate-400">Logged in as</span>
                     <span id="navEmail" class="text-sm font-bold text-white leading-none">...</span>
                 </div>
-                <!-- Tombol Logout -->
-                <button onclick="doLogout()" class="text-sm text-red-400 hover:text-white hover:bg-red-500/80 font-medium border border-red-500/30 px-5 py-2 rounded-full transition duration-300 flex items-center gap-2 group">
-                    <i class="fas fa-sign-out-alt group-hover:-translate-x-1 transition-transform"></i> <span class="hidden sm:inline">Log Out</span>
+                <button onclick="doLogout()" class="text-sm text-red-400 hover:text-white hover:bg-red-500/80 font-medium border border-red-500/30 px-4 py-2 rounded-full transition duration-300 flex items-center gap-2 group">
+                    <i class="fas fa-sign-out-alt"></i> <span class="hidden sm:inline">Logout</span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- HEADER DASHBOARD -->
-    <header class="pt-32 pb-10 px-4">
-        <div class="max-w-6xl mx-auto">
+    <!-- HEADER DASHBOARD (Sedikit dirapatkan paddingnya agar muat layar) -->
+    <header class="pt-28 pb-4 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-end md:items-center gap-4">
             
-            <!-- (BARU) Counter User Tool -->
-            <div class="flex items-center gap-2 mb-2 animate-fade-up">
-                <i class="fas fa-users text-blue-500 text-xs"></i>
-                <span class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Sedang Akses Tool:</span>
-                <span id="toolUserCount" class="text-blue-400 text-xs font-bold font-mono bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">Memuat...</span>
-            </div>
-
-            <!-- System Status Indicator (Lively) -->
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 mb-4 animate-fade-up">
-                <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                <span class="text-green-400 text-xs font-bold tracking-wide">SYSTEM ONLINE</span>
-            </div>
-
-            <div class="animate-fade-up" style="animation-delay: 0.1s;">
-                <h2 class="text-3xl md:text-4xl font-bold text-white">
+            <div class="animate-fade-up">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 mb-3">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span class="text-green-400 text-[10px] font-bold tracking-wide">SYSTEM ONLINE</span>
+                    <span class="text-slate-600 mx-1">|</span>
+                    <span id="toolUserCount" class="text-blue-400 text-[10px] font-mono">... User</span>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-bold text-white leading-tight">
                     Halo, <span id="welcomeName" class="text-blue-400">Creator</span> 👋
                 </h2>
-                <p class="text-slate-400 mt-2 text-lg">Pilih "Jurus" AI di bawah untuk mulai berkarya hari ini.</p>
+                <p class="text-slate-400 text-sm mt-1">Geser untuk memilih "Jurus" AI andalanmu.</p>
             </div>
         </div>
     </header>
 
-    <!-- GRID LAYANAN UTAMA -->
-    <main class="max-w-6xl mx-auto px-4 pb-24 animate-fade-up" style="animation-delay: 0.2s;">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- HORIZONTAL SCROLL LAYANAN (JURUS UTAMA) -->
+    <main class="w-full max-w-[1400px] mx-auto pb-8 pl-4 md:px-8 overflow-hidden animate-fade-up" style="animation-delay: 0.2s;">
+        
+        <!-- Wrapper Relative untuk Tombol Navigasi -->
+        <div class="relative group">
             
-            <!-- 1. Realistic Video (NARUTO) -->
-            <div class="glass-card rounded-3xl p-5 relative group overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/20 blur-[50px] group-hover:bg-blue-500/40 transition"></div>
-                <div class="overflow-hidden rounded-2xl">
-                    <img src="assets/naruto.jpg" alt="Naruto" class="card-img" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Text+to+Video';">
-                </div>
-                <h3 class="text-xl font-bold mb-1 text-white group-hover:text-blue-400 transition">1. AI Video Filmmaker Studio</h3>
-                <p class="text-slate-400 text-sm mb-6 h-10 leading-relaxed">Engine: VEO 3.1 & Seedance 1.5 Pro. Hasilkan film AI konsisten hingga 4 menit hanya dengan satu kalli klik.</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="layanan-1.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl text-center font-semibold text-sm transition">Detail</a>
-                    <a href="tool.html?src=https://sumahir-filmmakerpro.hf.space" target="_self" class="tool-btn bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl text-center font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/50">
-                       <span>Buka Tool</span> <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
+            <!-- Tombol Kiri (Desktop Only) -->
+            <button onclick="scrollGrid('left')" class="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full items-center justify-center text-white hover:bg-blue-600 transition shadow-2xl opacity-0 group-hover:opacity-100 -ml-4">
+                <i class="fas fa-chevron-left"></i>
+            </button>
 
-            <!-- 2. Anime Converter (SASUKE) -->
-            <div class="glass-card rounded-3xl p-5 relative group overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/20 blur-[50px] group-hover:bg-purple-500/40 transition"></div>
-                <div class="overflow-hidden rounded-2xl">
-                    <img src="assets/sasuke.jpg" alt="Sasuke" class="card-img" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Video+to+Anime';">
-                </div>
-                <h3 class="text-xl font-bold mb-1 text-white group-hover:text-purple-400 transition">2. Ultimate UGC Tool (One Click Affiliate Automation)</h3>
-                <p class="text-slate-400 text-sm mb-6 h-10 leading-relaxed">Engine: NanoBanana Pro, AudioLM, VEO 3.1. Hasilkan audio+video affiliate siap upload tak sampai 10 menit.</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="layanan-2.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl text-center font-semibold text-sm transition">Detail</a>
-                    <a href="tool.html?src=https://sumahir-ugcpromax.hf.space" target="_self" class="tool-btn bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl text-center font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/50">
-                       <span>Buka Tool</span> <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <!-- 3. Voice Cloning (KAKASHI) -->
-            <div class="glass-card rounded-3xl p-5 relative group overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/20 blur-[50px] group-hover:bg-green-500/40 transition"></div>
-                <div class="overflow-hidden rounded-2xl">
-                    <img src="assets/kakashi.jpg" alt="Kakashi" class="card-img" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Voice+Cloning';">
-                </div>
-                <h3 class="text-xl font-bold mb-1 text-white group-hover:text-green-400 transition">3. Generate unlimited Kling 2.5 Pro dengan Freepik API Key</h3>
-                <p class="text-slate-400 text-sm mb-6 h-10 leading-relaxed">Celah Kling 2.5 Pro, hasilkan video sepuasnya dengan API Key gratis atau berbayar.</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="layanan-3.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl text-center font-semibold text-sm transition">Detail</a>
-                    <a href="tool.html?src=https://sumahir-aplikasi-kling-saya.hf.space" target="_self" class="tool-btn bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl text-center font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/50">
-                       <span>Buka Tool</span> <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- 4. Photo Restore (SAKURA) -->
-            <div class="glass-card rounded-3xl p-5 relative group overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-500/20 blur-[50px] group-hover:bg-yellow-500/40 transition"></div>
-                <div class="overflow-hidden rounded-2xl">
-                    <img src="assets/sakura.jpg" alt="Sakura" class="card-img" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Photo+Restore';">
-                </div>
-                <h3 class="text-xl font-bold mb-1 text-white group-hover:text-yellow-400 transition">4. Kling first frame to last frame (Hasilkan video konsisten dengan gerakan yang rapi)</h3>
-                <p class="text-slate-400 text-sm mb-6 h-10 leading-relaxed">Engine: Kling V1.6. Generate unlimited dengan Freepik API Key.</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="layanan-4.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl text-center font-semibold text-sm transition">Detail</a>
-                    <a href="tool.html?src=https://sumahir-klinggambarkegambar.hf.space" target="_self" class="tool-btn bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl text-center font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/50">
-                       <span>Buka Tool</span> <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- 5. Background Remover (ITACHI) -->
-            <div class="glass-card rounded-3xl p-5 relative group overflow-hidden">
-                <div class="absolute top-0 right-0 w-20 h-20 bg-pink-500/20 blur-[50px] group-hover:bg-pink-500/40 transition"></div>
-                <div class="overflow-hidden rounded-2xl">
-                    <img src="assets/itachi.jpg" alt="Itachi" class="card-img" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=BG+Remover';">
-                </div>
-                <h3 class="text-xl font-bold mb-1 text-white group-hover:text-pink-400 transition">5. Seedance Pro. Generate unlimited dengan Freepik API Key</h3>
-                <p class="text-slate-400 text-sm mb-6 h-10 leading-relaxed">Seedance Pro (bukan Seedance 1.5 Pro)</p>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="layanan-5.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-3 rounded-xl text-center font-semibold text-sm transition">Detail</a>
-                    <a href="tool.html?src=https://sumahir-aplikasi-keren-saya1.hf.space" target="_self" class="tool-btn bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl text-center font-bold text-sm flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/50">
-                       <span>Buka Tool</span> <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-            </div>
-            <div class="border-t border-slate-800/60 pt-10 mt-12 mb-20 animate-fade-up" style="animation-delay: 0.3s;">
-    
-    <div class="max-w-5xl mx-auto">
-        <!-- Kartu Upgrade Premium -->
-        <div class="relative rounded-3xl p-1 p-px bg-gradient-to-r from-blue-500/30 via-purple-500/30 to-blue-500/30 overflow-hidden shadow-2xl shadow-blue-900/20 group">
-            
-            <!-- Background & Glow Effect -->
-            <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-xl rounded-3xl"></div>
-            <div class="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[80px] group-hover:bg-blue-600/30 transition duration-700"></div>
-            
-            <!-- Konten Kartu -->
-            <div class="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-10 gap-8">
+            <!-- Container Scroll -->
+            <!-- snap-x snap-mandatory: Agar berhenti pas di kartu (seperti buka buku) -->
+            <div id="servicesContainer" class="flex gap-5 overflow-x-auto pb-8 pt-4 px-2 snap-x snap-mandatory no-scrollbar scroll-smooth-x">
                 
-                <!-- Kiri: Teks & Benefit -->
-                <div class="flex-1 text-center md:text-left">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-4">
-                        <i class="fas fa-crown text-yellow-400 text-xs"></i>
-                        <span class="text-blue-400 text-xs font-bold tracking-widest uppercase">Premium Access</span>
+                <!-- 1. Realistic Video -->
+                <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 blur-[40px]"></div>
+                    <div class="overflow-hidden rounded-xl bg-slate-800">
+                        <img src="assets/naruto.jpg" alt="Naruto" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Text+to+Video';">
                     </div>
-                    
-                    <h2 class="text-3xl md:text-4xl font-bold text-white mb-3">
-                        Buka Semua Potensi <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">AI Studio</span>
-                    </h2>
-                    <p class="text-slate-400 text-sm md:text-base mb-6 max-w-xl leading-relaxed">
-                        Hapus batasan Anda. Dapatkan akses unlimited ke Tool Filmmaker, UGC Automation, Kling 2.5 Pro, dan prioritas server tercepat.
-                    </p>
-                    
-                    <!-- Feature List Mini -->
-                    <div class="flex flex-wrap justify-center md:justify-start gap-4 md:gap-6 text-sm text-slate-300 font-medium">
-                        <span class="flex items-center gap-2"><i class="fas fa-check-circle text-green-400"></i> Unlock Semua Tool</span>
-                        <span class="flex items-center gap-2"><i class="fas fa-check-circle text-green-400"></i> Tanpa Watermark</span>
-                        <span class="flex items-center gap-2"><i class="fas fa-check-circle text-green-400"></i> Support 24/7</span>
+                    <div class="mt-4 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-white mb-1 truncate">1. AI Filmmaker Studio</h3>
+                        <p class="text-slate-400 text-xs mb-4 line-clamp-2">VEO 3.1 & Seedance 1.5 Pro. Video konsisten 4 menit, satu klik.</p>
+                        <div class="mt-auto grid grid-cols-2 gap-2">
+                            <a href="layanan-1.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-2.5 rounded-lg text-center text-xs font-semibold transition">Detail</a>
+                            <a href="tool.html?src=https://sumahir-filmmakerpro.hf.space" class="tool-btn bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-center text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/20">
+                               Buka Tool <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Kanan: Tombol Action -->
-                <div class="flex-shrink-0 w-full md:w-auto text-center">
-                    <a href="pembayaran.html" class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-600/30 transform hover:-translate-y-1 transition-all duration-300 w-full md:w-auto">
-                        <span>Upgrade Sekarang</span>
-                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                        
-                        <!-- Kilauan Tombol -->
-                        <div class="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
-                            <div class="absolute top-0 left-[-100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[30deg] animate-[shimmer_3s_infinite]"></div>
+                <!-- 2. Anime Converter -->
+                <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 blur-[40px]"></div>
+                    <div class="overflow-hidden rounded-xl bg-slate-800">
+                        <img src="assets/sasuke.jpg" alt="Sasuke" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Video+to+Anime';">
+                    </div>
+                    <div class="mt-4 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-white mb-1 truncate">2. Ultimate UGC Tool</h3>
+                        <p class="text-slate-400 text-xs mb-4 line-clamp-2">Audio+Video affiliate automation. Ready upload &lt; 10 menit.</p>
+                        <div class="mt-auto grid grid-cols-2 gap-2">
+                            <a href="layanan-2.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-2.5 rounded-lg text-center text-xs font-semibold transition">Detail</a>
+                            <a href="tool.html?src=https://sumahir-ugcpromax.hf.space" class="tool-btn bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-center text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/20">
+                               Buka Tool <i class="fas fa-arrow-right"></i>
+                            </a>
                         </div>
-                    </a>
-                    <p class="text-slate-500 text-xs mt-3">Garansi uang kembali & Aktivasi Otomatis</p>
+                    </div>
                 </div>
+
+                <!-- 3. Voice Cloning -->
+                <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/10 blur-[40px]"></div>
+                    <div class="overflow-hidden rounded-xl bg-slate-800">
+                        <img src="assets/kakashi.jpg" alt="Kakashi" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Kling+Pro';">
+                    </div>
+                    <div class="mt-4 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-white mb-1 truncate">3. Kling 2.5 Pro Unlimited</h3>
+                        <p class="text-slate-400 text-xs mb-4 line-clamp-2">Generate video sepuasnya dengan Freepik API Key.</p>
+                        <div class="mt-auto grid grid-cols-2 gap-2">
+                            <a href="layanan-3.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-2.5 rounded-lg text-center text-xs font-semibold transition">Detail</a>
+                            <a href="tool.html?src=https://sumahir-aplikasi-kling-saya.hf.space" class="tool-btn bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-center text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/20">
+                               Buka Tool <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Photo Restore -->
+                <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-500/10 blur-[40px]"></div>
+                    <div class="overflow-hidden rounded-xl bg-slate-800">
+                        <img src="assets/sakura.jpg" alt="Sakura" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Kling+Consitency';">
+                    </div>
+                    <div class="mt-4 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-white mb-1 truncate">4. Kling Frame-to-Frame</h3>
+                        <p class="text-slate-400 text-xs mb-4 line-clamp-2">Gerakan konsisten (Frame Awal ke Akhir). Kling V1.6.</p>
+                        <div class="mt-auto grid grid-cols-2 gap-2">
+                            <a href="layanan-4.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-2.5 rounded-lg text-center text-xs font-semibold transition">Detail</a>
+                            <a href="tool.html?src=https://sumahir-klinggambarkegambar.hf.space" class="tool-btn bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-center text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/20">
+                               Buka Tool <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. BG Remover -->
+                <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
+                    <div class="absolute top-0 right-0 w-20 h-20 bg-pink-500/10 blur-[40px]"></div>
+                    <div class="overflow-hidden rounded-xl bg-slate-800">
+                        <img src="assets/itachi.jpg" alt="Itachi" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Seedance+Pro';">
+                    </div>
+                    <div class="mt-4 flex-1 flex flex-col">
+                        <h3 class="text-lg font-bold text-white mb-1 truncate">5. Seedance Pro Unlimited</h3>
+                        <p class="text-slate-400 text-xs mb-4 line-clamp-2">Versi Pro Original. Generate gerakan tari unlimited dengan API.</p>
+                        <div class="mt-auto grid grid-cols-2 gap-2">
+                            <a href="layanan-5.html" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white py-2.5 rounded-lg text-center text-xs font-semibold transition">Detail</a>
+                            <a href="tool.html?src=https://sumahir-aplikasi-keren-saya1.hf.space" class="tool-btn bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-center text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg shadow-blue-900/20">
+                               Buka Tool <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Spacer di akhir agar kartu terakhir bisa di scroll penuh ke tengah -->
+                <div class="min-w-[20px] snap-center"></div>
 
             </div>
-        </div>
-    </div>
-</div>
 
-            
-            <!-- 6. Request Tool (WHATSAPP) -->
-            <a href="https://wa.me/6285841244290?text=Halo%20Admin%2C%20saya%20tertarik%20request%20tool%20AI%20baru..." target="_blank" class="glass-card rounded-3xl p-5 flex flex-col items-center justify-center text-center border-dashed border-2 border-slate-700 bg-slate-800/20 hover:bg-slate-800/40 hover:border-green-500/50 transition group cursor-pointer h-full">
-                <div class="w-20 h-20 rounded-full bg-green-600/20 text-green-500 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-green-500 group-hover:text-white transition-all shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-                    <i class="fab fa-whatsapp text-4xl"></i>
-                </div>
-                <h3 class="text-xl font-bold text-white group-hover:text-green-400 transition">Request Fitur Baru</h3>
-                <p class="text-slate-400 text-sm mt-2 px-4">Punya ide tool AI lain? Hubungi admin via WhatsApp untuk request apa saja.</p>
-                <span class="mt-4 text-xs font-bold text-green-500 uppercase tracking-widest border border-green-500/30 px-3 py-1 rounded-full bg-green-900/20">Chat Admin</span>
-            </a>
-
+            <!-- Tombol Kanan (Desktop Only) -->
+            <button onclick="scrollGrid('right')" class="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full items-center justify-center text-white hover:bg-blue-600 transition shadow-2xl opacity-0 group-hover:opacity-100 -mr-2">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
     </main>
 
+    <!-- SECONDARY SECTION (Compact) -->
+    <section class="max-w-7xl mx-auto px-4 md:px-8 mb-10 -mt-2 animate-fade-up" style="animation-delay: 0.3s;">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Request Card (Horizontal Compact) -->
+            <a href="https://wa.me/6285841244290?text=Halo%20Admin%2C%20Request%20Tool..." target="_blank" class="glass-card rounded-2xl p-4 flex items-center gap-4 hover:border-green-500/50 group cursor-pointer">
+                <div class="w-12 h-12 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500 group-hover:text-white transition">
+                    <i class="fab fa-whatsapp text-2xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm">Request Fitur Baru</h4>
+                    <p class="text-slate-400 text-xs">Punya ide tool? Chat admin langsung.</p>
+                </div>
+                <div class="ml-auto">
+                    <i class="fas fa-chevron-right text-slate-600 group-hover:text-green-400 transition"></i>
+                </div>
+            </a>
+
+            <!-- Info Upgrade / Notifikasi (Placeholder) -->
+            <div class="glass-card rounded-2xl p-4 flex items-center gap-4 border-dashed border-slate-700">
+                <div class="w-12 h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-crown text-xl"></i>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm">Upgrade Pro</h4>
+                    <p class="text-slate-400 text-xs">Dapatkan akses server prioritas & API.</p>
+                </div>
+                <button class="ml-auto text-xs bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-700 transition">Info</button>
+            </div>
+
+        </div>
+    </section>
+
     <!-- FOOTER SIMPLE -->
-    <footer class="mt-auto py-8 text-center text-slate-600 text-sm border-t border-slate-800 bg-slate-900/50">
+    <footer class="mt-auto py-6 text-center text-slate-600 text-xs border-t border-slate-800 bg-slate-900/50">
         <p>&copy; 2026 AI Studio Dashboard System. All Systems Operational.</p>
     </footer>
 
     <!-- SCRIPT UTAMA -->
     <script>
+        // --- LOGIC SCROLL HORIZONTAL ---
+        function scrollGrid(direction) {
+            const container = document.getElementById('servicesContainer');
+            // Geser sebesar 350px (ukuran kartu)
+            const scrollAmount = 350; 
+            if (direction === 'left') {
+                container.scrollLeft -= scrollAmount;
+            } else {
+                container.scrollLeft += scrollAmount;
+            }
+        }
+
+        // --- SUPABASE LOGIC (ORIGINAL) ---
         const { createClient } = supabase
         const _supabase = createClient(
             'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
         )
 
-        // CEK LOGIN & SUBSCRIPTION
         async function checkAccess() {
             const { data: { session } } = await _supabase.auth.getSession()
             if (!session) {
@@ -330,82 +338,50 @@
                 document.getElementById('navEmail').innerText = email;
                 document.getElementById('welcomeName').innerText = name;
 
-                // --- LOGIC PENGECEKAN SUBSCRIPTION ---
-                // Asumsi: Ada tabel 'profiles' atau 'subscriptions' yang menyimpan status user.
-                // Jika tabel belum ada di database Anda, kode ini akan mengembalikan null dan tool terkunci (Aman).
-                
                 let isSubscribed = false;
-
                 try {
-                    // Ganti 'profiles' dan 'is_premium' sesuai tabel Supabase Anda sebenarnya
                     const { data, error } = await _supabase
                         .from('profiles') 
-                        .select('is_premium') // Kolom boolean atau status
+                        .select('is_premium')
                         .eq('id', user.id)
                         .single();
                     
                     if (data && data.is_premium === true) {
                         isSubscribed = true;
-                    } else {
-                        // Jika tidak ketemu di profiles, cek metadata user (opsional)
-                        // isSubscribed = user.user_metadata.is_subscribed || false;
                     }
                 } catch (err) {
-                    console.log("Gagal cek subscription, default ke Locked.");
+                    console.log("Status: Free Tier");
                 }
 
-                // Jika TIDAK berlangganan, KUNCI tombol
                 if (!isSubscribed) {
                     lockContent();
                 }
 
-                // Mulai Listener User Online
                 initLiveCounter();
 
-                // Hapus Loading Screen
                 const loader = document.getElementById('loadingScreen');
                 loader.style.opacity = '0';
                 setTimeout(() => { loader.style.display = 'none'; }, 500);
             }
         }
         
-        // FUNGSI MENGUNCI TOMBOL
         function lockContent() {
             const toolButtons = document.querySelectorAll('.tool-btn');
-            
             toolButtons.forEach(btn => {
-                // Ubah Tampilan Visual
-                btn.className = "bg-slate-800 border border-slate-700 text-slate-500 py-3 rounded-xl text-center font-bold text-sm flex items-center justify-center gap-2 cursor-not-allowed";
-                
-                // Ubah Isi
+                btn.className = "bg-slate-800 border border-slate-700 text-slate-500 py-2.5 rounded-lg text-center font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed";
                 btn.innerHTML = '<i class="fas fa-lock"></i> <span>Terkunci</span>';
-                
-                // Matikan Link
                 btn.removeAttribute('href');
                 btn.removeAttribute('target');
-                
-                // Tambahkan Alert Saat Diklik
-                btn.onclick = function() {
-                    alert("Akses Terkunci! Silakan berlangganan untuk membuka tool ini.");
-                };
+                btn.onclick = function() { alert("Akses Terkunci! Silakan berlangganan."); };
             });
         }
 
-        // FUNGSI HITUNG USER ONLINE (REALTIME)
         function initLiveCounter() {
-            // Subscribe ke channel 'room-tools' (asumsi tool.html juga connect ke sini nantinya)
-            // Untuk sekarang, kita hitung user yang aktif di dashboard ini sebagai simulasi
             const channel = _supabase.channel('online-users');
-
-            channel
-            .on('presence', { event: 'sync' }, () => {
+            channel.on('presence', { event: 'sync' }, () => {
                 const state = channel.presenceState();
                 const count = Object.keys(state).length;
-                
-                // Tambahkan angka acak kecil (2-5) agar terlihat ramai jika user asli sedikit (Simulasi Crowd)
-                // Hapus '+ Math.floor(...)' jika ingin murni real data
                 const displayCount = count + Math.floor(Math.random() * 3) + 2; 
-                
                 document.getElementById('toolUserCount').innerText = displayCount + " User";
             })
             .subscribe(async (status) => {
@@ -415,10 +391,8 @@
             });
         }
 
-        // Jalankan pengecekan
         checkAccess()
 
-        // LOGOUT
         async function doLogout() {
             await _supabase.auth.signOut()
             window.location.href = "index.html"
@@ -426,4 +400,3 @@
     </script>
 </body>
 </html>
-
