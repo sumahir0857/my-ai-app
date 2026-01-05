@@ -89,8 +89,69 @@
         }
         .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         
-        .video-wrapper { width: 100%; height: 400px; background: #000; position: relative; }
-        .video-wrapper video { width: 100%; height: 100%; object-fit: cover; }
+        /* --- YOUTUBE CUSTOM LOGIC START --- */
+        .video-wrapper { 
+            width: 100%; 
+            height: 400px; 
+            background: #000; 
+            position: relative; 
+            overflow: hidden; /* Penting agar zoom tidak keluar kotak */
+        }
+
+        /* Tampilan Default (Zoomed / 9:16 Style) */
+        .yt-iframe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            /* Scale width to 350% force fills the vertical height with a horizontal video */
+            width: 350%; 
+            height: 100%;
+            border: none;
+            pointer-events: none; /* User tidak bisa klik pause saat mode preview */
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.8;
+        }
+
+        /* Overlay untuk menangkap klik user */
+        .yt-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            cursor: pointer;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Icon Play saat di hover */
+        .yt-overlay::after {
+            content: '\f144'; /* FontAwesome Play Icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 3rem;
+            color: rgba(255,255,255,0.8);
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .video-wrapper:hover .yt-overlay::after { opacity: 1; }
+
+        /* Tampilan Aktif (Normal / 16:9 Style) setelah diklik */
+        .video-wrapper.active .yt-iframe {
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            pointer-events: all; /* Aktifkan kontrol Youtube */
+            opacity: 1;
+        }
+        
+        .video-wrapper.active .yt-overlay {
+            display: none; /* Hilangkan overlay */
+        }
+        /* --- YOUTUBE CUSTOM LOGIC END --- */
+
         .caption { padding: 15px; font-size: 0.9rem; color: #cbd5e1; background: #151b2b; flex-grow: 1; border-top: 1px solid #334155; display: flex; align-items: center; }
 
         /* Floating WA */
@@ -217,8 +278,9 @@
             </div>
         </div>
     </section>
+
     <!-- ========================================= -->
-    <!-- SERVICES SECTION -->
+    <!-- SERVICES SECTION (YOUTUBE MODIFIED) -->
     <!-- ========================================= -->
 
     <!-- LAYANAN 1 -->
@@ -226,18 +288,36 @@
         <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
             <div>
                 <h2 class="text-3xl font-bold text-white mb-1"><span class="text-blue-500">01.</span> AI Video Filmmaker Studio</h2>
-                <p class="text-slate-400 text-sm">Engine: VEO 3.1 & Seedance 1.5 Pro. Hasilkan film AI konsisten hingga 4 menit hanya dengan satu kalli klik</p>
+                <p class="text-slate-400 text-sm">Engine: VEO 3.1 & Seedance 1.5 Pro. Hasilkan film AI konsisten.</p>
             </div>
             <div class="hidden md:block w-1/3 h-px bg-gradient-to-r from-blue-500/50 to-transparent mb-4"></div>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid1.mp4" type="video/mp4"></video></div><div class="caption"><b>Tema:</b> "Astronot berjalan di Mars."</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid2.mp4" type="video/mp4"></video></div><div class="caption"><b>Tema:</b> "Kucing lucu pakai kacamata."</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid3.mp4" type="video/mp4"></video></div><div class="caption"><b>Tema:</b> "Kota Jakarta tahun 2077."</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid4.mp4" type="video/mp4"></video></div><div class="caption"><b>Tema:</b> "Pemandangan pegunungan Alpen."</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid5.mp4" type="video/mp4"></video></div><div class="caption"><b>Tema:</b> "Mobil balap merah di sirkuit."</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan1-vid6.mp4" type="video/mp4"></video></div><div class="caption"><b>Tema:</b> "Robot sedang memasak."</div></div>
+                <!-- Slide 1 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'LXb3EKWsInQ')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1&mute=1&controls=0&loop=1&playlist=LXb3EKWsInQ&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption"><b>Tema:</b> Astronot di Mars</div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'ScMzIvxBSi4')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/ScMzIvxBSi4?autoplay=1&mute=1&controls=0&loop=1&playlist=ScMzIvxBSi4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption"><b>Tema:</b> Kucing Kacamata</div>
+                </div>
+                <!-- Slide 3 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'LXb3EKWsInQ')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1&mute=1&controls=0&loop=1&playlist=LXb3EKWsInQ&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption"><b>Tema:</b> Kota Jakarta 2077</div>
+                </div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
@@ -247,19 +327,37 @@
     <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
         <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
             <div>
-                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-purple-500">02.</span>  Ultimate UGC Tool (One Click Affiliate Automation)</h2>
-                <p class="text-slate-400 text-sm">Engine: NanoBanana Pro, AudioLM, VEO 3.1. Hasilkan audio+video affiliate siap upload tak sampai 10 menit</p>
+                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-purple-500">02.</span> Ultimate UGC Tool</h2>
+                <p class="text-slate-400 text-sm">Engine: NanoBanana Pro. Affiliate video siap upload.</p>
             </div>
             <div class="hidden md:block w-1/3 h-px bg-gradient-to-r from-purple-500/50 to-transparent mb-4"></div>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid1.mp4" type="video/mp4"></video></div><div class="caption">Contoh Joget TikTok Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid2.mp4" type="video/mp4"></video></div><div class="caption">Contoh Vlog Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid3.mp4" type="video/mp4"></video></div><div class="caption">Contoh Selfie Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid4.mp4" type="video/mp4"></video></div><div class="caption">Contoh Pemandangan Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid5.mp4" type="video/mp4"></video></div><div class="caption">Contoh Makan jadi Anime.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan2-vid6.mp4" type="video/mp4"></video></div><div class="caption">Contoh Hewan jadi Anime.</div></div>
+                 <!-- Slide 1 -->
+                 <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'gC2s06g15C4')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/gC2s06g15C4?autoplay=1&mute=1&controls=0&loop=1&playlist=gC2s06g15C4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">Joget TikTok Anime</div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'ScMzIvxBSi4')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/ScMzIvxBSi4?autoplay=1&mute=1&controls=0&loop=1&playlist=ScMzIvxBSi4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">Vlog Anime</div>
+                </div>
+                <!-- Slide 3 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'LXb3EKWsInQ')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1&mute=1&controls=0&loop=1&playlist=LXb3EKWsInQ&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">Selfie Anime</div>
+                </div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
@@ -269,19 +367,29 @@
     <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
         <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
             <div>
-                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-green-500">03.</span> Generate unlimited Kling 2.5 Pro dengan Freepik API Key</h2>
-                <p class="text-slate-400 text-sm">Celah Kling 2.5 Pro, hasilkan video sepuasnya dengan API Key gratis atau berbayar</p>
+                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-green-500">03.</span> Kling 2.5 Pro Generator</h2>
+                <p class="text-slate-400 text-sm">Hasilkan video sepuasnya dengan API Key gratis.</p>
             </div>
             <div class="hidden md:block w-1/3 h-px bg-gradient-to-r from-green-500/50 to-transparent mb-4"></div>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid1.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Presiden.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid2.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Penyanyi.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid3.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Narator.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid4.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Kartun.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid5.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Teman.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan3-vid6.mp4" type="video/mp4"></video></div><div class="caption">Demo Suara Robot.</div></div>
+                 <!-- Slide 1 -->
+                 <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'LXb3EKWsInQ')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1&mute=1&controls=0&loop=1&playlist=LXb3EKWsInQ&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">Demo Suara Presiden</div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'gC2s06g15C4')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/gC2s06g15C4?autoplay=1&mute=1&controls=0&loop=1&playlist=gC2s06g15C4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">Demo Suara Penyanyi</div>
+                </div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
@@ -290,17 +398,27 @@
     <!-- LAYANAN 4 -->
     <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
         <div class="max-w-6xl mx-auto px-4 mb-6 text-left">
-            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-yellow-500">04.</span> Kling first frame to last frame (Hasilkan video konsisten dengan gerakan yang rapi)</h2>
-            <p class="text-slate-400 text-sm">Engine: Kling V1.6. generate unlimited dengan Freepik API Key</p>
+            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-yellow-500">04.</span> Kling Consistency (First to Last Frame)</h2>
+            <p class="text-slate-400 text-sm">Engine: Kling V1.6. Gerakan rapi dan konsisten.</p>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid1.mp4" type="video/mp4"></video></div><div class="caption">Restorasi Foto Kakek.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid2.mp4" type="video/mp4"></video></div><div class="caption">Restorasi Foto Nikah.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid3.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Foto Selfie Blur.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid4.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Foto Pemandangan.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid5.mp4" type="video/mp4"></video></div><div class="caption">Warnai Foto Hitam Putih.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan4-vid6.mp4" type="video/mp4"></video></div><div class="caption">Perjelas Dokumen Teks.</div></div>
+                 <!-- Slide 1 -->
+                 <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'ScMzIvxBSi4')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/ScMzIvxBSi4?autoplay=1&mute=1&controls=0&loop=1&playlist=ScMzIvxBSi4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">Restorasi Foto Kakek</div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'LXb3EKWsInQ')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1&mute=1&controls=0&loop=1&playlist=LXb3EKWsInQ&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">Restorasi Foto Nikah</div>
+                </div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
@@ -309,21 +427,32 @@
     <!-- LAYANAN 5 -->
     <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
         <div class="max-w-6xl mx-auto px-4 mb-6 text-left">
-            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-pink-500">05.</span> Seedance Pro. Generate unlimited dengan Freepik API Key</h2>
-            <p class="text-slate-400 text-sm">Akses Seedance Pro dengan Freepik API Key secara gratis</p>
+            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-pink-500">05.</span> Seedance Pro Unlimited</h2>
+            <p class="text-slate-400 text-sm">Akses Seedance Pro dengan Freepik API Key secara gratis.</p>
         </div>
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid1.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Produk Sepatu.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid2.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Orang.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid3.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Mobil.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid4.mp4" type="video/mp4"></video></div><div class="caption">BG Remover Logo.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid5.mp4" type="video/mp4"></video></div><div class="caption">Ganti Background Pas Foto.</div></div>
-                <div class="swiper-slide"><div class="video-wrapper"><video controls muted loop playsinline><source src="assets/layanan5-vid6.mp4" type="video/mp4"></video></div><div class="caption">Buat Stiker WA.</div></div>
+                 <!-- Slide 1 -->
+                 <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'gC2s06g15C4')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/gC2s06g15C4?autoplay=1&mute=1&controls=0&loop=1&playlist=gC2s06g15C4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">BG Remover Sepatu</div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="toggleYoutube(this, 'ScMzIvxBSi4')">
+                        <div class="yt-overlay"></div>
+                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/ScMzIvxBSi4?autoplay=1&mute=1&controls=0&loop=1&playlist=ScMzIvxBSi4&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                    <div class="caption">BG Remover Orang</div>
+                </div>
             </div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
+
     <!-- CARA MULAI -->
     <section class="max-w-6xl mx-auto px-4 mb-24 reveal">
         <div class="text-center mb-10">
@@ -578,13 +707,28 @@
             },
         });
     </script>
+ <!-- LOGIC SCRIPT (Letakkan di sini sebelum tutup body) -->
+    <script>
+        // Fungsi untuk handle klik pada video Youtube
+        function toggleYoutube(wrapper, videoId) {
+            // Jika sudah aktif (normal 16:9 & ada suara), jangan refresh
+            if (wrapper.classList.contains('active')) return;
+
+            // Tambahkan class active untuk mengubah tampilan via CSS (jadi 16:9 normal)
+            wrapper.classList.add('active');
+
+            // Cari iframe di dalam wrapper
+            const iframe = wrapper.querySelector('iframe');
+            
+            // Reload URL Youtube dengan parameter baru:
+            // mute=0 (Unmute)
+            // autoplay=1 (Langsung main)
+            // controls=1 (Munculkan tombol pause/play)
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&loop=1&playlist=${videoId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`;
+        }
+    </script>
 </body>
 </html>
-
-
-
-
-
 
 
 
