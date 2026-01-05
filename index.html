@@ -615,8 +615,8 @@
 <script>
     // --- 1. INISIALISASI SUPABASE ---
     // Ganti dengan URL dan Key dari Dashboard Supabase kamu
-    const supabaseUrl = 'URL_SUPABASE_KAMU'
-    const supabaseKey = 'ANON_KEY_SUPABASE_KAMU'
+    const supabaseUrl = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
     const supabase = supabase.createClient(supabaseUrl, supabaseKey)
 
     // --- 2. LOGIKA GANTI TAMPILAN ---
@@ -668,7 +668,7 @@
         // Contoh: http://localhost:5500/update-password.html
         // Atau: https://namawebsite.com/update-password.html
         const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'http://localhost:5500/update-password.html', 
+            redirectTo: 'https://www.orbitbot.pro/update-password.html', 
         })
 
         if (error) {
@@ -877,6 +877,7 @@
     </script>
 </body>
 </html>
+
 
 
 
