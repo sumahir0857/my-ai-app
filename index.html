@@ -111,6 +111,10 @@
             pointer-events: none; /* User tidak bisa klik pause saat mode preview */
             transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0.8;
+            /* KHUSUS VIDEO YANG ASLINYA SUDAH VERTIKAL (9:16) */
+.video-wrapper.is-vertical .yt-iframe {
+    width: 100%; /* Tidak perlu diperlebar */
+    height: 100%;
         }
 
         /* Overlay untuk menangkap klik user */
@@ -729,6 +733,7 @@
     </script>
 </body>
 </html>
+
 
 
 
