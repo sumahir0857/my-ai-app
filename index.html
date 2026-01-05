@@ -89,72 +89,67 @@
         }
         .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         
-        /* --- YOUTUBE CUSTOM LOGIC START --- */
+               /* --- YOUTUBE LOGIC BARU (THUMBNAIL MODE) --- */
         .video-wrapper { 
             width: 100%; 
             height: 400px; 
             background: #000; 
             position: relative; 
-            overflow: hidden; /* Penting agar zoom tidak keluar kotak */
+            overflow: hidden; 
+            cursor: pointer;
         }
 
-        /* Tampilan Default (Zoomed / 9:16 Style) */
-        .yt-iframe {
+        /* 1. Gambar Thumbnail (Cover Penuh) */
+        .video-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* KUNCI: Gambar landscape dipaksa isi kotak vertikal */
+            opacity: 0.9;
+            transition: opacity 0.3s;
+            display: block;
+        }
+
+        .video-wrapper:hover .video-thumb { opacity: 0.7; }
+
+        /* 2. Tombol Play Merah di Tengah */
+        .play-button {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* Scale width to 350% force fills the vertical height with a horizontal video */
-            width: 350%; 
-            height: 100%;
-            border: none;
-            pointer-events: none; /* User tidak bisa klik pause saat mode preview */
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0.8;
-            /* KHUSUS VIDEO YANG ASLINYA SUDAH VERTIKAL (9:16) */
-.video-wrapper.is-vertical .yt-iframe {
-    width: 100%; /* Tidak perlu diperlebar */
-    height: 100%;
-        }
-
-        /* Overlay untuk menangkap klik user */
-        .yt-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 10;
-            cursor: pointer;
-            background: transparent;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s;
+            z-index: 10;
         }
-        
-        /* Icon Play saat di hover */
-        .yt-overlay::after {
-            content: '\f144'; /* FontAwesome Play Icon */
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            font-size: 3rem;
-            color: rgba(255,255,255,0.8);
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .video-wrapper:hover .yt-overlay::after { opacity: 1; }
 
-        /* Tampilan Aktif (Normal / 16:9 Style) setelah diklik */
-        .video-wrapper.active .yt-iframe {
+        .play-button i {
+            color: white;
+            font-size: 24px;
+            margin-left: 4px; /* Geser dikit biar pas tengah */
+        }
+
+        .video-wrapper:hover .play-button {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* 3. Iframe (Muncul setelah klik) */
+        .yt-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            transform: translate(-50%, -50%);
-            pointer-events: all; /* Aktifkan kontrol Youtube */
-            opacity: 1;
+            z-index: 20;
+            border: none;
         }
-        
-        .video-wrapper.active .yt-overlay {
-            display: none; /* Hilangkan overlay */
-        }
-        /* --- YOUTUBE CUSTOM LOGIC END --- */
+        /* --- YOUTUBE LOGIC END --- */
 
         .caption { padding: 15px; font-size: 0.9rem; color: #cbd5e1; background: #151b2b; flex-grow: 1; border-top: 1px solid #334155; display: flex; align-items: center; }
 
@@ -300,37 +295,40 @@
             <div class="swiper-wrapper">
                 <!-- Slide 1 -->
                 <div class="swiper-slide">
-                    <div class="video-wrapper" onclick="toggleYoutube(this, 'T3Bqj9v_imE')">
-                        <div class="yt-overlay"></div>
-                        <iframe class="yt-iframe" src="https://www.youtube.com/watch?v=T3Bqj9v_imE?autoplay=1&mute=1&controls=0&loop=1&playlist=LXb3EKWsInQ&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="caption"><b>Tema:</b> Astronot di Mars</div>
-                </div>
+    <!-- ID Video: T3Bqj9v_imE -->
+                 <div class="video-wrapper" onclick="loadVideo(this, 'T3Bqj9v_imE')">
+                <img src="https://img.youtube.com/vi/T3Bqj9v_imE/maxresdefault.jpg" 
+               class="video-thumb" 
+              alt="Thumbnail" 
+             onerror="this.src='https://img.youtube.com/vi/T3Bqj9v_imE/hqdefault.jpg'">
+        <div class="play-button"><i class="fas fa-play"></i></div>
+    </div>
+    <div class="caption"><b>Judul:</b> Demo Video Youtube</div>
+</div>
                 <!-- Slide 2 -->
                 <div class="swiper-slide">
-    <div class="video-wrapper is-vertical" onclick="toggleYoutube(this, 'y6oMutwJQCw')">
-        <div class="yt-overlay"></div>
-        <iframe class="yt-iframe" 
-            src="https://www.youtube.com/embed/y6oMutwJQCw?autoplay=1&mute=1&controls=0&loop=1&playlist=y6oMutwJQCw&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" 
-            allow="autoplay; encrypted-media" 
-            allowfullscreen>
-        </iframe>
+    <!-- ID Video: T3Bqj9v_imE -->
+                 <div class="video-wrapper" onclick="loadVideo(this, 'T3Bqj9v_imE')">
+                <img src="https://img.youtube.com/vi/T3Bqj9v_imE/maxresdefault.jpg" 
+               class="video-thumb" 
+              alt="Thumbnail" 
+             onerror="this.src='https://img.youtube.com/vi/T3Bqj9v_imE/hqdefault.jpg'">
+        <div class="play-button"><i class="fas fa-play"></i></div>
     </div>
-    <div class="caption"><b>Tema:</b> Video Alam Vertical</div>
+    <div class="caption"><b>Judul:</b> Demo Video Youtube</div>
 </div>
                 <!-- Slide 3 -->
                 <div class="swiper-slide">
-                    <div class="video-wrapper" onclick="toggleYoutube(this, 'LXb3EKWsInQ')">
-                        <div class="yt-overlay"></div>
-                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/LXb3EKWsInQ?autoplay=1&mute=1&controls=0&loop=1&playlist=LXb3EKWsInQ&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="caption"><b>Tema:</b> Kota Jakarta 2077</div>
-                </div>
-            </div>
-            <div class="swiper-pagination"></div>
-        </div>
-    </section>
-
+    <!-- ID Video: T3Bqj9v_imE -->
+                 <div class="video-wrapper" onclick="loadVideo(this, 'T3Bqj9v_imE')">
+                <img src="https://img.youtube.com/vi/T3Bqj9v_imE/maxresdefault.jpg" 
+               class="video-thumb" 
+              alt="Thumbnail" 
+             onerror="this.src='https://img.youtube.com/vi/T3Bqj9v_imE/hqdefault.jpg'">
+        <div class="play-button"><i class="fas fa-play"></i></div>
+    </div>
+    <div class="caption"><b>Judul:</b> Demo Video Youtube</div>
+</div>
     <!-- LAYANAN 2 -->
     <section class="mb-24 pt-5 border-t border-slate-800/50 reveal">
         <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
@@ -734,6 +732,72 @@
             // controls=1 (Munculkan tombol pause/play)
             iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&loop=1&playlist=${videoId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`;
         }
+    </script>
+
+    <!-- LOGIC VIDEO & SLIDER -->
+    <script>
+        // 1. Setup Slider agar bisa distop
+        const swipers = document.querySelectorAll('.service-swiper');
+        const swiperInstances = [];
+        swipers.forEach(sw => {
+            const s = new Swiper(sw, {
+                slidesPerView: 'auto', spaceBetween: 20, centeredSlides: true, loop: true,
+                autoplay: { delay: 2500, disableOnInteraction: false },
+                pagination: { el: ".swiper-pagination", clickable: true },
+            });
+            swiperInstances.push(s);
+        });
+
+        // 2. Fungsi Load Video (Jalankan saat klik)
+        function loadVideo(wrapper, videoId) {
+            if (wrapper.querySelector('iframe')) return; // Jika sudah play, diam
+
+            // Stop Slider
+            swiperInstances.forEach(s => s.autoplay.stop());
+
+            // Reset video lain (biar gak bentrok suara)
+            document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
+                resetVideo(frame.parentElement);
+            });
+
+            // Buat Iframe Youtube
+            const iframe = document.createElement('iframe');
+            iframe.className = 'yt-iframe';
+            // Parameter: autoplay=1, mute=0 (ada suara), controls=1
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0&showinfo=0&modestbranding=1`;
+            iframe.allow = "autoplay; encrypted-media";
+            iframe.allowFullscreen = true;
+
+            // Masukkan ke layar
+            wrapper.appendChild(iframe);
+            
+            // Sembunyikan tombol play
+            const playBtn = wrapper.querySelector('.play-button');
+            if(playBtn) playBtn.style.display = 'none';
+        }
+
+        // 3. Fungsi Reset (Balik ke Thumbnail)
+        function resetVideo(wrapper) {
+            const iframe = wrapper.querySelector('iframe');
+            const playBtn = wrapper.querySelector('.play-button');
+            if (iframe) {
+                iframe.remove(); // Hapus video
+                if(playBtn) playBtn.style.display = 'flex'; // Munculkan tombol play
+            }
+        }
+
+        // 4. Auto Stop saat Scroll Jauh / Pindah Tab
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) resetVideo(entry.target);
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.video-wrapper').forEach(w => observer.observe(w));
+        
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) document.querySelectorAll('.video-wrapper').forEach(w => resetVideo(w));
+        });
     </script>
 </body>
 </html>
