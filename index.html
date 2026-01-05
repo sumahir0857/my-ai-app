@@ -619,38 +619,40 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
     const supabase = supabase.createClient(supabaseUrl, supabaseKey)
 
-    // --- 2. LOGIKA GANTI TAMPILAN ---
-    function switchMode(mode) {
-        const passSection = document.getElementById('passwordSection');
-        const loginBtns = document.getElementById('loginButtons');
-        const resetBtns = document.getElementById('resetButtons');
-        const title = document.getElementById('modalTitle');
-        const desc = document.getElementById('modalDesc');
-        const msg = document.getElementById('statusMsg');
+   // --- LOGIKA GANTI TAMPILAN ---
+function switchMode(mode) {
+    const passSection = document.getElementById('passwordSection');
+    const loginBtns = document.getElementById('loginButtons');
+    const resetBtns = document.getElementById('resetButtons');
+    const title = document.getElementById('modalTitle');
+    const desc = document.getElementById('modalDesc');
+    const msg = document.getElementById('statusMsg');
 
-        msg.innerText = ""; // Bersihkan pesan error
+    // Reset pesan error setiap ganti mode
+    if(msg) msg.innerText = ""; 
 
-        if (mode === 'reset') {
-            // Sembunyikan Password & Tombol Login, Munculkan Tombol Reset
-            passSection.classList.add('hidden');
-            loginBtns.classList.add('hidden');
-            resetBtns.classList.remove('hidden');
-            resetBtns.classList.add('flex');
-            
-            title.innerText = "Reset Password";
-            desc.innerText = "Masukkan email untuk mendapatkan link reset.";
-        } else {
-            // Kembali ke Mode Login Normal
-            passSection.classList.remove('hidden');
-            loginBtns.classList.remove('hidden');
-            resetBtns.classList.add('hidden');
-            resetBtns.classList.remove('flex');
+    if (mode === 'reset') {
+        // Mode Reset Password
+        passSection.classList.add('hidden');
+        loginBtns.classList.add('hidden');
+        
+        resetBtns.classList.remove('hidden');
+        resetBtns.classList.add('flex'); // Pakai flex agar rapi
+        
+        title.innerText = "Reset Password";
+        desc.innerText = "Masukkan email untuk link reset.";
+    } else {
+        // Mode Login Biasa
+        passSection.classList.remove('hidden');
+        loginBtns.classList.remove('hidden');
+        
+        resetBtns.classList.add('hidden');
+        resetBtns.classList.remove('flex');
 
-            title.innerText = "Welcome Back";
-            desc.innerText = "Akses dashboard creator Anda.";
-        }
+        title.innerText = "Welcome Back";
+        desc.innerText = "Akses dashboard creator Anda.";
     }
-
+}
     // --- 3. LOGIKA KIRIM EMAIL RESET ---
     async function handleResetPassword() {
         const email = document.getElementById('emailInput').value;
@@ -877,6 +879,7 @@
     </script>
 </body>
 </html>
+
 
 
 
