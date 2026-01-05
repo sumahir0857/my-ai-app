@@ -89,68 +89,67 @@
         }
         .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         
-        /* --- YOUTUBE CUSTOM LOGIC START --- */
+               /* --- YOUTUBE LOGIC BARU (THUMBNAIL MODE) --- */
         .video-wrapper { 
             width: 100%; 
             height: 400px; 
             background: #000; 
             position: relative; 
-            overflow: hidden; /* Penting agar zoom tidak keluar kotak */
+            overflow: hidden; 
+            cursor: pointer;
         }
 
-        /* Tampilan Default (Zoomed / 9:16 Style) */
-        .yt-iframe {
+        /* 1. Gambar Thumbnail (Cover Penuh) */
+        .video-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* KUNCI: Gambar landscape dipaksa isi kotak vertikal */
+            opacity: 0.9;
+            transition: opacity 0.3s;
+            display: block;
+        }
+
+        .video-wrapper:hover .video-thumb { opacity: 0.7; }
+
+        /* 2. Tombol Play Merah di Tengah */
+        .play-button {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            /* Scale width to 350% force fills the vertical height with a horizontal video */
-            width: 350%; 
-            height: 100%;
-            border: none;
-            pointer-events: none; /* User tidak bisa klik pause saat mode preview */
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            opacity: 0.8;
-        }
-
-        /* Overlay untuk menangkap klik user */
-        .yt-overlay {
-            position: absolute;
-            inset: 0;
-            z-index: 10;
-            cursor: pointer;
-            background: transparent;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 0, 0, 0.9);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: transform 0.3s;
+            z-index: 10;
         }
-        
-        /* Icon Play saat di hover */
-        .yt-overlay::after {
-            content: '\f144'; /* FontAwesome Play Icon */
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            font-size: 3rem;
-            color: rgba(255,255,255,0.8);
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-        .video-wrapper:hover .yt-overlay::after { opacity: 1; }
 
-        /* Tampilan Aktif (Normal / 16:9 Style) setelah diklik */
-        .video-wrapper.active .yt-iframe {
+        .play-button i {
+            color: white;
+            font-size: 24px;
+            margin-left: 4px; /* Geser dikit biar pas tengah */
+        }
+
+        .video-wrapper:hover .play-button {
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        /* 3. Iframe (Muncul setelah klik) */
+        .yt-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            transform: translate(-50%, -50%);
-            pointer-events: all; /* Aktifkan kontrol Youtube */
-            opacity: 1;
+            z-index: 20;
+            border: none;
         }
-        
-        .video-wrapper.active .yt-overlay {
-            display: none; /* Hilangkan overlay */
-        }
-        /* --- YOUTUBE CUSTOM LOGIC END --- */
+        /* --- YOUTUBE LOGIC END --- */
 
         .caption { padding: 15px; font-size: 0.9rem; color: #cbd5e1; background: #151b2b; flex-grow: 1; border-top: 1px solid #334155; display: flex; align-items: center; }
 
@@ -728,5 +727,6 @@
     </script>
 </body>
 </html>
+
 
 
