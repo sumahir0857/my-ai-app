@@ -294,13 +294,20 @@
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
                 <!-- Slide 1 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper" onclick="toggleYoutube(this, 'T3Bqj9v_imE')">
-                        <div class="yt-overlay"></div>
-                        <iframe class="yt-iframe" src="https://www.youtube.com/embed/T3Bqj9v_imE?autoplay=1&mute=1&controls=0&loop=1&playlist=T3Bqj9v_imE&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                    </div>
-                    <div class="caption"><b>Tema:</b> Balapan mobil dakar di hutan sempit indonesia</div>
-                </div>
+                <!-- Contoh Slide -->
+<div class="swiper-slide">
+    <!-- GANTI 'LXb3EKWsInQ' DENGAN ID YOUTUBE ABANG -->
+    <div class="video-wrapper" onclick="loadVideo(this, 'T3Bqj9v_imE')">
+        
+        <!-- 1. Gambar Thumbnail (Otomatis ambil dari Youtube) -->
+        <img src="https://img.youtube.com/vi/T3Bqj9v_imE/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/T3Bqj9v_imE/hqdefault.jpg'">
+        
+        <!-- 2. Tombol Play -->
+        <div class="play-button"><i class="fas fa-play"></i></div>
+
+    </div>
+    <div class="caption"><b>Tema:</b> Judul Video Disini</div>
+</div>
                 <!-- Slide 2 -->
                 <div class="swiper-slide">
                     <div class="video-wrapper" onclick="toggleYoutube(this, 'ScMzIvxBSi4')">
@@ -704,29 +711,88 @@
                 enabled: true,
             },
         });
-    </script>
-     <!-- LOGIC SCRIPT (Letakkan di sini sebelum tutup body) -->
+   </script>
+        <!-- Script Baru (Thumbnail Mode + Stop Slider) -->
     <script>
-        // Fungsi untuk handle klik pada video Youtube
-        function toggleYoutube(wrapper, videoId) {
-            // Jika sudah aktif (normal 16:9 & ada suara), jangan refresh
-            if (wrapper.classList.contains('active')) return;
+        // 1. Setup Slider agar bisa distop
+        const swipers = document.querySelectorAll('.service-swiper');
+        const swiperInstances = [];
+        
+        swipers.forEach(sw => {
+            const s = new Swiper(sw, {
+                slidesPerView: 'auto', 
+                spaceBetween: 20, 
+                centeredSlides: true, 
+                loop: true,
+                // Autoplay nyala di awal
+                autoplay: { delay: 2500, disableOnInteraction: false },
+                pagination: { el: ".swiper-pagination", clickable: true },
+            });
+            swiperInstances.push(s);
+        });
 
-            // Tambahkan class active untuk mengubah tampilan via CSS (jadi 16:9 normal)
-            wrapper.classList.add('active');
+        // 2. Fungsi Load Video (Jalankan saat klik)
+        function loadVideo(wrapper, videoId) {
+            // Jika video sudah jalan, diam saja
+            if (wrapper.querySelector('iframe')) return; 
 
-            // Cari iframe di dalam wrapper
-            const iframe = wrapper.querySelector('iframe');
+            // STOP SEMUA SLIDER BERGESER
+            swiperInstances.forEach(s => s.autoplay.stop());
+
+            // Matikan video lain jika ada yang sedang nyala
+            document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
+                resetVideo(frame.parentElement);
+            });
+
+            // Buat Iframe Youtube Baru
+            const iframe = document.createElement('iframe');
+            iframe.className = 'yt-iframe';
+            // Setting: Autoplay, Ada Suara (mute=0), Ada Kontrol
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0&showinfo=0&modestbranding=1`;
+            iframe.allow = "autoplay; encrypted-media";
+            iframe.allowFullscreen = true;
+
+            // Masukkan iframe ke layar
+            wrapper.appendChild(iframe);
             
-            // Reload URL Youtube dengan parameter baru:
-            // mute=0 (Unmute)
-            // autoplay=1 (Langsung main)
-            // controls=1 (Munculkan tombol pause/play)
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&loop=1&playlist=${videoId}&modestbranding=1&rel=0&showinfo=0&iv_load_policy=3`;
+            // Sembunyikan tombol play & thumbnail
+            const playBtn = wrapper.querySelector('.play-button');
+            if(playBtn) playBtn.style.display = 'none';
         }
+
+        // 3. Fungsi Reset (Balik ke Thumbnail & Hapus Video)
+        function resetVideo(wrapper) {
+            const iframe = wrapper.querySelector('iframe');
+            const playBtn = wrapper.querySelector('.play-button');
+            
+            if (iframe) {
+                iframe.remove(); // Hapus video biar ringan
+                if(playBtn) playBtn.style.display = 'flex'; // Munculkan tombol play lagi
+            }
+            
+            // Opsional: Kalau mau slider jalan lagi setelah video mati, buka komen di bawah ini:
+            // swiperInstances.forEach(s => s.autoplay.start());
+        }
+
+        // 4. Auto Stop Video saat Scroll Jauh
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                // Jika video keluar layar, reset!
+                if (!entry.isIntersecting) resetVideo(entry.target);
+            });
+        }, { threshold: 0.1 });
+
+        // Pasang pengawas ke semua video
+        document.querySelectorAll('.video-wrapper').forEach(w => observer.observe(w));
+        
+        // 5. Auto Stop saat Pindah Tab Browser
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) document.querySelectorAll('.video-wrapper').forEach(w => resetVideo(w));
+        });
     </script>
 </body>
 </html>
+
 
 
 
