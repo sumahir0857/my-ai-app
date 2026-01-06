@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tool Workspace - Studio Ajaib</title>
-    <!-- Favicon (Logo Sendiri) -->
+    <!-- Favicon -->
    <link rel="shortcut icon" href="assets/logo.png" type="image/png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -17,12 +17,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        /* Desain Utama Selaras dengan Dashboard */
         body { 
             background-color: #0B0F19; 
             color: white; 
             font-family: 'Outfit', sans-serif; 
-            overflow: hidden; /* Hilangkan scrollbar window utama */
+            overflow: hidden; 
             height: 100vh;
             width: 100vw;
             display: flex;
@@ -32,7 +31,6 @@
             background-size: 50px 50px;
         }
 
-        /* Container Iframe dengan Efek Monitor Neon */
         .iframe-container {
             flex-grow: 1;
             margin: 10px;
@@ -48,11 +46,9 @@
             width: 100%;
             height: 100%;
             border: none;
-            /* Trik Visual: Sedikit menggelapkan agar tidak terlalu silau kontrasnya */
-            filter: contrast(1.1) brightness(0.95);
+            filter: contrast(1.05) brightness(1);
         }
 
-        /* 2. TOMBOL POJOK KANAN ATAS (Floating & Expandable) */
         .float-nav {
             position: fixed;
             top: 20px;
@@ -63,10 +59,10 @@
             justify-content: center;
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ef4444; /* Warna Merah Warning */
+            color: #ef4444; 
             border-radius: 50px;
             height: 45px;
-            width: 45px; /* Awalnya bulat kecil */
+            width: 45px; 
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
@@ -75,7 +71,7 @@
         }
 
         .float-nav:hover {
-            width: 200px; /* Melebar saat di-hover */
+            width: 200px; 
             background: rgba(239, 68, 68, 0.1);
             border-color: #ef4444;
         }
@@ -101,7 +97,6 @@
             transform: translateX(0);
         }
 
-        /* 1. CUSTOM MODAL (Peringatan Refresh/Exit) */
         #warningModal {
             display: none;
             position: fixed;
@@ -121,7 +116,7 @@
             border-radius: 20px;
             width: 90%;
             max-width: 400px;
-            text-center;
+            text-align: center;
             box-shadow: 0 0 50px rgba(239, 68, 68, 0.2);
             transform: scale(0.95);
             animation: popUp 0.3s forwards;
@@ -134,19 +129,18 @@
 </head>
 <body>
 
-    <!-- Tombol Kembali (Floating Top Right) -->
+    <!-- Tombol Tutup -->
     <div onclick="triggerExit()" class="float-nav" title="Kembali ke Dashboard">
         <i class="fas fa-times"></i>
         <span>Tutup & Kembali</span>
     </div>
 
-    <!-- Container Utama -->
+    <!-- Container Iframe -->
     <div class="iframe-container">
-        <!-- Iframe Hugging Face -->
-        <iframe id="toolFrame" src="" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; webcam; microphone" allowfullscreen></iframe>
+        <iframe id="toolFrame" src="about:blank" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; webcam; microphone" allowfullscreen></iframe>
     </div>
 
-    <!-- MODAL PERINGATAN (Custom Popup) -->
+    <!-- Modal Peringatan -->
     <div id="warningModal">
         <div class="modal-content">
             <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -154,7 +148,7 @@
             </div>
             <h2 class="text-xl font-bold text-white mb-2">Peringatan Data Hilang</h2>
             <p class="text-slate-400 text-sm mb-6">
-                Jika Anda keluar atau refresh halaman ini, file hasil generate yang belum disimpan <b>akan hilang permanen</b>.
+                Jika Anda keluar sekarang, proses yang sedang berjalan atau file yang belum di-download akan hilang.
             </p>
             <div class="grid grid-cols-2 gap-3">
                 <button onclick="closeModal()" class="py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-700 font-semibold transition">
@@ -168,7 +162,17 @@
     </div>
 
     <script>
-        // --- 1. SETUP SUPABASE & SECURITY ---
+        // --- 1. CONFIGURATION: DAFTAR LINK LAYANAN ---
+        // Anda bisa menambah atau mengubah link di sini tanpa mengubah link di Dashboard
+        const toolLinks = {
+            "servis1": "https://sumahir-filmmakerpro.hf.space",
+            "servis2": "https://sumahir-ugcpromax.hf.space",
+            "servis3": "https://sumahir-aplikasi-kling-saya.hf.space",
+            "servis4": "https://sumahir-klinggambarkegambar.hf.space",
+            "servis5": "https://sumahir-aplikasi-keren-saya1.hf.space"
+        };
+
+        // --- 2. SUPABASE AUTH CHECK ---
         const { createClient } = supabase
         const _supabase = createClient(
             'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
@@ -181,27 +185,24 @@
         }
         checkAccess()
 
-        // --- 2. LOAD TOOL (URL PARSER) ---
+        // --- 3. LOAD TOOL BY ID ---
         const urlParams = new URLSearchParams(window.location.search);
-        let targetUrl = urlParams.get('src');
+        const toolId = urlParams.get('id'); // Mengambil ?id=...
 
-        if(targetUrl) {
-            document.getElementById('toolFrame').src = targetUrl;
+        if(toolId && toolLinks[toolId]) {
+            document.getElementById('toolFrame').src = toolLinks[toolId];
         } else {
-            alert("Error: Tool URL not found.");
+            alert("Error: ID Layanan tidak valid atau tidak ditemukan.");
             window.location.href = "dashboard.html";
         }
 
-        // --- 3. LOGIC ANTI-REFRESH & MODAL ---
+        // --- 4. ANTI-REFRESH & MODAL LOGIC ---
         
-        // A. Mencegah Refresh Browser (F5 / Tombol Reload)
         window.addEventListener('beforeunload', function (e) {
-            // Modern browser requires this standard pattern
             e.preventDefault(); 
-            e.returnValue = 'Data generate akan hilang jika direfresh.'; 
+            e.returnValue = 'Data akan hilang jika direfresh.'; 
         });
 
-        // B. Logic Tombol Kembali (Custom Modal)
         const modal = document.getElementById('warningModal');
 
         function triggerExit() {
@@ -213,16 +214,13 @@
         }
 
         function confirmExit() {
-            // Bypass beforeunload check agar bisa keluar mulus
-            window.removeEventListener('beforeunload', () => {}); 
+            // Hapus proteksi agar bisa pindah halaman
+            window.onbeforeunload = null;
             window.location.href = "dashboard.html";
         }
 
-        // Tutup modal jika klik di luar area
         modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
-            }
+            if (e.target === modal) closeModal();
         });
     </script>
 </body>
