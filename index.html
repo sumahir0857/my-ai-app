@@ -560,7 +560,7 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <!-- MODAL LOGIN POPUP -->
+<!-- MODAL LOGIN POPUP -->
 <div id="loginModal" class="fixed inset-0 bg-slate-950/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
     <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl w-full max-w-md shadow-2xl relative transform scale-95 opacity-0 transition-all duration-300" id="loginContent">
         <button onclick="closeLogin()" class="absolute top-5 right-5 text-slate-500 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
@@ -570,315 +570,205 @@
             <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
                 <i class="fas fa-user-astronaut text-blue-400 text-2xl"></i>
             </div>
-            <!-- Judul berubah dinamis via ID -->
             <h2 id="modalTitle" class="text-2xl font-bold text-white">Welcome Back</h2>
             <p id="modalDesc" class="text-slate-400 text-sm">Akses dashboard creator Anda.</p>
         </div>
         
         <div class="space-y-4">
-            <!-- Input Email (Selalu Muncul) -->
+            <!-- Email -->
             <div>
                 <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Email Address</label>
                 <input type="email" id="emailInput" placeholder="creator@example.com" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
             </div>
 
-            <!-- Bagian Password (Bisa Disembunyikan) -->
+            <!-- Password Section -->
             <div id="passwordSection">
                 <div class="flex justify-between items-center mb-2">
                     <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider">Password</label>
-                    <!-- TOMBOL LUPA PASSWORD -->
                     <button onclick="switchMode('reset')" class="text-xs text-blue-400 hover:text-blue-300 transition">Lupa Password?</button>
                 </div>
                 <input type="password" id="passInput" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
             </div>
 
-            <!-- Tombol Aksi -->
+            <!-- Buttons -->
             <div class="pt-4">
-                <!-- Tombol Login & Daftar (Default) -->
                 <div id="loginButtons" class="grid grid-cols-2 gap-3">
                     <button onclick="handleLogin()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/50 hover:scale-[1.02]">Masuk</button>
                     <button onclick="handleSignup()" class="bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold transition border border-slate-700 hover:scale-[1.02]">Daftar</button>
                 </div>
 
-                <!-- Tombol Reset Password (Hidden by Default) -->
                 <div id="resetButtons" class="hidden flex-col gap-3">
                     <button onclick="handleResetPassword()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/50 hover:scale-[1.02]">Kirim Link Reset</button>
                     <button onclick="switchMode('login')" class="w-full text-slate-400 hover:text-white text-sm py-2">Kembali ke Login</button>
                 </div>
             </div>
 
-            <p id="statusMsg" class="text-center text-sm text-yellow-400 mt-2 min-h-[20px]"></p>
+            <p id="statusMsg" class="text-center text-sm mt-2 min-h-[20px]"></p>
         </div>
     </div>
 </div>
 
+<!-- SCRIPTS EXTERNAL -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
 <script>
-    // --- 1. INISIALISASI SUPABASE ---
-    // Ganti dengan URL dan Key dari Dashboard Supabase kamu
-    const supabaseUrl = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co'
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey)
+    // --- 1. SETUP SUPABASE (Hanya Satu Kali) ---
+    const SUPABASE_URL = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-   // --- LOGIKA GANTI TAMPILAN ---
-function switchMode(mode) {
-    const passSection = document.getElementById('passwordSection');
-    const loginBtns = document.getElementById('loginButtons');
-    const resetBtns = document.getElementById('resetButtons');
-    const title = document.getElementById('modalTitle');
-    const desc = document.getElementById('modalDesc');
-    const msg = document.getElementById('statusMsg');
-
-    // Reset pesan error setiap ganti mode
-    if(msg) msg.innerText = ""; 
-
-    if (mode === 'reset') {
-        // Mode Reset Password
-        passSection.classList.add('hidden');
-        loginBtns.classList.add('hidden');
-        
-        resetBtns.classList.remove('hidden');
-        resetBtns.classList.add('flex'); // Pakai flex agar rapi
-        
-        title.innerText = "Reset Password";
-        desc.innerText = "Masukkan email untuk link reset.";
-    } else {
-        // Mode Login Biasa
-        passSection.classList.remove('hidden');
-        loginBtns.classList.remove('hidden');
-        
-        resetBtns.classList.add('hidden');
-        resetBtns.classList.remove('flex');
-
-        title.innerText = "Welcome Back";
-        desc.innerText = "Akses dashboard creator Anda.";
+    // --- 2. AUTH LOGIC (LOGIN, SIGNUP, RESET) ---
+    async function checkSession() {
+        const { data: { session } } = await _supabase.auth.getSession();
+        const authBtn = document.getElementById('authBtn');
+        const authText = document.getElementById('authBtnText');
+        if (session && authBtn && authText) {
+            authText.innerHTML = '<i class="fas fa-gauge-high"></i> Dashboard';
+            authBtn.onclick = () => window.location.href = "dashboard.html";
+            authBtn.classList.replace('bg-slate-800', 'bg-blue-600');
+        }
     }
-}
-    // --- 3. LOGIKA KIRIM EMAIL RESET ---
+
+    async function handleLogin() {
+        const email = document.getElementById('emailInput').value;
+        const password = document.getElementById('passInput').value;
+        const msg = document.getElementById('statusMsg');
+        if(!email || !password) { msg.innerText = "Isi email dan password!"; msg.className="text-yellow-400 text-center text-sm"; return; }
+        
+        msg.innerText = "Authenticating...";
+        const { error } = await _supabase.auth.signInWithPassword({ email, password });
+        if (error) { msg.innerText = error.message; msg.className="text-red-400 text-center text-sm"; }
+        else { window.location.href = "dashboard.html"; }
+    }
+
+    async function handleSignup() {
+        const email = document.getElementById('emailInput').value;
+        const password = document.getElementById('passInput').value;
+        const msg = document.getElementById('statusMsg');
+        if(password.length < 6) { msg.innerText = "Password min 6 karakter"; return; }
+        
+        const { error } = await _supabase.auth.signUp({ email, password });
+        if (error) { msg.innerText = error.message; }
+        else { msg.innerText = "Cek email Anda untuk konfirmasi!"; msg.className="text-green-400 text-center text-sm"; }
+    }
+
     async function handleResetPassword() {
         const email = document.getElementById('emailInput').value;
         const msg = document.getElementById('statusMsg');
-
-        if (!email) {
-            msg.innerText = "Harap isi email terlebih dahulu!";
-            return;
-        }
+        if (!email) { msg.innerText = "Isi email dulu!"; return; }
 
         msg.innerText = "Mengirim email...";
-        msg.className = "text-center text-sm text-blue-400 mt-2";
+        const { error } = await _supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://www.orbitbot.pro/update-password.html',
+        });
 
-        // GANTI URL DI BAWAH dengan lokasi file update-password.html kamu
-        // Contoh: http://localhost:5500/update-password.html
-        // Atau: https://namawebsite.com/update-password.html
-        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://www.orbitbot.pro/update-password.html', 
-        })
+        if (error) { msg.innerText = error.message; msg.className="text-red-500 text-center text-sm"; }
+        else { msg.innerText = "Link reset terkirim ke email!"; msg.className="text-green-400 text-center text-sm"; }
+    }
 
-        if (error) {
-            msg.innerText = error.message;
-            msg.className = "text-center text-sm text-red-500 mt-2";
+    // --- 3. UI LOGIC (MODAL & MODES) ---
+    function switchMode(mode) {
+        const passSection = document.getElementById('passwordSection');
+        const loginBtns = document.getElementById('loginButtons');
+        const resetBtns = document.getElementById('resetButtons');
+        const title = document.getElementById('modalTitle');
+        const desc = document.getElementById('modalDesc');
+        
+        document.getElementById('statusMsg').innerText = "";
+
+        if (mode === 'reset') {
+            passSection.classList.add('hidden');
+            loginBtns.classList.add('hidden');
+            resetBtns.classList.replace('hidden', 'flex');
+            title.innerText = "Reset Password";
+            desc.innerText = "Masukkan email untuk link reset.";
         } else {
-            msg.innerText = "Cek email kamu! Link reset telah dikirim.";
-            msg.className = "text-center text-sm text-green-400 mt-2";
+            passSection.classList.remove('hidden');
+            loginBtns.classList.remove('hidden');
+            resetBtns.classList.replace('flex', 'hidden');
+            title.innerText = "Welcome Back";
+            desc.innerText = "Akses dashboard creator Anda.";
         }
     }
 
-    // --- FUNGSI LOGIN & SIGNUP LAMA KAMU ---
-    // Pastikan function handleLogin, handleSignup, closeLogin tetap ada di sini atau file JS terpisah
-</script>
+    function openLogin() {
+        const modal = document.getElementById('loginModal');
+        const content = document.getElementById('loginContent');
+        modal.classList.replace('hidden', 'flex');
+        setTimeout(() => content.classList.replace('opacity-0', 'opacity-100'), 10);
+        content.classList.replace('scale-95', 'scale-100');
+    }
 
-    <!-- SCRIPT UTAMA -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script>
-        // --- 1. SETUP SUPABASE ---
-        const { createClient } = supabase
-        const _supabase = createClient(
-            'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
-        )
+    function closeLogin() {
+        const modal = document.getElementById('loginModal');
+        const content = document.getElementById('loginContent');
+        content.classList.replace('opacity-100', 'opacity-0');
+        content.classList.replace('scale-100', 'scale-95');
+        setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
+    }
 
-        // --- 2. LOGIC LOGIN STATE ---
-        async function checkSession() {
-            const { data: { session } } = await _supabase.auth.getSession();
-            const authBtn = document.getElementById('authBtn');
-            const authText = document.getElementById('authBtnText');
-            
-            if (session) {
-                // User sedang login
-                authText.innerHTML = '<i class="fas fa-gauge-high"></i> Dashboard';
-                authBtn.onclick = function() {
-                    window.location.href = "dashboard.html";
-                };
-                authBtn.classList.remove('bg-slate-800');
-                authBtn.classList.add('bg-blue-600', 'border-blue-500');
-            }
-        }
-        checkSession();
-
-        // --- 3. LOGIN & SIGNUP LOGIC ---
-        async function handleLogin() {
-            const email = document.getElementById('emailInput').value
-            const password = document.getElementById('passInput').value
-            const msg = document.getElementById('statusMsg')
-            
-            if(!email || !password) { msg.innerText = "Isi email dan password!"; return; }
-            msg.innerText = "Authenticating..."
-            
-            const { data, error } = await _supabase.auth.signInWithPassword({ email, password })
-            if (error) {
-                msg.innerText = "Error: " + error.message
-                msg.className = "text-center text-sm text-red-400 mt-2 h-5"
-            } else {
-                msg.innerText = "Login Sukses! Mengalihkan..."
-                msg.className = "text-center text-sm text-green-400 mt-2 h-5"
-                setTimeout(() => { window.location.href = "dashboard.html" }, 1000)
-            }
-        }
-
-        async function handleSignup() {
-            const email = document.getElementById('emailInput').value
-            const password = document.getElementById('passInput').value
-            const msg = document.getElementById('statusMsg')
-
-            if(password.length < 6) { msg.innerText = "Password min 6 karakter"; return; }
-            msg.innerText = "Creating Account..."
-            
-            const { data, error } = await _supabase.auth.signUp({ email, password })
-            if (error) {
-                msg.innerText = "Gagal: " + error.message
-            } else {
-                msg.innerText = "Cek email Anda untuk konfirmasi!"
-                msg.className = "text-center text-sm text-green-400 mt-2 h-5"
-            }
-        }
-
-        // --- 4. UI UTILS ---
-        function openLogin() { 
-            const modal = document.getElementById('loginModal');
-            const content = document.getElementById('loginContent');
-            modal.style.display = 'flex';
-            void modal.offsetWidth; // Trigger reflow
-            modal.classList.remove('hidden');
-            content.classList.remove('scale-95', 'opacity-0');
-            content.classList.add('scale-100', 'opacity-100');
-        }
-
-        function closeLogin() { 
-            const modal = document.getElementById('loginModal');
-            const content = document.getElementById('loginContent');
-            content.classList.remove('scale-100', 'opacity-100');
-            content.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { modal.style.display = 'none'; }, 300);
-        }
-
-                // --- 1. UI UTILS (SCROLL REVEAL) - PENTING JANGAN DIHAPUS ---
-        window.addEventListener('scroll', reveal);
-        function reveal(){
-            var reveals = document.querySelectorAll('.reveal');
-            for(var i = 0; i < reveals.length; i++){
-                var windowheight = window.innerHeight;
-                var revealtop = reveals[i].getBoundingClientRect().top;
-                var revealpoint = 150;
-                if(revealtop < windowheight - revealpoint){
-                    reveals[i].classList.add('active');
-                }
-            }
-        }
-        // Jalankan sekali di awal biar header langsung muncul
-        reveal();
-
-
-        // --- 2. SETUP SLIDER (TAMPILAN KEREN ABANG) ---
-        const swipers = document.querySelectorAll('.service-swiper');
-        const swiperInstances = []; 
-
-        swipers.forEach(sw => {
-            const s = new Swiper(sw, {
-                effect: "coverflow", 
-                loop: true,
-                loopedSlides: 6, 
-                grabCursor: true,    
-                centeredSlides: true,
-                slidesPerView: "auto", 
-                coverflowEffect: {
-                    rotate: 0,      
-                    stretch: 0,      
-                    depth: 120,      
-                    modifier: 1.5,     
-                    slideShadows: true, 
-                },
-                pagination: {
-                    el: ".swiper-pagination",
-                    clickable: true, 
-                },
-                keyboard: { enabled: true },
-                
-                // Autoplay (pauseOnMouseEnter: true)
-                autoplay: {
-                    delay: 2500,
-                    disableOnInteraction: false,
-                    pauseOnMouseEnter: true
-                }
-            });
-            swiperInstances.push(s);
+    // --- 4. SCROLL REVEAL ---
+    function reveal(){
+        var reveals = document.querySelectorAll('.reveal');
+        reveals.forEach(el => {
+            var windowheight = window.innerHeight;
+            var revealtop = el.getBoundingClientRect().top;
+            if(revealtop < windowheight - 150) el.classList.add('active');
         });
+    }
+    window.addEventListener('scroll', reveal);
 
+    // --- 5. SWIPER SLIDER ---
+    const swiperInstances = [];
+    document.querySelectorAll('.service-swiper').forEach(sw => {
+        const s = new Swiper(sw, {
+            effect: "coverflow",
+            loop: true,
+            grabCursor: true,
+            centeredSlides: true,
+            slidesPerView: "auto",
+            autoplay: { delay: 2500, pauseOnMouseEnter: true },
+            coverflowEffect: { rotate: 0, stretch: 0, depth: 120, modifier: 1.5, slideShadows: true },
+            pagination: { el: ".swiper-pagination", clickable: true }
+        });
+        swiperInstances.push(s);
+    });
 
-        // --- 3. LOGIC VIDEO YOUTUBE (STOP GESER SAAT PLAY) ---
-        function loadVideo(wrapper, videoId) {
-            if (wrapper.querySelector('iframe')) return; 
-
-            // STOP SLIDER AGAR TIDAK GESER SENDIRI
-            swiperInstances.forEach(instance => {
-                instance.autoplay.stop(); 
-            });
-
-            // Reset video lain
-            document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
-                resetVideo(frame.parentElement);
-            });
-
-            // Buat Iframe Youtube
-            const iframe = document.createElement('iframe');
-            iframe.className = 'yt-iframe';
-            // Setting: Autoplay, Suara ON, Controls ON
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&rel=0&showinfo=0&modestbranding=1`;
-            iframe.allow = "autoplay; encrypted-media";
-            iframe.allowFullscreen = true;
-
-            wrapper.appendChild(iframe);
-            
-            const playBtn = wrapper.querySelector('.play-button');
-            if(playBtn) playBtn.style.display = 'none';
-        }
-
-        function resetVideo(wrapper) {
-            const iframe = wrapper.querySelector('iframe');
-            const playBtn = wrapper.querySelector('.play-button');
-            
-            if (iframe) {
-                iframe.remove();
-                if(playBtn) playBtn.style.display = 'flex';
-            }
-            // Uncomment bawah ini kalau mau slider jalan lagi setelah video mati
-            // swiperInstances.forEach(instance => instance.autoplay.start());
-        }
-
-        // Auto Stop saat Scroll
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) resetVideo(entry.target);
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.video-wrapper').forEach(w => observer.observe(w));
+    // --- 6. YOUTUBE VIDEO LOGIC ---
+    function loadVideo(wrapper, videoId) {
+        if (wrapper.querySelector('iframe')) return;
+        swiperInstances.forEach(s => s.autoplay.stop());
         
-        // Auto Stop saat Pindah Tab
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) document.querySelectorAll('.video-wrapper').forEach(w => resetVideo(w));
-        });
-    </script>
+        const iframe = document.createElement('iframe');
+        iframe.className = 'yt-iframe w-full h-full rounded-xl';
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        iframe.allow = "autoplay; encrypted-media; fullscreen";
+        
+        wrapper.appendChild(iframe);
+        const playBtn = wrapper.querySelector('.play-button');
+        if(playBtn) playBtn.style.display = 'none';
+    }
+
+    function resetVideo(wrapper) {
+        const iframe = wrapper.querySelector('iframe');
+        if (iframe) {
+            iframe.remove();
+            const playBtn = wrapper.querySelector('.play-button');
+            if(playBtn) playBtn.style.display = 'flex';
+        }
+    }
+
+    // Jalankan pengecekan session saat page load
+    window.onload = () => {
+        checkSession();
+        reveal();
+    };
+</script>
+    
 </body>
 </html>
+
 
 
 
