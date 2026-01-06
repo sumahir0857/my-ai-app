@@ -29,6 +29,7 @@
                     animation: {
                         'blob': 'blob 7s infinite',
                         'fade-up': 'fadeUp 0.6s ease-out forwards',
+                        'premium-glow': 'premiumGlow 3s infinite alternate',
                     },
                     keyframes: {
                         blob: {
@@ -40,6 +41,10 @@
                         fadeUp: {
                             '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        premiumGlow: {
+                            '0%': { boxShadow: '0 0 15px -5px rgba(59, 130, 246, 0.2)' },
+                            '100%': { boxShadow: '0 0 30px 2px rgba(59, 130, 246, 0.4)' },
                         }
                     }
                 }
@@ -60,13 +65,12 @@
 
         /* Glassmorphism */
         .glass-nav { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .glass-card { background: rgba(21, 27, 43, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s ease; }
+        .glass-card { background: rgba(21, 27, 43, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
         /* Card Hover Effects */
         .glass-card:hover { 
-            transform: translateY(-5px); 
-            border-color: rgba(96, 165, 250, 0.4); 
-            box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.3);
+            transform: translateY(-8px); 
+            border-color: rgba(96, 165, 250, 0.5); 
             background: rgba(21, 27, 43, 0.9);
         }
 
@@ -77,11 +81,9 @@
         }
         .glass-card:hover .card-img { transform: scale(1.03); }
 
-        /* Custom Scrollbar Hide for Carousel */
+        /* Custom Scrollbar Hide */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        
-        /* Smooth Scroll Behavior */
         .scroll-smooth-x { scroll-behavior: smooth; }
 
         /* Loader Screen */
@@ -89,36 +91,54 @@
         .loader-spinner { width: 40px; height: 40px; border: 4px solid #1e293b; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- PREMIUM BLUE FIRE EFFECT --- */
-        #premium-fire-container {
+        /* --- PREMIUM BLUE FIRE EFFECT (CLEAN & LIGHTWEIGHT) --- */
+        .premium-unlocked .premium-bg-fire {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 100vh;
+            height: 100%;
             pointer-events: none;
             z-index: -1;
-            overflow: hidden;
-            display: none; /* Hidden by default */
+            background: linear-gradient(to top, rgba(59, 130, 246, 0.08) 0%, transparent 60%);
+            display: block;
         }
-        .fire-particle {
-            position: absolute;
-            bottom: -100px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 70%);
-            border-radius: 50%;
-            filter: blur(15px);
-            animation: fireRise var(--duration) ease-in infinite;
-            opacity: 0;
+
+        .premium-unlocked .fire-overlay {
+            position: fixed;
+            bottom: -50%;
+            left: -50%;
+            right: -50%;
+            top: -50%;
+            width: 200%;
+            height: 200%;
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png'); /* Light particles */
+            background-repeat: repeat;
+            opacity: 0.15;
+            animation: fireMove 20s linear infinite;
+            pointer-events: none;
+            z-index: -1;
         }
-        @keyframes fireRise {
-            0% { transform: translateY(0) scale(1); opacity: 0; }
-            20% { opacity: 0.4; }
-            80% { opacity: 0.2; }
-            100% { transform: translateY(-110vh) scale(3); opacity: 0; }
+
+        @keyframes fireMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(0, -100px); }
         }
+
+        /* Aura untuk Kartu Premium */
+        .premium-unlocked .glass-card {
+            box-shadow: 0 10px 30px -15px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Mencegah Kedip dengan GPU Acceleration */
+        * { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
+
+    <!-- PREMIUM ELEMENTS (Hidden by default) -->
+    <div class="premium-bg-fire"></div>
+    <div class="fire-overlay"></div>
 
     <!-- LOADING SCREEN -->
     <div id="loadingScreen">
@@ -131,9 +151,6 @@
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] animate-blob"></div>
         <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
     </div>
-
-    <!-- PREMIUM FIRE CONTAINER (AKAN AKTIF JIKA PREMIUM) -->
-    <div id="premium-fire-container"></div>
 
     <!-- NAVIGASI -->
     <nav class="fixed top-0 w-full z-50 glass-nav">
@@ -159,12 +176,10 @@
         </div>
     </nav>
 
-    <!-- HEADER DASHBOARD (PERBAIKAN: RATA KIRI TOTAL) -->
+    <!-- HEADER DASHBOARD -->
     <header class="pt-28 pb-2">
         <div class="w-full max-w-[1400px] mx-auto pl-6 pr-4 md:px-8 flex flex-col items-start justify-start">
-            
             <div class="animate-fade-up w-full text-left">
-                <!-- Badge System Status (Rata Kiri) -->
                 <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 mb-3">
                     <span class="relative flex h-2 w-2">
                       <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -174,8 +189,6 @@
                     <span class="text-slate-600 mx-1">|</span>
                     <span id="toolUserCount" class="text-blue-400 text-[10px] font-mono">... User</span>
                 </div>
-
-                <!-- Judul Utama (Rata Kiri) -->
                 <h2 class="text-2xl md:text-3xl font-bold text-white leading-tight">
                     Halo, <span id="welcomeName" class="text-blue-400">Creator</span> 👋
                 </h2>
@@ -184,25 +197,19 @@
         </div>
     </header>
 
-    <!-- HORIZONTAL SCROLL LAYANAN (JURUS UTAMA) -->
+    <!-- MAIN CONTENT -->
     <main class="w-full max-w-[1400px] mx-auto pb-8 pl-4 md:px-8 overflow-hidden animate-fade-up" style="animation-delay: 0.2s;">
-        
-        <!-- Wrapper Relative untuk Tombol Navigasi -->
         <div class="relative group">
-            
-            <!-- Tombol Kiri (Desktop Only) -->
             <button onclick="scrollGrid('left')" class="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full items-center justify-center text-white hover:bg-blue-600 transition shadow-2xl opacity-0 group-hover:opacity-100 -ml-4">
                 <i class="fas fa-chevron-left"></i>
             </button>
 
-            <!-- Container Scroll -->
             <div id="servicesContainer" class="flex gap-5 overflow-x-auto pb-8 pt-4 px-2 snap-x snap-mandatory no-scrollbar scroll-smooth-x">
                 
-                <!-- 1. Realistic Video -->
+                <!-- Tool 1 -->
                 <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 blur-[40px]"></div>
                     <div class="overflow-hidden rounded-xl bg-slate-800">
-                        <img src="assets/naruto.jpg" alt="Naruto" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Text+to+Video';">
+                        <img src="assets/naruto.jpg" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=AI+Filmmaker';">
                     </div>
                     <div class="mt-4 flex-1 flex flex-col">
                         <h3 class="text-lg font-bold text-white mb-1 truncate">1. AI Filmmaker Studio</h3>
@@ -216,11 +223,10 @@
                     </div>
                 </div>
 
-                <!-- 2. Anime Converter -->
+                <!-- Tool 2 -->
                 <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-purple-500/10 blur-[40px]"></div>
                     <div class="overflow-hidden rounded-xl bg-slate-800">
-                        <img src="assets/sasuke.jpg" alt="Sasuke" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Video+to+Anime';">
+                        <img src="assets/sasuke.jpg" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=UGC+Tool';">
                     </div>
                     <div class="mt-4 flex-1 flex flex-col">
                         <h3 class="text-lg font-bold text-white mb-1 truncate">2. Ultimate UGC Tool</h3>
@@ -234,11 +240,10 @@
                     </div>
                 </div>
 
-                <!-- 3. Voice Cloning -->
+                <!-- Tool 3 -->
                 <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-green-500/10 blur-[40px]"></div>
                     <div class="overflow-hidden rounded-xl bg-slate-800">
-                        <img src="assets/kakashi.jpg" alt="Kakashi" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Kling+Pro';">
+                        <img src="assets/kakashi.jpg" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Kling+Pro';">
                     </div>
                     <div class="mt-4 flex-1 flex flex-col">
                         <h3 class="text-lg font-bold text-white mb-1 truncate">3. Kling 2.5 Pro Unlimited</h3>
@@ -252,11 +257,10 @@
                     </div>
                 </div>
 
-                <!-- 4. Photo Restore -->
+                <!-- Tool 4 -->
                 <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-yellow-500/10 blur-[40px]"></div>
                     <div class="overflow-hidden rounded-xl bg-slate-800">
-                        <img src="assets/sakura.jpg" alt="Sakura" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Kling+Consitency';">
+                        <img src="assets/sakura.jpg" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Kling+Frame';">
                     </div>
                     <div class="mt-4 flex-1 flex flex-col">
                         <h3 class="text-lg font-bold text-white mb-1 truncate">4. Kling Frame-to-Frame</h3>
@@ -270,11 +274,10 @@
                     </div>
                 </div>
 
-                <!-- 5. BG Remover -->
+                <!-- Tool 5 -->
                 <div class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] snap-center glass-card rounded-3xl p-4 relative flex-shrink-0 flex flex-col">
-                    <div class="absolute top-0 right-0 w-20 h-20 bg-pink-500/10 blur-[40px]"></div>
                     <div class="overflow-hidden rounded-xl bg-slate-800">
-                        <img src="assets/itachi.jpg" alt="Itachi" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Seedance+Pro';">
+                        <img src="assets/itachi.jpg" class="card-img mb-0" onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Seedance+Pro';">
                     </div>
                     <div class="mt-4 flex-1 flex flex-col">
                         <h3 class="text-lg font-bold text-white mb-1 truncate">5. Seedance Pro Unlimited</h3>
@@ -288,22 +291,18 @@
                     </div>
                 </div>
                 
-                <!-- Spacer -->
                 <div class="min-w-[20px] snap-center"></div>
             </div>
 
-            <!-- Tombol Kanan (Desktop Only) -->
             <button onclick="scrollGrid('right')" class="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 w-12 h-12 bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-full items-center justify-center text-white hover:bg-blue-600 transition shadow-2xl opacity-0 group-hover:opacity-100 -mr-2">
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
     </main>
 
-    <!-- SECONDARY SECTION (Compact) -->
+    <!-- SECONDARY SECTION -->
     <section class="max-w-7xl mx-auto px-4 md:px-8 mb-10 -mt-2 animate-fade-up" style="animation-delay: 0.3s;">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <!-- Request Card (Horizontal Compact) -->
             <a href="https://wa.me/6285841244290?text=Halo%20Admin%2C%20Request%20Tool..." target="_blank" class="glass-card rounded-2xl p-4 flex items-center gap-4 hover:border-green-500/50 group cursor-pointer">
                 <div class="w-12 h-12 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center flex-shrink-0 group-hover:bg-green-500 group-hover:text-white transition">
                     <i class="fab fa-whatsapp text-2xl"></i>
@@ -312,12 +311,9 @@
                     <h4 class="text-white font-bold text-sm">Request Fitur Baru</h4>
                     <p class="text-slate-400 text-xs">Punya ide tool? Chat admin langsung.</p>
                 </div>
-                <div class="ml-auto">
-                    <i class="fas fa-chevron-right text-slate-600 group-hover:text-green-400 transition"></i>
-                </div>
+                <div class="ml-auto"><i class="fas fa-chevron-right text-slate-600 group-hover:text-green-400 transition"></i></div>
             </a>
 
-            <!-- Info Upgrade (SUDAH DI-LINK KE pambayaran.html) -->
             <a href="pembayaran.html" class="glass-card rounded-2xl p-4 flex items-center gap-4 border-dashed border-slate-700 hover:border-yellow-500/50 hover:bg-slate-800/40 transition group cursor-pointer">
                 <div class="w-12 h-12 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center flex-shrink-0 group-hover:bg-yellow-500 group-hover:text-white transition">
                     <i class="fas fa-crown text-xl"></i>
@@ -326,33 +322,23 @@
                     <h4 class="text-white font-bold text-sm group-hover:text-yellow-400">Upgrade Pro</h4>
                     <p class="text-slate-400 text-xs">Dapatkan akses server prioritas & API.</p>
                 </div>
-                <div class="ml-auto">
-                    <span class="text-xs bg-slate-800 group-hover:bg-yellow-600 group-hover:text-white text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 group-hover:border-yellow-500 transition">Buka</span>
-                </div>
+                <div class="ml-auto"><span class="text-xs bg-slate-800 group-hover:bg-yellow-600 group-hover:text-white text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 group-hover:border-yellow-500 transition">Buka</span></div>
             </a>
-
         </div>
     </section>
 
-    <!-- FOOTER SIMPLE -->
     <footer class="mt-auto py-6 text-center text-slate-600 text-xs border-t border-slate-800 bg-slate-900/50">
         <p>&copy; 2026 AI Studio Dashboard System. All Systems Operational.</p>
     </footer>
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- LOGIC SCROLL HORIZONTAL ---
         function scrollGrid(direction) {
             const container = document.getElementById('servicesContainer');
             const scrollAmount = 350; 
-            if (direction === 'left') {
-                container.scrollLeft -= scrollAmount;
-            } else {
-                container.scrollLeft += scrollAmount;
-            }
+            container.scrollLeft += (direction === 'left' ? -scrollAmount : scrollAmount);
         }
 
-        // --- SUPABASE LOGIC (ORIGINAL) ---
         const { createClient } = supabase
         const _supabase = createClient(
             'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
@@ -363,42 +349,35 @@
             const { data: { session } } = await _supabase.auth.getSession()
             if (!session) {
                 window.location.href = "index.html"
-            } else {
-                const user = session.user;
-                const email = user.email;
-                const name = email.split('@')[0];
-                
-                document.getElementById('navEmail').innerText = email;
-                document.getElementById('welcomeName').innerText = name;
-
-                let isSubscribed = false;
-                try {
-                    const { data, error } = await _supabase
-                        .from('profiles') 
-                        .select('is_premium')
-                        .eq('id', user.id)
-                        .single();
-                    
-                    if (data && data.is_premium === true) {
-                        isSubscribed = true;
-                    }
-                } catch (err) {
-                    console.log("Status: Free Tier");
-                }
-
-                if (!isSubscribed) {
-                    lockContent();
-                } else {
-                    // JIKA BERLANGGANAN, NYALAKAN EFEK API BIRU
-                    startPremiumFire();
-                }
-
-                initLiveCounter();
-
-                const loader = document.getElementById('loadingScreen');
-                loader.style.opacity = '0';
-                setTimeout(() => { loader.style.display = 'none'; }, 500);
+                return;
             }
+
+            const user = session.user;
+            document.getElementById('navEmail').innerText = user.email;
+            document.getElementById('welcomeName').innerText = user.email.split('@')[0];
+
+            let isSubscribed = false;
+            try {
+                const { data } = await _supabase
+                    .from('profiles') 
+                    .select('is_premium')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (data && data.is_premium === true) isSubscribed = true;
+            } catch (err) { console.log("Free Tier"); }
+
+            if (!isSubscribed) {
+                lockContent();
+            } else {
+                // AKTIFKAN EFEK PREMIUM TANPA JS LOOP (HANYA CLASS)
+                document.body.classList.add('premium-unlocked');
+            }
+
+            initLiveCounter();
+            const loader = document.getElementById('loadingScreen');
+            loader.style.opacity = '0';
+            setTimeout(() => { loader.style.display = 'none'; }, 500);
         }
         
         function lockContent() {
@@ -407,57 +386,26 @@
                 btn.className = "bg-slate-800 border border-slate-700 text-slate-500 py-2.5 rounded-lg text-center font-bold text-xs flex items-center justify-center gap-2 cursor-not-allowed";
                 btn.innerHTML = '<i class="fas fa-lock"></i> <span>Terkunci</span>';
                 btn.removeAttribute('href');
-                btn.removeAttribute('target');
-                btn.onclick = function() { alert("Akses Terkunci! Silakan berlangganan."); };
+                btn.onclick = function() { alert("Akses Terkunci! Silakan berlangganan."); return false; };
             });
-        }
-
-        // --- PREMIUM FIRE LOGIC ---
-        function startPremiumFire() {
-            const container = document.getElementById('premium-fire-container');
-            container.style.display = 'block';
-            const particleCount = 25; // Jumlah partikel api
-
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'fire-particle';
-                
-                // Randomize position, size, and duration
-                const size = Math.random() * 200 + 100; // 100px - 300px
-                const left = Math.random() * 100; // 0% - 100%
-                const duration = Math.random() * 5 + 4; // 4s - 9s
-                const delay = Math.random() * 5; // 0s - 5s
-
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.left = `${left}%`;
-                particle.style.setProperty('--duration', `${duration}s`);
-                particle.style.animationDelay = `${delay}s`;
-
-                container.appendChild(particle);
-            }
         }
 
         function initLiveCounter() {
             const channel = _supabase.channel('online-users');
             channel.on('presence', { event: 'sync' }, () => {
                 const state = channel.presenceState();
-                const count = Object.keys(state).length;
-                const displayCount = count + Math.floor(Math.random() * 3) + 2; 
-                document.getElementById('toolUserCount').innerText = displayCount + " User";
+                document.getElementById('toolUserCount').innerText = (Object.keys(state).length + 5) + " User";
             })
             .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await channel.track({ online_at: new Date().toISOString() });
-                }
+                if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() });
             });
         }
 
-        checkAccess()
+        checkAccess();
 
         async function doLogout() {
-            await _supabase.auth.signOut()
-            window.location.href = "index.html"
+            await _supabase.auth.signOut();
+            window.location.href = "index.html";
         }
     </script>
 </body>
