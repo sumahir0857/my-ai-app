@@ -609,16 +609,18 @@
 </div>
 
 <!-- SCRIPTS EXTERNAL -->
+<!-- PASTIKAN LIBRARY INI ADA DI ATAS SCRIPT UTAMA -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <script>
-    // --- 1. SETUP SUPABASE (Hanya Satu Kali) ---
+    // ==========================================
+    // 1. SETUP SUPABASE & AUTH LOGIC
+    // ==========================================
     const SUPABASE_URL = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // --- 2. AUTH LOGIC (LOGIN, SIGNUP, RESET) ---
     async function checkSession() {
         const { data: { session } } = await _supabase.auth.getSession();
         const authBtn = document.getElementById('authBtn');
@@ -634,11 +636,11 @@
         const email = document.getElementById('emailInput').value;
         const password = document.getElementById('passInput').value;
         const msg = document.getElementById('statusMsg');
-        if(!email || !password) { msg.innerText = "Isi email dan password!"; msg.className="text-yellow-400 text-center text-sm"; return; }
+        if(!email || !password) { msg.innerText = "Isi email dan password!"; msg.className="text-yellow-400 text-center text-sm mt-2"; return; }
         
         msg.innerText = "Authenticating...";
         const { error } = await _supabase.auth.signInWithPassword({ email, password });
-        if (error) { msg.innerText = error.message; msg.className="text-red-400 text-center text-sm"; }
+        if (error) { msg.innerText = error.message; msg.className="text-red-400 text-center text-sm mt-2"; }
         else { window.location.href = "dashboard.html"; }
     }
 
@@ -646,11 +648,12 @@
         const email = document.getElementById('emailInput').value;
         const password = document.getElementById('passInput').value;
         const msg = document.getElementById('statusMsg');
-        if(password.length < 6) { msg.innerText = "Password min 6 karakter"; return; }
+        if(password.length < 6) { msg.innerText = "Password min 6 karakter"; msg.className="text-yellow-400 text-center text-sm mt-2"; return; }
         
+        msg.innerText = "Creating account...";
         const { error } = await _supabase.auth.signUp({ email, password });
-        if (error) { msg.innerText = error.message; }
-        else { msg.innerText = "Cek email Anda untuk konfirmasi!"; msg.className="text-green-400 text-center text-sm"; }
+        if (error) { msg.innerText = error.message; msg.className="text-red-400 text-center text-sm mt-2"; }
+        else { msg.innerText = "Cek email Anda untuk konfirmasi!"; msg.className="text-green-400 text-center text-sm mt-2"; }
     }
 
     async function handleResetPassword() {
@@ -663,18 +666,19 @@
             redirectTo: 'https://www.orbitbot.pro/update-password.html',
         });
 
-        if (error) { msg.innerText = error.message; msg.className="text-red-500 text-center text-sm"; }
-        else { msg.innerText = "Link reset terkirim ke email!"; msg.className="text-green-400 text-center text-sm"; }
+        if (error) { msg.innerText = error.message; msg.className="text-red-500 text-center text-sm mt-2"; }
+        else { msg.innerText = "Link reset terkirim ke email!"; msg.className="text-green-400 text-center text-sm mt-2"; }
     }
 
-    // --- 3. UI LOGIC (MODAL & MODES) ---
+    // ==========================================
+    // 2. UI MODAL LOGIC
+    // ==========================================
     function switchMode(mode) {
         const passSection = document.getElementById('passwordSection');
         const loginBtns = document.getElementById('loginButtons');
         const resetBtns = document.getElementById('resetButtons');
         const title = document.getElementById('modalTitle');
         const desc = document.getElementById('modalDesc');
-        
         document.getElementById('statusMsg').innerText = "";
 
         if (mode === 'reset') {
@@ -708,43 +712,62 @@
         setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
     }
 
-    // --- 4. SCROLL REVEAL ---
+    // ==========================================
+    // 3. UI UTILS (SCROLL REVEAL)
+    // ==========================================
     function reveal(){
         var reveals = document.querySelectorAll('.reveal');
-        reveals.forEach(el => {
+        for(var i = 0; i < reveals.length; i++){
             var windowheight = window.innerHeight;
-            var revealtop = el.getBoundingClientRect().top;
-            if(revealtop < windowheight - 150) el.classList.add('active');
-        });
+            var revealtop = reveals[i].getBoundingClientRect().top;
+            var revealpoint = 150;
+            if(revealtop < windowheight - revealpoint){
+                reveals[i].classList.add('active');
+            }
+        }
     }
     window.addEventListener('scroll', reveal);
 
-    // --- 5. SWIPER SLIDER ---
-    const swiperInstances = [];
+    // ==========================================
+    // 4. SETUP SLIDER (SWIPER)
+    // ==========================================
+    const swiperInstances = []; 
     document.querySelectorAll('.service-swiper').forEach(sw => {
         const s = new Swiper(sw, {
-            effect: "coverflow",
+            effect: "coverflow", 
             loop: true,
-            grabCursor: true,
+            grabCursor: true,    
             centeredSlides: true,
-            slidesPerView: "auto",
-            autoplay: { delay: 2500, pauseOnMouseEnter: true },
-            coverflowEffect: { rotate: 0, stretch: 0, depth: 120, modifier: 1.5, slideShadows: true },
-            pagination: { el: ".swiper-pagination", clickable: true }
+            slidesPerView: "auto", 
+            coverflowEffect: {
+                rotate: 0, stretch: 0, depth: 120, modifier: 1.5, slideShadows: true, 
+            },
+            pagination: { el: ".swiper-pagination", clickable: true },
+            autoplay: { delay: 2500, disableOnInteraction: false, pauseOnMouseEnter: true }
         });
         swiperInstances.push(s);
     });
 
-    // --- 6. YOUTUBE VIDEO LOGIC ---
+    // ==========================================
+    // 5. LOGIC VIDEO YOUTUBE
+    // ==========================================
     function loadVideo(wrapper, videoId) {
-        if (wrapper.querySelector('iframe')) return;
-        swiperInstances.forEach(s => s.autoplay.stop());
-        
+        if (wrapper.querySelector('iframe')) return; 
+
+        // Stop Slider
+        swiperInstances.forEach(instance => instance.autoplay.stop());
+
+        // Reset video lain
+        document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
+            resetVideo(frame.parentElement);
+        });
+
         const iframe = document.createElement('iframe');
         iframe.className = 'yt-iframe w-full h-full rounded-xl';
         iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
         iframe.allow = "autoplay; encrypted-media; fullscreen";
-        
+        iframe.allowFullscreen = true;
+
         wrapper.appendChild(iframe);
         const playBtn = wrapper.querySelector('.play-button');
         if(playBtn) playBtn.style.display = 'none';
@@ -752,22 +775,35 @@
 
     function resetVideo(wrapper) {
         const iframe = wrapper.querySelector('iframe');
+        const playBtn = wrapper.querySelector('.play-button');
         if (iframe) {
             iframe.remove();
-            const playBtn = wrapper.querySelector('.play-button');
             if(playBtn) playBtn.style.display = 'flex';
         }
     }
 
-    // Jalankan pengecekan session saat page load
+    // Observer untuk stop video saat scroll menjauh
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) resetVideo(entry.target);
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.video-wrapper').forEach(w => observer.observe(w));
+    
+    // Stop video saat ganti tab browser
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) document.querySelectorAll('.video-wrapper').forEach(w => resetVideo(w));
+    });
+
+    // Jalankan pengecekan session dan reveal saat startup
     window.onload = () => {
         checkSession();
         reveal();
     };
 </script>
-    
-</body>
 </html>
+
 
 
 
