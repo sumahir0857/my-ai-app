@@ -88,6 +88,34 @@
         #loadingScreen { position: fixed; inset: 0; background: #0B0F19; z-index: 999; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
         .loader-spinner { width: 40px; height: 40px; border: 4px solid #1e293b; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- PREMIUM BLUE FIRE EFFECT --- */
+        #premium-fire-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            pointer-events: none;
+            z-index: -1;
+            overflow: hidden;
+            display: none; /* Hidden by default */
+        }
+        .fire-particle {
+            position: absolute;
+            bottom: -100px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0) 70%);
+            border-radius: 50%;
+            filter: blur(15px);
+            animation: fireRise var(--duration) ease-in infinite;
+            opacity: 0;
+        }
+        @keyframes fireRise {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            20% { opacity: 0.4; }
+            80% { opacity: 0.2; }
+            100% { transform: translateY(-110vh) scale(3); opacity: 0; }
+        }
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
@@ -103,6 +131,9 @@
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] animate-blob"></div>
         <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] animate-blob animation-delay-2000"></div>
     </div>
+
+    <!-- PREMIUM FIRE CONTAINER (AKAN AKTIF JIKA PREMIUM) -->
+    <div id="premium-fire-container"></div>
 
     <!-- NAVIGASI -->
     <nav class="fixed top-0 w-full z-50 glass-nav">
@@ -130,10 +161,6 @@
 
     <!-- HEADER DASHBOARD (PERBAIKAN: RATA KIRI TOTAL) -->
     <header class="pt-28 pb-2">
-        <!-- 
-            Note: pl-6 (padding left 1.5rem) di sini disamakan dengan visual awal kartu. 
-            max-w-[1400px] disamakan dengan Main Content di bawah.
-        -->
         <div class="w-full max-w-[1400px] mx-auto pl-6 pr-4 md:px-8 flex flex-col items-start justify-start">
             
             <div class="animate-fade-up w-full text-left">
@@ -361,6 +388,9 @@
 
                 if (!isSubscribed) {
                     lockContent();
+                } else {
+                    // JIKA BERLANGGANAN, NYALAKAN EFEK API BIRU
+                    startPremiumFire();
                 }
 
                 initLiveCounter();
@@ -380,6 +410,32 @@
                 btn.removeAttribute('target');
                 btn.onclick = function() { alert("Akses Terkunci! Silakan berlangganan."); };
             });
+        }
+
+        // --- PREMIUM FIRE LOGIC ---
+        function startPremiumFire() {
+            const container = document.getElementById('premium-fire-container');
+            container.style.display = 'block';
+            const particleCount = 25; // Jumlah partikel api
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'fire-particle';
+                
+                // Randomize position, size, and duration
+                const size = Math.random() * 200 + 100; // 100px - 300px
+                const left = Math.random() * 100; // 0% - 100%
+                const duration = Math.random() * 5 + 4; // 4s - 9s
+                const delay = Math.random() * 5; // 0s - 5s
+
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${left}%`;
+                particle.style.setProperty('--duration', `${duration}s`);
+                particle.style.animationDelay = `${delay}s`;
+
+                container.appendChild(particle);
+            }
         }
 
         function initLiveCounter() {
@@ -406,5 +462,3 @@
     </script>
 </body>
 </html>
-
-
