@@ -10,7 +10,6 @@
         body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; }
         .glass-box { background: #1e293b; border: 1px solid #334155; }
         
-        /* Animasi Transisi */
         .plan-card { transition: all 0.3s ease; }
         .plan-card:hover { transform: translateY(-2px); border-color: #3b82f6; }
         .plan-card.active { 
@@ -29,34 +28,49 @@
         <!-- Header -->
         <div class="text-center mb-6">
             <h1 class="text-2xl font-bold mb-1">Pilih Paket Langganan</h1>
-            <p class="text-gray-400 text-sm">Pilih durasi yang sesuai kebutuhan Anda</p>
+            <p class="text-gray-400 text-sm">Akses fitur premium sekarang juga</p>
         </div>
 
-        <!-- Pilihan Paket (Ganti Detail Pesanan Lama) -->
+        <!-- Pilihan Paket -->
         <div class="space-y-3 mb-6">
             
             <!-- PAKET TESTER -->
-            <div onclick="pilihPaket('TESTER', 29000, '3 Hari')" id="btn-tester"
+            <div onclick="pilihPaket('TESTER', 15000, '3 Hari', 'Semua fitur aktif')" id="btn-tester"
                  class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
                 <div class="flex justify-between items-center">
                     <div>
                         <h3 class="font-bold text-blue-400">TESTER <span class="text-xs text-gray-400 font-normal ml-1 bg-slate-700 px-2 py-0.5 rounded-full">3 Hari</span></h3>
-                        <p class="text-xs text-gray-400 mt-1">Untuk orang iseng/penasaran.</p>
+                        <p class="text-xs text-gray-400 mt-1">Dapat semua fitur selama 3 hari.</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-lg">Rp 29k</p>
+                        <p class="font-bold text-lg">Rp 15k</p>
                         <i class="fas fa-check-circle text-blue-500 check-icon absolute top-4 right-4 text-xl"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- PAKET CREATOR -->
-            <div onclick="pilihPaket('CREATOR', 89000, '7 Hari')" id="btn-creator"
-                 class="plan-card active border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
+            <!-- PAKET PRO -->
+            <div onclick="pilihPaket('PRO', 49000, '30 Hari', 'Semua fitur sebulan (Kecuali AI Video Filmmaker aktif 7 hari)')" id="btn-pro"
+                 class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-yellow-400">CREATOR <span class="text-xs text-white font-normal ml-1 bg-yellow-600 px-2 py-0.5 rounded-full">7 Hari</span></h3>
-                        <p class="text-xs text-gray-400 mt-1">User proyek jangka pendek.</p>
+                        <h3 class="font-bold text-purple-400">PRO <span class="text-xs text-white font-normal ml-1 bg-purple-600 px-2 py-0.5 rounded-full">1 Bulan</span></h3>
+                        <p class="text-[10px] leading-tight text-gray-400 mt-1">Semua fitur sebulan, kecuali <br>AI Video Filmmaker (7 hari).</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-lg">Rp 49k</p>
+                        <i class="fas fa-check-circle text-blue-500 check-icon absolute top-4 right-4 text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAKET GOLD -->
+            <div onclick="pilihPaket('GOLD', 89000, '30 Hari', 'Semua fitur aktif sebulan penuh')" id="btn-gold"
+                 class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-yellow-400">GOLD <span class="text-xs text-white font-normal ml-1 bg-yellow-600 px-2 py-0.5 rounded-full">1 Bulan</span></h3>
+                        <p class="text-xs text-gray-400 mt-1">Semua fitur aktif sebulan penuh.</p>
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-lg">Rp 89k</p>
@@ -65,31 +79,15 @@
                 </div>
             </div>
 
-            <!-- PAKET PRO -->
-            <div onclick="pilihPaket('PRO', 249000, '30 Hari')" id="btn-pro"
-                 class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-purple-400">PRO <span class="text-xs text-white font-normal ml-1 bg-purple-600 px-2 py-0.5 rounded-full">30 Hari</span></h3>
-                        <p class="text-xs text-gray-400 mt-1">Content Creator serius/Agensi.</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-lg">Rp 249k</p>
-                        <i class="fas fa-check-circle text-blue-500 check-icon absolute top-4 right-4 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
         </div>
 
-        <!-- Metode Pembayaran (Dari Screenshot Anda) -->
+        <!-- Metode Pembayaran -->
         <div class="mb-2">
             <p class="text-xs text-gray-400 uppercase font-bold mb-3 tracking-wider">Metode Pembayaran</p>
         </div>
         
         <div class="space-y-3 mb-8">
-            <!-- BANK JAGO -->
-            <div class="flex items-center gap-4 border border-slate-600 p-3 rounded-xl hover:border-yellow-500 transition cursor-pointer bg-slate-900/50" onclick="copyText('1234567890')">
+            <div class="flex items-center gap-4 border border-slate-600 p-3 rounded-xl hover:border-yellow-500 transition cursor-pointer bg-slate-900/50" onclick="copyText('104212452291')">
                 <div class="w-12 h-8 bg-yellow-500 rounded flex items-center justify-center text-black font-bold text-xs">JAGO</div>
                 <div>
                     <p class="text-xs text-gray-400">Bank Jago</p>
@@ -98,7 +96,6 @@
                 </div>
             </div>
 
-            <!-- DANA -->
             <div class="flex items-center gap-4 border border-slate-600 p-3 rounded-xl hover:border-blue-500 transition cursor-pointer bg-slate-900/50" onclick="copyText('085841244290')">
                 <div class="w-12 h-8 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">DANA</div>
                 <div>
@@ -113,50 +110,45 @@
         <a id="waButton" href="#" target="_blank" 
            class="block w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl text-center shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2">
             <i class="fab fa-whatsapp text-xl"></i> 
-            <span id="btnText">Konfirmasi Bayar (Rp 89.000)</span>
+            <span id="btnText">Konfirmasi Bayar</span>
         </a>
 
         <a href="javascript:history.back()" class="block text-center mt-4 text-gray-500 hover:text-white text-sm transition">Batal / Kembali</a>
     </div>
 
     <script>
-        // Data Variabel Global
-        let paketTerpilih = 'CREATOR';
-        let hargaTerpilih = 89000;
-        let durasiTerpilih = '7 Hari';
-        const nomorWA = "6285841244290"; // Nomor Admin Anda
+        let paketTerpilih = '';
+        let hargaTerpilih = 0;
+        let durasiTerpilih = '';
+        let ketTerpilih = '';
+        const nomorWA = "6285841244290"; 
 
-        // Fungsi Memilih Paket
-        function pilihPaket(nama, harga, durasi) {
-            // Update Data
+        function pilihPaket(nama, harga, durasi, keterangan) {
             paketTerpilih = nama;
             hargaTerpilih = harga;
             durasiTerpilih = durasi;
+            ketTerpilih = keterangan;
 
-            // Update Tampilan Kartu (Visual Active State)
             document.querySelectorAll('.plan-card').forEach(card => card.classList.remove('active'));
             
             if(nama === 'TESTER') document.getElementById('btn-tester').classList.add('active');
-            if(nama === 'CREATOR') document.getElementById('btn-creator').classList.add('active');
             if(nama === 'PRO') document.getElementById('btn-pro').classList.add('active');
+            if(nama === 'GOLD') document.getElementById('btn-gold').classList.add('active');
 
-            // Format Rupiah
             const formatRupiah = new Intl.NumberFormat('id-ID', { 
                 style: 'currency', currency: 'IDR', minimumFractionDigits: 0 
             }).format(harga);
 
-            // Update Tombol WhatsApp
-            const btnText = document.getElementById('btnText');
-            btnText.innerText = `Konfirmasi Bayar (${formatRupiah})`;
+            document.getElementById('btnText').innerText = `Konfirmasi Bayar (${formatRupiah})`;
             
             updateLinkWA(formatRupiah);
         }
 
-        // Fungsi Update Link WA
         function updateLinkWA(hargaFormatted) {
             const pesan = `Halo Admin, saya mau beli paket: 
 📦 *${paketTerpilih}* (${durasiTerpilih})
 💰 Harga: *${hargaFormatted}*
+📝 Catatan: ${ketTerpilih}
 
 Saya sudah transfer ke rekening yang tertera. Mohon diproses. Terima kasih!`;
             
@@ -164,16 +156,13 @@ Saya sudah transfer ke rekening yang tertera. Mohon diproses. Terima kasih!`;
             document.getElementById('waButton').href = link;
         }
 
-        // Fungsi Copy Rekening (Tambahan fitur kecil)
         function copyText(text) {
             navigator.clipboard.writeText(text);
-            alert('Nomor berhasil disalin!');
+            alert('Nomor rekening/e-wallet berhasil disalin!');
         }
 
-        // Jalankan sekali saat loading untuk set default (Creator)
-        pilihPaket('CREATOR', 89000, '7 Hari');
+        // Default set ke Gold saat pertama buka
+        pilihPaket('GOLD', 89000, '30 Hari', 'Semua fitur aktif sebulan penuh');
     </script>
 </body>
 </html>
-
-
