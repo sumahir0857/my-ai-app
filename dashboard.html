@@ -56,6 +56,7 @@
             background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
+            transition: background-color 1s ease;
         }
 
         /* Glassmorphism */
@@ -89,16 +90,17 @@
         .loader-spinner { width: 40px; height: 40px; border: 4px solid #1e293b; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- PREMIUM BLUE FIRE EFFECT (MODERN & STRONG) --- */
+        /* --- PREMIUM GOLDEN FIRE EFFECT (NEW) --- */
         #premium-fire-bg {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
             height: 100vh;
-            background: radial-gradient(circle at 50% 150%, rgba(37, 99, 235, 0.25) 0%, transparent 50%),
-                        radial-gradient(circle at 20% 130%, rgba(29, 78, 216, 0.2) 0%, transparent 40%),
-                        radial-gradient(circle at 80% 130%, rgba(29, 78, 216, 0.2) 0%, transparent 40%);
+            /* Mengubah warna api biru ke Emas/Kuning */
+            background: radial-gradient(circle at 50% 150%, rgba(255, 215, 0, 0.25) 0%, transparent 50%),
+                        radial-gradient(circle at 20% 130%, rgba(218, 165, 32, 0.2) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 130%, rgba(255, 223, 0, 0.2) 0%, transparent 40%);
             z-index: -1;
             display: none; /* Default hidden */
             animation: fireRiseAnim 8s ease-in-out infinite alternate;
@@ -111,20 +113,63 @@
             100% { transform: translateY(0px) scale(1); opacity: 0.7; }
         }
 
-        /* Glowing Effect for Premium Cards */
+        /* --- PREMIUM GOLDEN THEME OVERRIDES --- */
+        
+        /* 1. Ubah Background Body jadi lebih gelap/keemasan */
+        body.is-premium-user {
+            background-color: #0F0A00; /* Dark Golden Black */
+        }
+
+        /* 2. Ubah Border & Glow Kartu jadi Emas */
         .is-premium-user .glass-card {
-            border-color: rgba(59, 130, 246, 0.3);
-            box-shadow: 0 0 20px rgba(37, 99, 235, 0.1);
+            border-color: rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.15);
+            background: rgba(30, 25, 10, 0.6);
         }
         .is-premium-user .glass-card:hover {
-            border-color: rgba(59, 130, 246, 0.8);
-            box-shadow: 0 0 30px rgba(37, 99, 235, 0.4);
+            border-color: rgba(255, 215, 0, 1);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+            background: rgba(40, 35, 10, 0.9);
         }
+
+        /* 3. Override Warna Text Biru (Blue-400/500) menjadi Emas */
+        .is-premium-user .text-blue-400, 
+        .is-premium-user .text-blue-500 {
+            color: #FACC15 !important; /* Yellow-400 */
+        }
+        
+        /* 4. Override Icon Cube Logo */
+        .is-premium-user .fa-cube {
+            color: #EAB308 !important; /* Yellow-500 */
+        }
+
+        /* 5. Override Tombol Biru menjadi Emas */
+        .is-premium-user .bg-blue-600 {
+            background-color: #CA8A04 !important; /* Yellow-600 */
+            box-shadow: 0 4px 15px rgba(202, 138, 4, 0.3);
+        }
+        .is-premium-user .bg-blue-600:hover {
+            background-color: #EAB308 !important; /* Yellow-500 */
+        }
+
+        /* 6. Override Blur Blob Background */
+        .is-premium-user .bg-blue-600\/10 {
+            background-color: rgba(255, 215, 0, 0.15) !important;
+        }
+        .is-premium-user .bg-purple-600\/10 {
+            background-color: rgba(218, 165, 32, 0.15) !important;
+        }
+
+        /* 7. Ubah Gradient Text Judul */
+        .is-premium-user .bg-gradient-to-r {
+            background-image: linear-gradient(to right, #FACC15, #FFFFFF) !important;
+        }
+
     </style>
 </head>
 <body class="antialiased min-h-screen flex flex-col">
 
-    <!-- PREMIUM FIRE BACKGROUND -->
+    <!-- PREMIUM FIRE BACKGROUND (GOLD) -->
     <div id="premium-fire-bg"></div>
 
     <!-- LOADING SCREEN -->
@@ -428,6 +473,3 @@
     </script>
 </body>
 </html>
-
-
-
