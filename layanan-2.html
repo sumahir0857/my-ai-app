@@ -128,31 +128,31 @@
             
             <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
                 <button @click="active === 1 ? active = null : active = 1" class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-700/50 transition">
-                    <span>Apa ada limit harian?</span>
+                    <span>AI Apa yang digunakan?</span>
                     <i class="fas" :class="active === 1 ? 'fa-minus' : 'fa-plus'"></i>
                 </button>
                 <div x-show="active === 1" class="px-6 py-4 text-gray-400 text-sm border-t border-slate-700 bg-slate-900/50">
-                    YA, gambar ke video dibatasi hanya 5 - 10 generate perhari, sementara foto UGC dan audio tidak.
+                    Kami menggunakan Gemini 2.5 Pro untuk membuat narasi dan suara, menggunakan Nano Banana Pro untuk membuat gambar, dan VEO 3.1 atau Grok Imagine untuk mengubah foto menjadi video.
                 </div>
             </div>
 
             <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
                 <button @click="active === 2 ? active = null : active = 2" class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-700/50 transition">
-                    <span>Pengguna bisa upgrade untuk menambah kuota generate?</span>
+                    <span>Apakah ada limit atau penggunaan dibatasi?</span>
                     <i class="fas" :class="active === 2 ? 'fa-minus' : 'fa-plus'"></i>
                 </button>
                 <div x-show="active === 2" class="px-6 py-4 text-gray-400 text-sm border-t border-slate-700 bg-slate-900/50">
-                    TENTU, Anda bisa menghungingi Admin untuk menambah kuota generate.
+                    Gemini 2.5 Pro dan Nano Banana Pro tidak ada limit, sementara VEO 3.1 dibatasi hanya 5-10 video. Saat kuota habis, foto akan diubah menjadi video dengan menggunakan Grok Imagine.
                 </div>
             </div>
 
              <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
                 <button @click="active === 3 ? active = null : active = 3" class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-700/50 transition">
-                    <span>Apakah ada garansi?</span>
+                    <span>Apakah bisa tambah kuota generate untuk VEO 3.1?</span>
                     <i class="fas" :class="active === 3 ? 'fa-minus' : 'fa-plus'"></i>
                 </button>
                 <div x-show="active === 3" class="px-6 py-4 text-gray-400 text-sm border-t border-slate-700 bg-slate-900/50">
-                    Jika kode token tidak bisa dipakai, kami akan ganti token baru atau uang kembali 100%.
+                    TENTU, Anda bisa tambah kuota generate untuk VEO 3.1. Langsung DM Admin, ya.
                 </div>
             </div>
 
@@ -161,4 +161,5 @@
     </div>
 </body>
 </html>
+
 
