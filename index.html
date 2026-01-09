@@ -35,6 +35,7 @@
                         'blob': 'blob 7s infinite',
                         'fade-up': 'fadeUp 0.8s ease-out forwards',
                         'marquee': 'marquee 25s linear infinite',
+                        'bounce-slow': 'bounce 3s infinite',
                     },
                     keyframes: {
                         blob: {
@@ -69,7 +70,7 @@
         }
         
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
@@ -89,29 +90,29 @@
         }
         .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         
-               /* --- YOUTUBE LOGIC BARU (THUMBNAIL MODE) --- */
+        /* --- YOUTUBE LOGIC BARU (THUMBNAIL MODE) --- */
         .video-wrapper { 
             width: 100%; 
-            height: 400px; 
+            height: 100%; 
             background: #000; 
             position: relative; 
             overflow: hidden; 
             cursor: pointer;
         }
 
-        /* 1. Gambar Thumbnail (Cover Penuh) */
+        /* 1. Gambar Thumbnail */
         .video-thumb {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* KUNCI: Gambar landscape dipaksa isi kotak vertikal */
-            opacity: 0.9;
+            object-fit: cover; 
+            opacity: 0.8;
             transition: opacity 0.3s;
             display: block;
         }
 
-        .video-wrapper:hover .video-thumb { opacity: 0.7; }
+        .video-wrapper:hover .video-thumb { opacity: 0.6; }
 
-        /* 2. Tombol Play Merah di Tengah */
+        /* 2. Tombol Play */
         .play-button {
             position: absolute;
             top: 50%;
@@ -129,17 +130,10 @@
             z-index: 10;
         }
 
-        .play-button i {
-            color: white;
-            font-size: 24px;
-            margin-left: 4px; /* Geser dikit biar pas tengah */
-        }
+        .play-button i { color: white; font-size: 24px; margin-left: 4px; }
+        .video-wrapper:hover .play-button { transform: translate(-50%, -50%) scale(1.1); }
 
-        .video-wrapper:hover .play-button {
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-
-        /* 3. Iframe (Muncul setelah klik) */
+        /* 3. Iframe */
         .yt-iframe {
             position: absolute;
             top: 0;
@@ -149,7 +143,6 @@
             z-index: 20;
             border: none;
         }
-        /* --- YOUTUBE LOGIC END --- */
 
         .caption { padding: 15px; font-size: 0.9rem; color: #cbd5e1; background: #151b2b; flex-grow: 1; border-top: 1px solid #334155; display: flex; align-items: center; }
 
@@ -169,10 +162,43 @@
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
         details[open] summary ~ * { animation: sweep .5s ease-in-out; }
-        @keyframes sweep { 0%    {opacity: 0; transform: translateY(-10px)} 100%  {opacity: 1; transform: translateY(0)} }
+        @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
+
+        /* MENU HORIZONTAL STYLE */
+        .menu-btn.active {
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+            border-color: #60A5FA;
+            color: white;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+        }
     </style>
 </head>
 <body class="antialiased">
+
+    <!-- 1. POP UP PROMO (NEW) -->
+    <div id="promoPopup" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 backdrop-blur-md bg-black/60 transition-opacity duration-300">
+        <div class="glass-card max-w-sm w-full p-6 rounded-3xl relative text-center border-t border-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.2)] animate-blob">
+            <!-- Close Button -->
+            <button onclick="closePromo()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            
+            <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg border-2 border-white/10 animate-bounce-slow">
+                <i class="fas fa-tags text-white text-3xl"></i>
+            </div>
+            
+            <h3 class="text-2xl font-extrabold text-white mb-2">DISKON SPESIAL 60%</h3>
+            <p class="text-slate-300 mb-6 leading-relaxed">
+                Dapatkan semua produk saya!<br>
+                <span class="text-red-400 line-through text-sm">Rp 37.000</span> 
+                <i class="fas fa-arrow-right text-xs mx-1 text-slate-500"></i> 
+                <span class="text-green-400 font-bold text-2xl">Rp 15.000</span>
+            </p>
+            
+            <a href="pembayaran.html" class="block w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl transition transform hover:scale-[1.02] shadow-lg shadow-green-900/50">
+                AMBIL DISKON SEKARANG <i class="fas fa-bolt ml-1"></i>
+            </a>
+            <p class="text-xs text-slate-500 mt-4">*Penawaran terbatas untuk kunjungan pertama.</p>
+        </div>
+    </div>
 
     <!-- RUNNING TEXT NOTIFICATION -->
     <div class="fixed top-0 w-full z-[60] bg-blue-900/90 border-b border-blue-500/30 text-xs font-bold text-blue-100 py-2 overflow-hidden whitespace-nowrap backdrop-blur-sm">
@@ -206,7 +232,6 @@
 
     <!-- HERO SECTION -->
     <header class="pt-48 pb-20 text-center px-4 relative">
-        <!-- V2.0 BADGE WITH GREEN LIGHT ANIMATION -->
         <span class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-xs font-bold mb-6 tracking-wider animate-fade-up shadow-[0_0_15px_rgba(59,130,246,0.3)]">
             <span class="relative flex h-2 w-2">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -229,7 +254,6 @@
         <div class="glass-card rounded-3xl p-1 overflow-hidden">
             <div class="bg-slate-900/80 p-8 rounded-[20px]">
                 <div class="flex flex-col md:flex-row gap-8 items-stretch">
-                    
                     <!-- LEFT: CURRENT ENGINE -->
                     <div class="flex-1 space-y-6">
                         <div class="flex items-center gap-3 mb-2">
@@ -255,10 +279,8 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- DIVIDER -->
                     <div class="hidden md:block w-px bg-slate-700/50"></div>
-
                     <!-- RIGHT: COMING SOON -->
                     <div class="flex-1 relative overflow-hidden rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-900/10 to-transparent p-6 group">
                         <div class="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMING SOON</div>
@@ -270,17 +292,12 @@
                             <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> No Watermark</li>
                             <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> HD Quality Output</li>
                             <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> 12 Seconds / Generation</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> Cinematic Depth & Color</li>
                         </ul>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- ========================================= -->
-    <!-- SERVICES SECTION (YOUTUBE MODIFIED) -->
-    <!-- ========================================= -->
 
     <!-- LAYANAN 1 -->
     <section class="mb-5 pt-5 border-t border-slate-800/50 reveal">
@@ -294,76 +311,23 @@
         <div class="swiper service-swiper">
             <div class="swiper-wrapper">
                 <!-- Slide 1 -->
-<div class="swiper-slide">
-    <!-- GANTI 'LXb3EKWsInQ' DENGAN ID YOUTUBE ABANG -->
-    <div class="video-wrapper" onclick="loadVideo(this, 'T3Bqj9v_imE')">
-        
-        <!-- 1. Gambar Thumbnail (Otomatis ambil dari Youtube) -->
-        <img src="https://img.youtube.com/vi/T3Bqj9v_imE/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/T3Bqj9v_imE/hqdefault.jpg'">
-        
-        <!-- 2. Tombol Play -->
-        <div class="play-button"><i class="fas fa-play"></i></div>
-
-    </div>
-    <div class="caption"><b>Ide cerita:</b> Balapan mobil dakar di hutan lebat indonesia</div>
-</div>
+                <div class="swiper-slide">
+                    <div class="video-wrapper" onclick="loadVideo(this, 'T3Bqj9v_imE')">
+                        <img src="https://img.youtube.com/vi/T3Bqj9v_imE/hqdefault.jpg" class="video-thumb" alt="Thumbnail">
+                        <div class="play-button"><i class="fas fa-play"></i></div>
+                    </div>
+                    <div class="caption"><b>Ide cerita:</b> Balapan mobil dakar di hutan lebat indonesia</div>
+                </div>
                 <!-- Slide 2 -->
                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'r3kLS7sZ67A')">
-           <img src="https://img.youtube.com/vi/r3kLS7sZ67A/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/r3kLS7sZ67A/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>Ide cerita:</b> Kehidupan manusia di zaman purba</div>
-</div>
-         
-                <!-- Slide 3 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'LVtsLYnfP8M')">
-           <img src="https://img.youtube.com/vi/LVtsLYnfP8M/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/rLVtsLYnfP8M/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>Ide cerita:</b> Reporter BBC tak sengaja masuk ke zaman purba</div>
-</div>
-                <!-- Slide 4 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'knLkcWuPE44')">
-           <img src="https://img.youtube.com/vi/knLkcWuPE44/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/knLkcWuPE44/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>Ide cerita:</b> Duel cinematic Ronaldo vs Messi di Yogyakarta</div>
-</div>
-                <!-- Slide 5 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'fYWRcH_hF7Y')">
-           <img src="https://img.youtube.com/vi/fYWRcH_hF7Y/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/fYWRcH_hF7Y/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>Ide cerita:</b> Drama keluarga, kisah anak dan orang tua sedih</div>
-</div>
-                    <!-- Slide 6 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'BrVT6hjsRws')">
-           <img src="https://img.youtube.com/vi/BrVT6hjsRws/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/BrVT6hjsRws/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>Ide cerita:</b> Reporter BBC terbangun dan sadar ada di zaman purba</div>
-</div>
-               <!-- Slide 7 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, '8__l2qxde-0')">
-           <img src="https://img.youtube.com/vi/8__l2qxde-0/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/8__l2qxde-0/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>                    
-    <div class="caption"><b>Ide cerita:</b> Hutan hujan asri belum tersentuh manusia</div>
-</div>
-                 <!-- Slide 8 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, '3M-JscJxnGk')">
-           <img src="https://img.youtube.com/vi/3M-JscJxnGk/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/3M-JscJxnGk/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>                    
-    <div class="caption"><b>Ide cerita:</b> Ilmuan menemukan fosil dinosaurus di indonesia</div>
-</div>
+                    <div class="video-wrapper" onclick="loadVideo(this, 'r3kLS7sZ67A')">
+                        <img src="https://img.youtube.com/vi/r3kLS7sZ67A/hqdefault.jpg" class="video-thumb" alt="Thumbnail">      
+                        <div class="play-button"><i class="fas fa-play"></i></div>
+                    </div>
+                    <div class="caption"><b>Ide cerita:</b> Kehidupan manusia di zaman purba</div>
+                </div>
+                <!-- Tambahan Slide Layanan 1 lainnya di sini jika perlu (disingkat agar ringkas) -->
+            </div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
@@ -381,135 +345,134 @@
             <div class="swiper-wrapper">
                  <!-- Slide 1 -->
                  <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
-           <img src="https://img.youtube.com/vi/-jYccBBAD7c/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>1.</b> Video promosi celana kerja pria</div>
-</div>
+                    <div class="video-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
+                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" class="video-thumb" alt="Thumbnail">      
+                        <div class="play-button"><i class="fas fa-play"></i></div>
+                    </div>
+                    <div class="caption"><b>1.</b> Video promosi celana kerja pria</div>
+                </div>
                 <!-- Slide 2 -->
                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'WxtmgW5oesU')">
-           <img src="https://img.youtube.com/vi/WxtmgW5oesU/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>2.</b> Video promosi jas hujan</div>
-</div>
-                <!-- Slide 3 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'KrK405TZaRI')">
-           <img src="https://img.youtube.com/vi/KrK405TZaRI/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/KrK405TZaRI/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>3.</b> Video promosi celana pria</div>
-</div>
-                <!-- Slide 4 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'kJJSmmzQgw8')">
-           <img src="https://img.youtube.com/vi/kJJSmmzQgw8/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/kJJSmmzQgw8/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>4.</b> Video promosi daster</div>
-</div>
-                 <!-- Slide 5 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'p2yGWw4rPBc')">
-           <img src="https://img.youtube.com/vi/p2yGWw4rPBc/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/p2yGWw4rPBc/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>5.</b> Video promosi sweater</div>
-</div>
-                <!-- Slide 6 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'Ghr_rDK69Oo')">
-           <img src="https://img.youtube.com/vi/Ghr_rDK69Oo/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/Ghr_rDK69Oo/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>6.</b> Video promosi jas hujan</div>
-</div>
-                <!-- Slide 7 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'H10_Oz0VVs4')">
-           <img src="https://img.youtube.com/vi/H10_Oz0VVs4/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/H10_Oz0VVs4/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>6.</b> Video promosi obat herbal</div>
-</div>
-            <div class="swiper-pagination"></div>
-        </div>
-    </section>
-
-    <!-- LAYANAN 3 -->
-    <section class="mb-5 pt-5 border-t border-slate-800/50 reveal">
-        <div class="max-w-6xl mx-auto px-4 mb-6 flex items-end justify-between">
-            <div>
-                <h2 class="text-3xl font-bold text-white mb-1"><span class="text-green-500">03.</span> Kling 2.5 Pro Generator</h2>
-                <p class="text-slate-400 text-sm">Hasilkan video beresolusi 1080p sepuasnya dengan API Key Freepik gratis.</p>
+                    <div class="video-wrapper" onclick="loadVideo(this, 'WxtmgW5oesU')">
+                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" class="video-thumb" alt="Thumbnail">      
+                        <div class="play-button"><i class="fas fa-play"></i></div>
+                    </div>
+                    <div class="caption"><b>2.</b> Video promosi jas hujan</div>
+                </div>
+                <!-- Tambahan Slide Layanan 2 lainnya di sini jika perlu -->
             </div>
-            <div class="hidden md:block w-1/3 h-px bg-gradient-to-r from-green-500/50 to-transparent mb-4"></div>
-        </div>
-        <div class="swiper service-swiper">
-            <div class="swiper-wrapper">
-                 <!-- Slide 1 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'Y9xBJXGec7M')">
-           <img src="https://img.youtube.com/vi/Y9xBJXGec7M/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/Y9xBJXGec7M/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>1.</b> Wanita dantik suku maya</div>
-</div>
-               <!-- Slide 2 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'DYQNfx2uYM4')">
-           <img src="https://img.youtube.com/vi/DYQNfx2uYM4/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/DYQNfx2uYM4/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>2.</b> wajah asli suku Aborigin</div>
-</div>
             <div class="swiper-pagination"></div>
         </div>
     </section>
 
-    <!-- LAYANAN 4 -->
-    <section class="mb-5 pt-5 border-t border-slate-800/50 reveal">
-        <div class="max-w-6xl mx-auto px-4 mb-6 text-left">
-            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-yellow-500">04.</span> Kling Consistency (First to Last Frame)</h2>
-            <p class="text-slate-400 text-sm">Engine: Kling V1.6. Gerakan rapi dan konsisten.</p>
+    <!-- 2. DAFTAR HARGA LANGGANAN (NEW) -->
+    <section class="max-w-6xl mx-auto px-4 mt-20 mb-20 reveal">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-4">Pilihan Paket Langganan</h2>
+            <p class="text-slate-400">Pilih paket yang sesuai dengan kebutuhan kreativitas Anda.</p>
         </div>
-        <div class="swiper service-swiper">
-            <div class="swiper-wrapper">
-                 <!-- Slide 1 -->
-                <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'GN8bOzmlLQc')">
-           <img src="https://img.youtube.com/vi/GN8bOzmlLQc/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/GN8bOzmlLQc/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>1.</b> Koenigsegg berubah warna</div>
-</div>
-            <div class="swiper-pagination"></div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            <!-- Paket A: TESTER -->
+            <div class="glass-card p-8 rounded-2xl border border-slate-700 hover:border-slate-500 transition duration-300 relative group">
+                <h3 class="text-xl font-bold text-white mb-2">TESTER 3 Hari</h3>
+                <div class="flex items-baseline gap-1 mb-4">
+                    <span class="text-sm text-slate-400">Rp</span>
+                    <span class="text-4xl font-bold text-white">15k</span>
+                </div>
+                <p class="text-slate-400 text-sm mb-6 border-b border-slate-700 pb-4">Coba dulu sebelum serius.</p>
+                <ul class="space-y-3 text-sm text-slate-300 mb-8">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-blue-500"></i> Full Akses 3 Hari</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-blue-500"></i> Semua Fitur AI</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-blue-500"></i> Support Standar</li>
+                </ul>
+                <a href="#" class="block w-full py-3 rounded-xl bg-slate-800 text-white font-semibold text-center hover:bg-slate-700 transition border border-slate-600">Pilih Paket</a>
+            </div>
+
+            <!-- Paket B: PRO (Highlight) -->
+            <div class="glass-card p-8 rounded-2xl border-2 border-purple-500/50 bg-gradient-to-b from-purple-900/20 to-slate-900/50 transition duration-300 relative transform md:-translate-y-4 shadow-2xl shadow-purple-900/20">
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-purple-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider shadow-lg">Most Popular</div>
+                <h3 class="text-xl font-bold text-white mb-2">PRO 1 Bulan</h3>
+                <div class="flex items-baseline gap-1 mb-4">
+                    <span class="text-sm text-purple-300">Rp</span>
+                    <span class="text-5xl font-bold text-white">49k</span>
+                </div>
+                <p class="text-purple-200/70 text-sm mb-6 border-b border-purple-500/30 pb-4">Untuk kreator konten aktif.</p>
+                <ul class="space-y-3 text-sm text-slate-300 mb-8">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-purple-400"></i> Masa Aktif 30 Hari</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-purple-400"></i> Semua Fitur Terbuka</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-exclamation-circle text-yellow-500"></i> Kecuali AI Video (7 hari)</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-purple-400"></i> Prioritas Render</li>
+                </ul>
+                <a href="#" class="block w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold text-center transition shadow-lg">Langganan Sekarang</a>
+            </div>
+
+            <!-- Paket C: GOLD -->
+            <div class="glass-card p-8 rounded-2xl border border-yellow-600/30 hover:border-yellow-500 transition duration-300 relative group">
+                <h3 class="text-xl font-bold text-yellow-100 mb-2">GOLD 1 Bulan</h3>
+                <div class="flex items-baseline gap-1 mb-4">
+                    <span class="text-sm text-yellow-500">Rp</span>
+                    <span class="text-4xl font-bold text-white">89k</span>
+                </div>
+                <p class="text-slate-400 text-sm mb-6 border-b border-slate-700 pb-4">Solusi tanpa batas.</p>
+                <ul class="space-y-3 text-sm text-slate-300 mb-8">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> Full Akses 30 Hari</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> AI Video Full Sebulan</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> VIP Support</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> Akses Beta Fitur Baru</li>
+                </ul>
+                <a href="#" class="block w-full py-3 rounded-xl bg-slate-800 text-white font-semibold text-center hover:bg-yellow-600/20 hover:text-yellow-400 transition border border-slate-600 hover:border-yellow-500">Pilih Paket</a>
+            </div>
         </div>
     </section>
 
-    <!-- LAYANAN 5 -->
-    <section class="mb-5 pt-5 border-t border-slate-800/50 reveal">
-        <div class="max-w-6xl mx-auto px-4 mb-6 text-left">
-            <h2 class="text-3xl font-bold text-white mb-1"><span class="text-pink-500">05.</span> Seedance Pro Unlimited</h2>
-            <p class="text-slate-400 text-sm">Akses Seedance Pro dengan Freepik API Key secara gratis.</p>
+    <!-- 3. GARIS PEMISAH -->
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-500 to-transparent opacity-50"></div>
+    </div>
+
+    <!-- 4. HORIZONTAL MENU (LAYANAN 3 - 5) -->
+    <section class="max-w-6xl mx-auto px-4 mt-16 mb-24 reveal">
+        <div class="text-left mb-6">
+            <h2 class="text-2xl font-bold text-white"><span class="text-blue-400">Library</span> Menu Tambahan</h2>
+            <p class="text-slate-500 text-sm">Geser menu di bawah untuk melihat fitur lainnya.</p>
         </div>
-        <div class="swiper service-swiper">
-            <div class="swiper-wrapper">
-                  <!-- Slide 1 -->
-                 <div class="swiper-slide">
-              <div class="video-wrapper" onclick="loadVideo(this, 'yfEQpmpiakM')">
-           <img src="https://img.youtube.com/vi/yfEQpmpiakM/maxresdefault.jpg" class="video-thumb" alt="Thumbnail" onerror="this.src='https://img.youtube.com/vi/yfEQpmpiakM/hqdefault.jpg'">      
-         <div class="play-button"><i class="fas fa-play"></i></div>
-      </div>
-    <div class="caption"><b>1.</b> Wanita cantik abad ke 3</div>
-</div>
-            <div class="swiper-pagination"></div>
+
+        <!-- Menu Rak Buku (Horizontal Scroll) -->
+        <div class="flex overflow-x-auto gap-4 pb-4 mb-6 scrollbar-hide select-none snap-x" id="featureMenu">
+            <!-- Tombol 1: Layanan 3 -->
+            <button onclick="changeFeature('layanan3', this)" class="menu-btn active snap-center shrink-0 px-6 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold hover:bg-slate-700 transition whitespace-nowrap flex items-center gap-2">
+                <i class="fas fa-film text-green-400"></i> Kling 2.5 Pro
+            </button>
+            <!-- Tombol 2: Layanan 4 -->
+            <button onclick="changeFeature('layanan4', this)" class="menu-btn snap-center shrink-0 px-6 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold hover:bg-slate-700 transition whitespace-nowrap flex items-center gap-2">
+                <i class="fas fa-sync text-yellow-400"></i> Kling Consistency
+            </button>
+            <!-- Tombol 3: Layanan 5 -->
+            <button onclick="changeFeature('layanan5', this)" class="menu-btn snap-center shrink-0 px-6 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-semibold hover:bg-slate-700 transition whitespace-nowrap flex items-center gap-2">
+                <i class="fas fa-infinity text-pink-400"></i> Seedance Pro Unlimited
+            </button>
+        </div>
+
+        <!-- Tampilan Video Dinamis -->
+        <div class="glass-card p-2 rounded-2xl border border-slate-700 shadow-2xl relative overflow-hidden group">
+            <div id="dynamicVideoContainer" class="aspect-video w-full rounded-xl bg-black relative overflow-hidden">
+                <!-- Video Layanan 3 (Default) -->
+                <div class="video-wrapper w-full h-full" onclick="loadVideo(this, 'Y9xBJXGec7M')">
+                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/hqdefault.jpg" class="video-thumb object-cover w-full h-full" alt="Kling 2.5">
+                    <div class="play-button"><i class="fas fa-play"></i></div>
+                </div>
+            </div>
+            
+            <!-- Deskripsi Dinamis -->
+            <div class="p-6 bg-slate-900/80 backdrop-blur-sm border-t border-slate-700">
+                <h3 id="featureTitle" class="text-xl font-bold text-white mb-2">Kling 2.5 Pro Generator</h3>
+                <p id="featureDesc" class="text-slate-400 text-sm">Hasilkan video beresolusi 1080p sepuasnya dengan API Key Freepik gratis.</p>
+            </div>
         </div>
     </section>
-     <!-- CARA MULAI -->
+
+    <!-- CARA MULAI -->
     <section class="max-w-6xl mx-auto px-4 mb-24 reveal">
         <div class="text-center mb-10">
             <h2 class="text-3xl font-bold text-white mb-2">Workflow Otomatis</h2>
@@ -654,13 +617,88 @@
 </div>
 
 <!-- SCRIPTS EXTERNAL -->
-<!-- PASTIKAN LIBRARY INI ADA DI ATAS SCRIPT UTAMA -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <script>
     // ==========================================
-    // 1. SETUP SUPABASE & AUTH LOGIC
+    // 0. DATA UNTUK MENU HORIZONTAL (LAYANAN 3-5)
+    // ==========================================
+    const featuresData = {
+        'layanan3': {
+            title: "Kling 2.5 Pro Generator",
+            desc: "Hasilkan video beresolusi 1080p sepuasnya dengan API Key Freepik gratis.",
+            videoId: "Y9xBJXGec7M"
+        },
+        'layanan4': {
+            title: "Kling Consistency (First to Last Frame)",
+            desc: "Engine: Kling V1.6. Gerakan rapi dan konsisten, objek tidak berubah bentuk.",
+            videoId: "GN8bOzmlLQc"
+        },
+        'layanan5': {
+            title: "Seedance Pro Unlimited",
+            desc: "Akses Seedance Pro dengan Freepik API Key secara gratis. Unlimited generation.",
+            videoId: "yfEQpmpiakM"
+        }
+    };
+
+    function changeFeature(key, btn) {
+        // 1. Update tombol aktif
+        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+
+        // 2. Ambil data
+        const data = featuresData[key];
+        const container = document.getElementById('dynamicVideoContainer');
+        const titleEl = document.getElementById('featureTitle');
+        const descEl = document.getElementById('featureDesc');
+
+        // 3. Reset Container Video & Inject Video Baru (Pake format LoadVideo)
+        container.innerHTML = `
+             <div class="video-wrapper w-full h-full" onclick="loadVideo(this, '${data.videoId}')">
+                <img src="https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg" class="video-thumb object-cover w-full h-full" alt="Thumbnail">
+                <div class="play-button"><i class="fas fa-play"></i></div>
+            </div>
+        `;
+
+        // 4. Update Teks dengan animasi simple
+        titleEl.style.opacity = 0;
+        descEl.style.opacity = 0;
+        
+        setTimeout(() => {
+            titleEl.innerText = data.title;
+            descEl.innerText = data.desc;
+            titleEl.style.opacity = 1;
+            descEl.style.opacity = 1;
+        }, 200);
+    }
+
+    // ==========================================
+    // 1. PROMO POPUP LOGIC
+    // ==========================================
+    function checkPromo() {
+        // Cek localStorage, jika belum ada key 'promoSeen', tampilkan
+        if (!localStorage.getItem('promoSeen')) {
+            const popup = document.getElementById('promoPopup');
+            popup.classList.remove('hidden');
+            popup.classList.add('flex');
+            
+            // Set flag di localStorage agar tidak muncul lagi (opsional, hapus baris ini jika mau muncul terus)
+            localStorage.setItem('promoSeen', 'true');
+        }
+    }
+
+    function closePromo() {
+        const popup = document.getElementById('promoPopup');
+        popup.classList.add('opacity-0');
+        setTimeout(() => {
+            popup.classList.remove('flex');
+            popup.classList.add('hidden');
+        }, 300);
+    }
+
+    // ==========================================
+    // 2. SETUP SUPABASE & AUTH LOGIC
     // ==========================================
     const SUPABASE_URL = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM';
@@ -716,7 +754,7 @@
     }
 
     // ==========================================
-    // 2. UI MODAL LOGIC
+    // 3. UI MODAL LOGIC (LOGIN)
     // ==========================================
     function switchMode(mode) {
         const passSection = document.getElementById('passwordSection');
@@ -758,7 +796,7 @@
     }
 
     // ==========================================
-    // 3. UI UTILS (SCROLL REVEAL)
+    // 4. UI UTILS (SCROLL REVEAL)
     // ==========================================
     function reveal(){
         var reveals = document.querySelectorAll('.reveal');
@@ -774,7 +812,7 @@
     window.addEventListener('scroll', reveal);
 
     // ==========================================
-    // 4. SETUP SLIDER (SWIPER)
+    // 5. SETUP SLIDER (SWIPER) - HANYA UNTUK LAYANAN 1 & 2
     // ==========================================
     const swiperInstances = []; 
     document.querySelectorAll('.service-swiper').forEach(sw => {
@@ -794,7 +832,7 @@
     });
 
     // ==========================================
-    // 5. LOGIC VIDEO YOUTUBE
+    // 6. LOGIC VIDEO YOUTUBE
     // ==========================================
     function loadVideo(wrapper, videoId) {
         if (wrapper.querySelector('iframe')) return; 
@@ -809,7 +847,7 @@
 
         const iframe = document.createElement('iframe');
         iframe.className = 'yt-iframe w-full h-full rounded-xl';
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
         iframe.allow = "autoplay; encrypted-media; fullscreen";
         iframe.allowFullscreen = true;
 
@@ -827,54 +865,12 @@
         }
     }
 
-    // Observer untuk stop video saat scroll menjauh
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) resetVideo(entry.target);
-        });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.video-wrapper').forEach(w => observer.observe(w));
-    
-    // Stop video saat ganti tab browser
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) document.querySelectorAll('.video-wrapper').forEach(w => resetVideo(w));
-    });
-
-    // Jalankan pengecekan session dan reveal saat startup
+    // Jalankan pengecekan session, reveal dan Promo saat startup
     window.onload = () => {
         checkSession();
         reveal();
+        setTimeout(checkPromo, 1500); // Munculkan promo setelah 1.5 detik
     };
 </script>
+</body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
