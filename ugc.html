@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGC Video Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body class="bg-black text-white min-h-screen p-4">
+
+    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+        
+        <!-- KOLOM KIRI: INPUT FORM -->
+        <div class="bg-gray-900 p-6 rounded-2xl border border-gray-800 h-fit">
+            <h1 class="text-2xl font-bold mb-6 text-pink-500"><i class="fas fa-magic mr-2"></i>UGC Pro Max</h1>
+            
+            <div class="space-y-4">
+                <!-- Upload -->
+                <div class="relative group cursor-pointer border-2 border-dashed border-gray-700 hover:border-pink-500 rounded-xl p-4 transition bg-gray-800" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage(event)">
+                    <div id="uploadPlaceholder" class="text-center py-4">
+                        <i class="fas fa-image text-3xl text-gray-500 mb-2"></i>
+                        <p class="text-xs text-gray-400">Klik Upload Foto Produk</p>
+                    </div>
+                    <img id="imagePreview" class="hidden w-full h-40 object-contain rounded" />
+                </div>
+
+                <!-- Inputs -->
+                <input type="text" id="prompt" placeholder="Nama Produk (Cth: Baju Bonia)" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:border-pink-500 outline-none">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="price" placeholder="Harga (Cth: 50k)" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:border-pink-500 outline-none">
+                    <input type="text" id="desc" placeholder="Deskripsi (Cth: Bahan Tebal)" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:border-pink-500 outline-none">
+                </div>
+
+                <button onclick="startGenerate()" id="btnGen" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 font-bold py-3 rounded-xl transition shadow-lg mt-2">
+                    GENERATE UGC PACK
+                </button>
+
+                <div id="statusBox" class="hidden text-center text-xs font-mono text-yellow-400 animate-pulse pt-2"></div>
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: HASIL OUTPUT -->
+        <div id="resultArea" class="hidden space-y-4">
+            
+            <!-- 1. HASIL FOTO -->
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                <h3 class="text-sm font-bold text-gray-400 mb-2"><i class="fas fa-images mr-2"></i>Variasi Foto</h3>
+                <div id="photoGrid" class="grid grid-cols-3 gap-2">
+                    <!-- Foto akan masuk sini -->
+                </div>
+            </div>
+
+            <!-- 2. HASIL AUDIO -->
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                <h3 class="text-sm font-bold text-gray-400 mb-2"><i class="fas fa-music mr-2"></i>Voiceover AI</h3>
+                <audio id="audioPlayer" controls class="w-full h-8"></audio>
+            </div>
+
+            <!-- 3. HASIL VIDEO -->
+            <div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
+                <h3 class="text-sm font-bold text-gray-400 mb-2"><i class="fas fa-video mr-2"></i>Video Final</h3>
+                <video id="videoPlayer" controls autoplay loop class="w-full rounded-lg bg-black"></video>
+                <a id="downloadLink" href="#" target="_blank" class="block mt-2 text-center text-pink-400 text-sm hover:underline">Download Video</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        let base64Image = "";
+        let eventSource = null;
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    base64Image = e.target.result;
+                    document.getElementById('imagePreview').src = base64Image;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    document.getElementById('uploadPlaceholder').classList.add('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function startGenerate() {
+            if (!base64Image) return alert("Upload foto produk dulu!");
+            
+            const btn = document.getElementById('btnGen');
+            const statusBox = document.getElementById('statusBox');
+            const resultArea = document.getElementById('resultArea');
+            const photoGrid = document.getElementById('photoGrid');
+
+            // Reset
+            if(eventSource) eventSource.close();
+            resultArea.classList.add('hidden');
+            photoGrid.innerHTML = ""; 
+            statusBox.classList.remove('hidden');
+            statusBox.innerText = "🔒 Mengirim data ke Server...";
+            btn.disabled = true; btn.classList.add('opacity-50');
+
+            try {
+                // KIRIM DATA KE BACKEND
+                const req = await fetch('/api/ugc-process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        image_data: base64Image, 
+                        prompt: document.getElementById('prompt').value,
+                        price: document.getElementById('price').value,
+                        desc: document.getElementById('desc').value,
+                        timestamp: Date.now()
+                    })
+                });
+
+                const data = await req.json();
+                if (!req.ok) throw new Error(data.message || "Gagal Request");
+
+                // MONITORING PROSES
+                statusBox.innerText = "⏳ Sedang meracik konten (bisa 1-2 menit)...";
+                const pollingUrl = `${data.space_url}/gradio_api/queue/data?session_hash=${data.session_hash}`;
+                
+                eventSource = new EventSource(pollingUrl);
+                
+                eventSource.onmessage = (e) => {
+                    const msg = JSON.parse(e.data);
+                    
+                    if(msg.msg === 'process_completed') {
+                        statusBox.classList.add('hidden');
+                        const outputs = msg.output.data;
+
+                        // --- LOGIKA PEMILAHAN FILE ---
+                        outputs.forEach(item => {
+                            // Cek apakah item adalah object file atau array file
+                            // Kasus 1: Array of images (Galeri Foto)
+                            if (Array.isArray(item)) { 
+                                item.forEach(img => {
+                                    const url = img.url || img;
+                                    const imgTag = `<img src="${url}" class="w-full h-24 object-cover rounded border border-gray-700 cursor-pointer hover:opacity-80" onclick="window.open('${url}')">`;
+                                    photoGrid.innerHTML += imgTag;
+                                });
+                            }
+                            // Kasus 2: Single File Object
+                            else if (item && item.url) {
+                                const url = item.url;
+                                
+                                if (url.includes('.mp3') || url.includes('.wav')) {
+                                    document.getElementById('audioPlayer').src = url;
+                                }
+                                else if (url.includes('.mp4')) {
+                                    document.getElementById('videoPlayer').src = url;
+                                    document.getElementById('downloadLink').href = url;
+                                }
+                                // Jika ada foto single (cover)
+                                else if (url.includes('.webp') || url.includes('.jpg')) {
+                                     // Masukkan ke grid juga
+                                     const imgTag = `<img src="${url}" class="w-full h-24 object-cover rounded border border-gray-700">`;
+                                     photoGrid.innerHTML += imgTag;
+                                }
+                            }
+                        });
+
+                        resultArea.classList.remove('hidden');
+                        btn.disabled = false; btn.classList.remove('opacity-50');
+                        eventSource.close();
+                    }
+                };
+
+            } catch (err) {
+                statusBox.innerText = "❌ Error: " + err.message;
+                btn.disabled = false; btn.classList.remove('opacity-50');
+            }
+        }
+    </script>
+</body>
+</html>
