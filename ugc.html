@@ -1,269 +1,156 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UGC Video Generator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <style>
-        /* Animasi Loading Halus */
-        .loading-pulse {
-            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.5; }
-            50% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(0.95); opacity: 0.5; }
-        }
-    </style>
-</head>
-<body class="bg-gray-950 text-white min-h-screen p-4 font-sans">
+<!-- Bagian HTML tetap sama, GANTI SCRIPT-NYA SAJA -->
+<script>
+    let base64Image = "";
+    let eventSource = null;
 
-    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-        
-        <!-- KOLOM KIRI: INPUT -->
-        <div class="bg-gray-900 p-8 rounded-2xl border border-gray-800 h-fit shadow-2xl">
-            <h1 class="text-3xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
-                <i class="fas fa-magic mr-2"></i>UGC Pro Max
-            </h1>
-            
-            <div class="space-y-5">
-                <!-- Upload Area -->
-                <div class="relative group cursor-pointer border-2 border-dashed border-gray-700 hover:border-pink-500 rounded-xl p-6 transition bg-gray-800" onclick="document.getElementById('fileInput').click()">
-                    <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="previewImage(event)">
-                    <div id="uploadPlaceholder" class="text-center">
-                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-500 mb-3 group-hover:text-pink-500 transition"></i>
-                        <p class="text-sm text-gray-400 font-medium">Klik untuk Upload Foto Produk</p>
-                    </div>
-                    <img id="imagePreview" class="hidden w-full h-48 object-contain rounded-lg mx-auto" />
-                </div>
-
-                <!-- Form Inputs -->
-                <div>
-                    <label class="text-xs text-gray-400 ml-1">Nama Produk</label>
-                    <input type="text" id="prompt" placeholder="Contoh: Batik Indonesia" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-pink-500 outline-none transition">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="text-xs text-gray-400 ml-1">Harga</label>
-                        <input type="text" id="price" placeholder="Contoh: 50k" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-pink-500 outline-none transition">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 ml-1">Deskripsi Singkat</label>
-                        <input type="text" id="desc" placeholder="Contoh: Bahan Halus" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:border-pink-500 outline-none transition">
-                    </div>
-                </div>
-
-                <button onclick="startGenerate()" id="btnGen" class="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl transition shadow-lg transform active:scale-95 mt-4">
-                    🚀 MULAI AUTOMATION
-                </button>
-
-                <!-- Status Bar -->
-                <div id="statusBox" class="hidden p-3 bg-gray-800 rounded-lg text-center text-xs font-mono text-yellow-400 border border-gray-700"></div>
-            </div>
-        </div>
-
-        <!-- KOLOM KANAN: HASIL LIVE UPDATE -->
-        <div id="resultContainer" class="hidden space-y-6">
-            
-            <!-- 1. FOTO (Muncul Duluan) -->
-            <div id="cardPhoto" class="bg-gray-900 p-5 rounded-2xl border border-gray-800 opacity-50 transition-all duration-500">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-bold text-gray-300 flex items-center"><i class="fas fa-images text-green-500 mr-2"></i>Variasi Foto</h3>
-                    <span id="statusPhoto" class="text-xs text-gray-500"><i class="fas fa-circle-notch fa-spin mr-1"></i>Menunggu...</span>
-                </div>
-                <div id="photoGrid" class="grid grid-cols-2 gap-2 min-h-[100px] content-center">
-                    <p class="text-xs text-gray-600 text-center col-span-2 place-self-center">Foto akan muncul di sini...</p>
-                </div>
-            </div>
-
-            <!-- 2. AUDIO (Muncul Kedua) -->
-            <div id="cardAudio" class="bg-gray-900 p-5 rounded-2xl border border-gray-800 opacity-50 transition-all duration-500">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-bold text-gray-300 flex items-center"><i class="fas fa-music text-blue-500 mr-2"></i>Voiceover</h3>
-                    <span id="statusAudio" class="text-xs text-gray-500"><i class="fas fa-clock mr-1"></i>Menunggu...</span>
-                </div>
-                <audio id="audioPlayer" controls class="w-full mt-2 hidden"></audio>
-                <div id="audioPlaceholder" class="h-8 bg-gray-800 rounded animate-pulse w-full"></div>
-            </div>
-
-            <!-- 3. VIDEO FINAL (Muncul Terakhir) -->
-            <div id="cardVideo" class="bg-gray-900 p-5 rounded-2xl border border-gray-800 shadow-xl opacity-50 transition-all duration-500">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="text-sm font-bold text-gray-300 flex items-center"><i class="fas fa-video text-pink-500 mr-2"></i>Video Final</h3>
-                    <span id="statusVideo" class="text-xs text-gray-500"><i class="fas fa-clock mr-1"></i>Menunggu antrian...</span>
-                </div>
-                
-                <div id="videoContainer" class="relative w-full bg-black rounded-lg border border-gray-700 min-h-[200px] flex items-center justify-center">
-                    <p id="videoLoadingText" class="text-xs text-gray-500 animate-pulse">Menunggu proses merge video...</p>
-                    <video id="videoPlayer" controls autoplay loop class="w-full rounded-lg hidden"></video>
-                </div>
-                
-                <a id="downloadLink" href="#" target="_blank" class="hidden mt-3 text-center bg-gray-800 hover:bg-gray-700 py-2 rounded-lg text-sm text-pink-400 transition">
-                    <i class="fas fa-download mr-1"></i> Download Video
-                </a>
-            </div>
-
-        </div>
-    </div>
-
-    <script>
-        let base64Image = "";
-        let eventSource = null;
-
-        function previewImage(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    base64Image = e.target.result;
-                    document.getElementById('imagePreview').src = base64Image;
-                    document.getElementById('imagePreview').classList.remove('hidden');
-                    document.getElementById('uploadPlaceholder').classList.add('hidden');
-                }
-                reader.readAsDataURL(file);
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                base64Image = e.target.result;
+                document.getElementById('imagePreview').src = base64Image;
+                document.getElementById('imagePreview').classList.remove('hidden');
+                document.getElementById('uploadPlaceholder').classList.add('hidden');
             }
+            reader.readAsDataURL(file);
         }
+    }
 
-        async function startGenerate() {
-            if (!base64Image) return alert("Upload foto produk dulu!");
+    async function startGenerate() {
+        if (!base64Image) return alert("Upload foto produk dulu!");
+        
+        const btn = document.getElementById('btnGen');
+        const statusBox = document.getElementById('statusBox');
+        
+        // Reset UI
+        if(eventSource) eventSource.close();
+        document.getElementById('resultContainer').classList.remove('hidden');
+        resetCards();
+        
+        statusBox.classList.remove('hidden');
+        statusBox.innerText = "1/2 Mengupload Gambar ke Server...";
+        statusBox.className = "text-center text-xs font-mono text-yellow-400 animate-pulse pt-2";
+        btn.disabled = true; btn.innerHTML = 'Memproses...'; btn.classList.add('opacity-50');
+
+        try {
+            // 1. Panggil API Vercel
+            const req = await fetch('/api/ugc-process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    image_data: base64Image, 
+                    prompt: document.getElementById('prompt').value,
+                    price: document.getElementById('price').value,
+                    desc: document.getElementById('desc').value,
+                    timestamp: Date.now()
+                })
+            });
+
+            const data = await req.json();
+            if (!req.ok) throw new Error(data.message || "Gagal Request");
+
+            // 2. Monitoring
+            statusBox.innerText = "2/2 Masuk Antrian (Menunggu respon)...";
+            const pollingUrl = `${data.space_url}/gradio_api/queue/data?session_hash=${data.session_hash}`;
             
-            const btn = document.getElementById('btnGen');
-            const statusBox = document.getElementById('statusBox');
+            eventSource = new EventSource(pollingUrl);
             
-            // UI Reset
-            if(eventSource) eventSource.close();
-            document.getElementById('resultContainer').classList.remove('hidden');
-            resetCards();
-            
-            statusBox.classList.remove('hidden');
-            statusBox.innerText = "🔒 Mengirim data ke Server...";
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; btn.classList.add('opacity-50');
+            // Tangkap Error Koneksi
+            eventSource.onerror = (err) => {
+                // Jangan panik dulu, kadang cuma putus nyambung
+                console.log("Koneksi EventSource berkedip...");
+            };
 
-            try {
-                // 1. Kirim Data
-                const req = await fetch('/api/ugc-process', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        image_data: base64Image, 
-                        prompt: document.getElementById('prompt').value,
-                        price: document.getElementById('price').value,
-                        desc: document.getElementById('desc').value,
-                        timestamp: Date.now()
-                    })
-                });
-
-                const data = await req.json();
-                if (!req.ok) throw new Error(data.message || "Gagal Request");
-
-                // 2. Monitoring (POLLING BERTINGKAT)
-                statusBox.innerText = "⏳ AI sedang bekerja bertahap...";
-                const pollingUrl = `${data.space_url}/gradio_api/queue/data?session_hash=${data.session_hash}`;
+            eventSource.onmessage = (e) => {
+                const msg = JSON.parse(e.data);
                 
-                eventSource = new EventSource(pollingUrl);
-                
-                eventSource.onmessage = (e) => {
-                    const msg = JSON.parse(e.data);
+                // DEBUG: Lihat di console apa yg terjadi
+                console.log(msg);
 
-                    // Kita tangkap 'process_generating' (Update Bertahap) DAN 'process_completed'
-                    if (msg.msg === 'process_generating' || msg.msg === 'process_completed') {
-                        
-                        const outputs = msg.output.data;
-                        
-                        // --- 1. UPDATE FOTO (Index 0) ---
-                        if (outputs[0] && Array.isArray(outputs[0]) && outputs[0].length > 0) {
-                            activateCard('cardPhoto', 'statusPhoto', '✅ Foto Jadi!');
-                            const photoGrid = document.getElementById('photoGrid');
-                            
-                            // Cek agar tidak render ulang terus menerus jika sama
-                            if(photoGrid.childElementCount !== outputs[0].length) {
-                                photoGrid.innerHTML = "";
-                                outputs[0].forEach(img => {
-                                    const url = img.url || img;
-                                    photoGrid.innerHTML += `<img src="${url}" class="w-full h-24 object-cover rounded cursor-pointer hover:scale-105 transition" onclick="window.open('${url}')">`;
-                                });
-                            }
-                        } else {
-                            // Sedang proses foto
-                            document.getElementById('statusPhoto').innerHTML = '<i class="fas fa-spinner fa-spin text-yellow-400"></i> Membuat Foto...';
-                        }
+                if (msg.msg === 'process_starts') {
+                    statusBox.innerText = "🚀 Mesin AI Mulai Bekerja!";
+                }
 
-                        // --- 2. UPDATE AUDIO (Index 1) ---
-                        if (outputs[1]) {
-                            activateCard('cardAudio', 'statusAudio', '✅ Audio Jadi!');
-                            const url = outputs[1].url || outputs[1];
-                            const player = document.getElementById('audioPlayer');
-                            
-                            if(player.src !== url) {
-                                player.src = url;
-                                player.classList.remove('hidden');
-                                document.getElementById('audioPlaceholder').classList.add('hidden');
-                            }
-                        } else if (outputs[0]) {
-                             // Jika foto sudah, berarti sedang bikin audio
-                             document.getElementById('statusAudio').innerHTML = '<i class="fas fa-spinner fa-spin text-yellow-400"></i> Membuat Audio...';
-                        }
-
-                        // --- 3. UPDATE VIDEO (Index 2) ---
-                        if (outputs[2]) {
-                            activateCard('cardVideo', 'statusVideo', '✅ Video Final Jadi!');
-                            const url = outputs[2].url || outputs[2];
-                            const player = document.getElementById('videoPlayer');
-                            
-                            if(player.src !== url) {
-                                player.src = url;
-                                player.classList.remove('hidden');
-                                document.getElementById('videoLoadingText').classList.add('hidden');
-                                document.getElementById('downloadLink').href = url;
-                                document.getElementById('downloadLink').classList.remove('hidden');
-                                statusBox.innerText = "✨ SELESAI SEMUA!";
-                                statusBox.classList.add('text-green-400');
-                            }
-                        } else if (outputs[1]) {
-                            // Jika audio sudah, berarti sedang render video
-                            activateCard('cardVideo', 'statusVideo', '<i class="fas fa-film fa-spin text-pink-500"></i> Merender 3 Video & Menggabung...');
-                        }
-
-                        // Jika COMPLETED, tutup koneksi
-                        if (msg.msg === 'process_completed') {
-                            eventSource.close();
-                            btn.disabled = false; 
-                            btn.innerHTML = '🚀 BUAT LAGI'; 
-                            btn.classList.remove('opacity-50');
+                if (msg.msg === 'process_generating' || msg.msg === 'process_completed') {
+                    
+                    if(!msg.output || !msg.output.data) return; // Skip jika data kosong
+                    const outputs = msg.output.data;
+                    
+                    // --- FOTO (Index 0) ---
+                    if (outputs[0] && Array.isArray(outputs[0])) {
+                        activateCard('cardPhoto', 'statusPhoto', '✅ Foto Jadi!');
+                        const photoGrid = document.getElementById('photoGrid');
+                        if(photoGrid.childElementCount !== outputs[0].length) {
+                            photoGrid.innerHTML = "";
+                            outputs[0].forEach(img => {
+                                const url = img.url || img;
+                                photoGrid.innerHTML += `<img src="${url}" class="w-full h-24 object-cover rounded border border-gray-600">`;
+                            });
                         }
                     }
-                };
 
-            } catch (err) {
-                statusBox.innerText = "❌ Error: " + err.message;
-                btn.disabled = false; btn.innerHTML = '🚀 COBA LAGI'; btn.classList.remove('opacity-50');
-            }
-        }
+                    // --- AUDIO (Index 1) ---
+                    if (outputs[1]) {
+                        activateCard('cardAudio', 'statusAudio', '✅ Audio Jadi!');
+                        const url = outputs[1].url || outputs[1];
+                        const player = document.getElementById('audioPlayer');
+                        if(player.src !== url) {
+                            player.src = url;
+                            player.classList.remove('hidden');
+                            document.getElementById('audioPlaceholder').classList.add('hidden');
+                        }
+                    }
 
-        function activateCard(cardId, statusId, statusText) {
-            const card = document.getElementById(cardId);
-            const status = document.getElementById(statusId);
-            card.classList.remove('opacity-50');
-            card.classList.add('border-pink-500'); // Highlight border
-            status.innerHTML = statusText;
-            status.classList.add('text-green-400');
-        }
+                    // --- VIDEO (Index 2) ---
+                    if (outputs[2]) {
+                        activateCard('cardVideo', 'statusVideo', '✅ Video Final Jadi!');
+                        const url = outputs[2].url || outputs[2];
+                        const player = document.getElementById('videoPlayer');
+                        if(player.src !== url) {
+                            player.src = url;
+                            player.classList.remove('hidden');
+                            document.getElementById('videoLoadingText').classList.add('hidden');
+                            document.getElementById('downloadLink').href = url;
+                            document.getElementById('downloadLink').classList.remove('hidden');
+                            statusBox.innerText = "✅ SELESAI!";
+                            statusBox.className = "text-center text-xs font-mono text-green-400 pt-2";
+                        }
+                    }
 
-        function resetCards() {
-            // Helper untuk reset tampilan ke awal
-            ['cardPhoto', 'cardAudio', 'cardVideo'].forEach(id => {
-                document.getElementById(id).classList.add('opacity-50');
-                document.getElementById(id).classList.remove('border-pink-500');
-            });
-            document.getElementById('photoGrid').innerHTML = '<p class="text-xs text-gray-600 text-center col-span-2 place-self-center">Menunggu...</p>';
-            document.getElementById('audioPlayer').classList.add('hidden');
-            document.getElementById('audioPlaceholder').classList.remove('hidden');
-            document.getElementById('videoPlayer').classList.add('hidden');
-            document.getElementById('videoLoadingText').classList.remove('hidden');
-            document.getElementById('downloadLink').classList.add('hidden');
+                    if (msg.msg === 'process_completed') {
+                        eventSource.close();
+                        btn.disabled = false; btn.innerHTML = '🚀 GENERATE LAGI'; btn.classList.remove('opacity-50');
+                    }
+                }
+            };
+
+        } catch (err) {
+            statusBox.innerText = "❌ Error: " + err.message;
+            statusBox.className = "text-center text-xs font-mono text-red-400 pt-2";
+            btn.disabled = false; btn.innerHTML = 'COBA LAGI'; btn.classList.remove('opacity-50');
         }
-    </script>
-</body>
-</html>
+    }
+
+    // Fungsi Helper Visual
+    function activateCard(cardId, statusId, text) {
+        document.getElementById(cardId).classList.remove('opacity-50');
+        document.getElementById(cardId).classList.add('border-pink-500');
+        const st = document.getElementById(statusId);
+        st.innerText = text; st.classList.add('text-green-400');
+    }
+    
+    function resetCards() {
+        ['cardPhoto', 'cardAudio', 'cardVideo'].forEach(id => {
+            const el = document.getElementById(id);
+            el.classList.add('opacity-50');
+            el.classList.remove('border-pink-500');
+        });
+        document.getElementById('photoGrid').innerHTML = '<p class="text-xs text-gray-500 col-span-2 text-center pt-8">Menunggu...</p>';
+        document.getElementById('audioPlayer').classList.add('hidden');
+        document.getElementById('audioPlaceholder').classList.remove('hidden');
+        document.getElementById('videoPlayer').classList.add('hidden');
+        document.getElementById('videoLoadingText').classList.remove('hidden');
+        document.getElementById('downloadLink').classList.add('hidden');
+    }
+</script>
