@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Video Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-lg bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">✨ AI Video Creator</h1>
+
+        <div class="space-y-4">
+            <!-- 1. Input URL Gambar -->
+            <div>
+                <label class="block text-sm font-medium mb-1 text-gray-300">URL Gambar (Wajib)</label>
+                <input type="text" id="imgUrl" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://contoh.com/gambar.jpg">
+            </div>
+
+            <!-- 2. Input Prompt -->
+            <div>
+                <label class="block text-sm font-medium mb-1 text-gray-300">Prompt Video</label>
+                <textarea id="prompt" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">Animate this image, cinematic camera movement, 4k</textarea>
+            </div>
+
+            <!-- 3. Pilihan Rasio -->
+            <div>
+                <label class="block text-sm font-medium mb-1 text-gray-300">Aspek Rasio</label>
+                <select id="ratio" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-sm outline-none">
+                    <option value="2:3">Potrait (2:3)</option>
+                    <option value="16:9">Landscape (16:9)</option>
+                    <option value="1:1">Square (1:1)</option>
+                </select>
+            </div>
+
+            <!-- Tombol -->
+            <button onclick="startGenerate()" id="btnGen" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg">
+                BUAT VIDEO SEKARANG
+            </button>
+
+            <!-- Status & Hasil -->
+            <div id="statusBox" class="hidden mt-4 text-center text-sm font-mono text-yellow-400"></div>
+            <div id="resultArea" class="hidden mt-4">
+                <video id="videoPlayer" controls loop class="w-full rounded-lg border border-gray-600"></video>
+                <a id="downloadLink" href="#" target="_blank" class="block mt-2 text-center text-blue-400 underline">Download Video</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let eventSource = null;
+
+        async function startGenerate() {
+            const img = document.getElementById('imgUrl').value;
+            const prompt = document.getElementById('prompt').value;
+            const ratio = document.getElementById('ratio').value;
+            const statusBox = document.getElementById('statusBox');
+            const btn = document.getElementById('btnGen');
+            const resArea = document.getElementById('resultArea');
+
+            if (!img) return alert("Masukkan URL gambar dulu!");
+
+            // Reset UI
+            if(eventSource) eventSource.close();
+            resArea.classList.add('hidden');
+            statusBox.classList.remove('hidden');
+            statusBox.innerText = "🔒 Verifikasi Keamanan & Mengirim Data...";
+            btn.disabled = true; btn.classList.add('opacity-50');
+
+            try {
+                // 1. Kirim ke Vercel (Backend akan generate Token Rahasia)
+                const req = await fetch('/api/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image_url: img, prompt: prompt, ratio: ratio })
+                });
+
+                const data = await req.json();
+                if (!req.ok) throw new Error(data.message || "Gagal Request");
+
+                // 2. Mulai Polling (Pantau Space)
+                statusBox.innerText = "⏳ Sedang memproses video di server AI...";
+                const pollingUrl = `${data.space_url}/gradio_api/queue/data?session_hash=${data.session_hash}`;
+                
+                eventSource = new EventSource(pollingUrl);
+                
+                eventSource.onmessage = (e) => {
+                    const msg = JSON.parse(e.data);
+                    
+                    if(msg.msg === 'process_starts') {
+                        statusBox.innerText = "🚀 AI sedang bekerja (Ini butuh waktu)...";
+                    } else if (msg.msg === 'process_completed') {
+                        statusBox.innerText = "✅ Selesai!";
+                        
+                        // Ambil Output
+                        // Struktur output Grok biasanya ada di data[0]
+                        const output = msg.output.data[0];
+                        const videoUrl = output.url || output; 
+
+                        // Tampilkan Video
+                        document.getElementById('videoPlayer').src = videoUrl;
+                        document.getElementById('downloadLink').href = videoUrl;
+                        resArea.classList.remove('hidden');
+                        
+                        btn.disabled = false; btn.classList.remove('opacity-50');
+                        eventSource.close();
+                    }
+                };
+
+                eventSource.onerror = () => {
+                   // Kadang error koneksi sesaat, biarkan saja
+                   // console.log("Polling tick...");
+                };
+
+            } catch (err) {
+                alert("Error: " + err.message);
+                statusBox.innerText = "❌ Gagal.";
+                btn.disabled = false; btn.classList.remove('opacity-50');
+            }
+        }
+    </script>
+</body>
+</html>
