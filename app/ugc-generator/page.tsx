@@ -1,38 +1,37 @@
-// app/ugc-generator/page.tsx
 'use client';
 
 import { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-// Setup Supabase Client (untuk auth user saat ini)
+// Setup Supabase (menggunakan env yang sudah kamu setting di Vercel)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function UGCGeneratorPage() {
+export default function UGCPage() {
   const [loading, setLoading] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
-  const [finalVideo, setFinalVideo] = useState<string | null>(null);
+  const [videoResult, setVideoResult] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
   const handleGenerate = async () => {
     setLoading(true);
     setLogs([]);
-    setFinalVideo(null);
+    setVideoResult(null);
     setErrorMsg('');
 
-    // Ambil User ID dari sesi login saat ini
+    // 1. Cek User Login
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      setErrorMsg("Silakan login terlebih dahulu.");
+      setErrorMsg("Harap login terlebih dahulu.");
       setLoading(false);
       return;
     }
 
     try {
-      // Panggil API Proxy kita sendiri (Bukan cURL langsung)
+      // 2. Panggil API Route kita (Backend)
       const response = await fetch('/api/generate-ugc', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,13 +39,13 @@ export default function UGCGeneratorPage() {
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Terjadi kesalahan.');
+        const err = await response.json();
+        throw new Error(err.error || 'Gagal memproses permintaan.');
       }
 
-      if (!response.body) throw new Error("No response body");
+      if (!response.body) return;
 
-      // LOGIC UNTUK MEMBACA STREAM (SSE)
+      // 3. Baca Stream Data (Agar muncul tulisan berjalan)
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
@@ -57,45 +56,43 @@ export default function UGCGeneratorPage() {
 
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split('\n');
-        
-        // Proses setiap baris, simpan sisa potongan terakhir di buffer
-        buffer = lines.pop() || ''; 
+        buffer = lines.pop() || ''; // Simpan sisa potongan
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6); // Hapus "data: "
             try {
+              const jsonStr = line.slice(6); // Hapus awalan "data: "
               const data = JSON.parse(jsonStr);
 
-              // 1. Tangkap Log Proses
+              // Ambil Log Progress
               if (data.msg === 'process_generating' && data.output?.data) {
-                // Biasanya log teks ada di index pertama dari array data
-                const logData = data.output.data[0];
-                
-                if (Array.isArray(logData)) {
-                   // Gradio sering kirim struktur diff, kita cari string deskriptif
-                   // Implementasi sederhana: Ambil string terakhir yang masuk
-                   const lastItem = logData[logData.length - 1];
-                   if(typeof lastItem === 'string') {
-                       // Bersihkan karakter aneh jika perlu
-                       setLogs(prev => [...prev, lastItem.replace(/\n/g, ' ')]);
-                   }
-                }
+                 // Logika simpel mengambil pesan teks terakhir dari array
+                 const rawData = data.output.data;
+                 // Cek jika ada string log baru
+                 if (Array.isArray(rawData) && rawData.length > 0) {
+                    const lastLog = rawData[rawData.length - 1]; // Ambil elemen terakhir
+                    // Kadang bentuknya array diff, kadang string, kita filter yang string saja
+                    if (typeof lastLog === 'string' && lastLog.length > 2) {
+                        // Bersihkan newline agar rapi
+                        setLogs(prev => [...prev, lastLog.replace(/\n/g, ' ').trim()]);
+                    }
+                 }
               }
 
-              // 2. Tangkap Hasil Akhir (Video)
+              // Ambil Hasil Akhir
               if (data.msg === 'process_completed') {
-                const outputData = data.output.data;
-                // Berdasarkan urutan jawaban curl kamu, video ada di index 1
-                // Struktur: [log_final_string, {video_obj}, {audio_obj}, ...]
-                if (outputData[1] && outputData[1].url) {
-                  setFinalVideo(outputData[1].url);
-                  setLogs(prev => [...prev, "✅ SELESAI! Video berhasil dibuat."]);
+                const results = data.output.data;
+                // Di curl kamu, video biasanya ada di index ke-1 (objek dengan url)
+                const videoObj = results.find((item: any) => item?.url?.endsWith('.mp4'));
+                
+                if (videoObj) {
+                  setVideoResult(videoObj.url);
+                  setLogs(prev => [...prev, "✅ VIDEO SELESAI DIGENERATE!"]);
                 }
               }
 
             } catch (e) {
-              // Ignore parse error on heartbeat or incomplete lines
+              // Abaikan error parsing JSON baris kosong/heartbeat
             }
           }
         }
@@ -109,109 +106,77 @@ export default function UGCGeneratorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4 font-sans">
-      <div className="max-w-2xl w-full bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-gray-700">
+    <div className="min-h-screen bg-slate-950 text-white p-6 flex flex-col items-center">
+      <div className="max-w-3xl w-full space-y-8">
         
         {/* Header */}
-        <div className="p-6 border-b border-gray-700">
-          <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-            UGC ProMax Generator
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600">
+            AI UGC Generator
           </h1>
-          <p className="text-gray-400 text-sm mt-1">Generate video iklan otomatis dengan AI.</p>
+          <p className="text-slate-400">Buat video iklan otomatis dalam hitungan detik.</p>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          
-          {errorMsg && (
-            <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded-lg text-sm">
-              ⚠️ {errorMsg}
-            </div>
-          )}
-
-          {/* Tombol Generate */}
-          <button
-            onClick={handleGenerate}
-            disabled={loading}
-            className={`w-full py-3 px-4 rounded-lg font-semibold transition-all duration-200 
-              ${loading 
-                ? 'bg-gray-600 cursor-not-allowed opacity-50' 
-                : 'bg-blue-600 hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-500/30 text-white'
-              }`}
-          >
-            {loading ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Sedang Memproses...
-              </span>
-            ) : '✨ Generate Video Sekarang'}
-          </button>
-
-          {/* Terminal Logs Display */}
-          <div className="bg-black rounded-lg p-4 font-mono text-sm h-64 overflow-y-auto border border-gray-700 shadow-inner custom-scrollbar">
-            {logs.length === 0 ? (
-              <span className="text-gray-600 italic">Waiting for command...</span>
-            ) : (
-              <div className="flex flex-col gap-1">
-                {logs.map((log, i) => (
-                  <div key={i} className="text-green-400 break-words">
-                    <span className="text-blue-500 mr-2">➜</span>
-                    {log}
-                  </div>
-                ))}
-                {loading && <div className="animate-pulse text-gray-500 mt-2">_</div>}
-              </div>
-            )}
+        {/* Error Box */}
+        {errorMsg && (
+          <div className="p-4 bg-red-500/10 border border-red-500/50 text-red-400 rounded-lg text-sm text-center">
+            {errorMsg}
           </div>
+        )}
 
-          {/* Result Area */}
-          {finalVideo && (
-            <div className="mt-6 animate-fade-in">
-              <h3 className="text-lg font-semibold mb-2 text-white">Hasil Video:</h3>
-              <div className="rounded-lg overflow-hidden border border-gray-600">
-                <video 
-                  controls 
-                  src={finalVideo} 
-                  className="w-full h-auto bg-black"
-                  autoPlay
-                />
+        {/* Button */}
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all
+            ${loading 
+              ? 'bg-slate-700 cursor-not-allowed text-slate-400' 
+              : 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white hover:shadow-cyan-500/25'
+            }`}
+        >
+          {loading ? 'Sedang Memproses...' : '🚀 Generate Video Sekarang'}
+        </button>
+
+        {/* Terminal Log View */}
+        <div className="bg-black/80 rounded-xl border border-slate-800 p-5 font-mono text-xs md:text-sm h-64 overflow-y-auto shadow-inner">
+          <div className="flex flex-col gap-2">
+            {logs.length === 0 && !loading && (
+              <span className="text-slate-600">Menunggu perintah... (Klik tombol di atas)</span>
+            )}
+            {logs.map((log, i) => (
+              <div key={i} className="text-emerald-400 break-words border-l-2 border-emerald-500/30 pl-2">
+                <span className="opacity-50 mr-2">[{new Date().toLocaleTimeString()}]</span>
+                {log}
               </div>
-              <a 
-                href={finalVideo} 
-                download 
-                className="mt-4 block text-center w-full bg-green-600 hover:bg-green-500 py-2 rounded text-sm font-medium transition-colors"
-              >
-                Download Video
-              </a>
-            </div>
-          )}
-
+            ))}
+            {loading && <div className="animate-pulse text-cyan-400">_ Processing...</div>}
+          </div>
         </div>
-      </div>
 
-      {/* CSS untuk Scrollbar (Opsional) */}
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #1f2937; 
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #4b5563; 
-          border-radius: 4px;
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.5s ease-in;
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+        {/* Video Result */}
+        {videoResult && (
+          <div className="bg-slate-900 rounded-xl p-6 border border-slate-700 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <h3 className="text-xl font-semibold mb-4 text-center">🎉 Hasil Video Anda</h3>
+            <div className="relative aspect-video rounded-lg overflow-hidden bg-black shadow-2xl">
+              <video 
+                src={videoResult} 
+                controls 
+                autoPlay 
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <a 
+              href={videoResult} 
+              download="ugc-video.mp4"
+              target="_blank"
+              className="mt-4 block w-full bg-emerald-600 hover:bg-emerald-500 text-center py-3 rounded-lg font-medium transition-colors"
+            >
+              Download Video
+            </a>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }
