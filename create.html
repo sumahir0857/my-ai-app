@@ -3,89 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok Video Generator</title>
+    <title>OrbitBot AI Video</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Tambahkan Font Awesome untuk ikon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-950 text-white min-h-screen flex items-center justify-center p-4">
 
-    <div class="w-full max-w-lg bg-gray-800 rounded-2xl shadow-2xl p-6 border border-gray-700">
-        <h1 class="text-2xl font-bold mb-6 text-center text-blue-400">✨ AI Video Creator</h1>
+    <div class="w-full max-w-lg bg-gray-900 rounded-2xl shadow-2xl p-6 border border-gray-800">
+        <h1 class="text-2xl font-bold mb-6 text-center text-blue-500">
+            <i class="fas fa-video mr-2"></i>AI Video Creator
+        </h1>
 
         <div class="space-y-5">
-            
-            <!-- AREA UPLOAD FOTO -->
-            <div>
-                <label class="block text-sm font-medium mb-2 text-gray-300">Upload Foto</label>
-                <div class="border-2 border-dashed border-gray-600 rounded-xl p-4 text-center hover:border-blue-500 transition cursor-pointer relative" id="dropZone">
-                    
+            <!-- UPLOAD -->
+            <div class="relative group">
+                <label class="block text-sm font-medium mb-2 text-gray-400">Upload Foto</label>
+                <div class="border-2 border-dashed border-gray-700 rounded-xl p-6 text-center hover:border-blue-500 transition bg-gray-800" id="dropZone">
                     <input type="file" id="fileInput" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="previewImage(event)">
-                    
-                    <!-- Tampilan saat belum ada foto -->
-                    <div id="uploadPlaceholder" class="py-4">
-                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-500 mb-2"></i>
-                        <p class="text-sm text-gray-400">Klik atau tarik foto ke sini</p>
+                    <div id="uploadPlaceholder">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-600 mb-2"></i>
+                        <p class="text-xs text-gray-500">Klik untuk upload foto</p>
                     </div>
-
-                    <!-- Tampilan Preview Foto -->
-                    <img id="imagePreview" class="hidden w-full h-48 object-contain rounded-lg mx-auto" />
+                    <img id="imagePreview" class="hidden w-full h-48 object-contain rounded" />
                 </div>
             </div>
 
             <!-- PROMPT -->
             <div>
-                <label class="block text-sm font-medium mb-1 text-gray-300">Prompt Video</label>
-                <textarea id="prompt" rows="3" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none placeholder-gray-500">Animate this image, cinematic camera movement, 4k</textarea>
-            </div>
-
-            <!-- RASIO -->
-            <div>
-                <label class="block text-sm font-medium mb-1 text-gray-300">Aspek Rasio</label>
-                <select id="ratio" class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-sm outline-none">
-                    <option value="2:3">Potrait (2:3)</option>
-                    <option value="16:9">Landscape (16:9)</option>
-                    <option value="1:1">Square (1:1)</option>
-                </select>
+                <label class="block text-sm font-medium mb-1 text-gray-400">Prompt</label>
+                <textarea id="prompt" rows="2" class="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-sm focus:border-blue-500 outline-none text-white">Animate this image, cinematic 4k</textarea>
             </div>
 
             <!-- BUTTON -->
-            <button onclick="startGenerate()" id="btnGen" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2">
-                <span>GENERATE VIDEO</span>
+            <button onclick="startGenerate()" id="btnGen" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-900/20">
+                GENERATE VIDEO
             </button>
 
-            <!-- STATUS & HASIL -->
-            <div id="statusBox" class="hidden mt-4 p-3 bg-gray-900 rounded-lg text-center text-xs font-mono text-yellow-400 border border-gray-700"></div>
-            
-            <div id="resultArea" class="hidden mt-4 animate-fade-in">
-                <p class="text-center text-green-400 font-bold mb-2 text-sm">✅ Selesai!</p>
-                <video id="videoPlayer" controls loop autoplay class="w-full rounded-lg border border-gray-600 shadow-lg"></video>
-                <a id="downloadLink" href="#" target="_blank" class="block mt-3 text-center bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm text-white transition">
-                    <i class="fas fa-download mr-1"></i> Download Video
+            <!-- STATUS -->
+            <div id="statusBox" class="hidden mt-4 p-3 bg-gray-800 rounded text-center text-xs font-mono text-yellow-400 animate-pulse"></div>
+
+            <!-- HASIL -->
+            <div id="resultArea" class="hidden mt-6 space-y-3">
+                <div class="text-center text-green-400 font-bold text-sm">✅ Video Selesai!</div>
+                
+                <!-- Video Player -->
+                <video id="videoPlayer" controls autoplay loop class="w-full rounded-lg border border-gray-700 shadow-xl bg-black"></video>
+                
+                <!-- Download Button -->
+                <a id="downloadLink" href="#" download="orbitbot-video.mp4" target="_blank" class="flex items-center justify-center w-full bg-gray-800 hover:bg-gray-700 py-3 rounded-lg text-sm text-white transition border border-gray-700">
+                    <i class="fas fa-download mr-2"></i> Download MP4
                 </a>
             </div>
         </div>
     </div>
 
     <script>
-        let base64Image = ""; // Variabel untuk menyimpan kode gambar
+        let base64Image = "";
         let eventSource = null;
 
-        // Fungsi Preview Gambar & Convert ke Base64
         function previewImage(event) {
             const file = event.target.files[0];
             if (file) {
-                // Cek ukuran file di Frontend (Max 4MB biar aman)
-                if(file.size > 4 * 1024 * 1024) {
-                    alert("Ukuran file terlalu besar! Maksimal 4MB.");
-                    return;
-                }
-
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    base64Image = e.target.result; // Simpan kode base64
-                    
-                    // Update UI
+                    base64Image = e.target.result;
                     document.getElementById('imagePreview').src = base64Image;
                     document.getElementById('imagePreview').classList.remove('hidden');
                     document.getElementById('uploadPlaceholder').classList.add('hidden');
@@ -95,40 +76,37 @@
         }
 
         async function startGenerate() {
-            if (!base64Image) return alert("Upload foto dulu bos!");
-
-            const prompt = document.getElementById('prompt').value;
-            const ratio = document.getElementById('ratio').value;
-            const statusBox = document.getElementById('statusBox');
+            if (!base64Image) return alert("Upload foto dulu!");
+            
             const btn = document.getElementById('btnGen');
-            const resArea = document.getElementById('resultArea');
+            const statusBox = document.getElementById('statusBox');
+            const resultArea = document.getElementById('resultArea');
 
             // Reset UI
             if(eventSource) eventSource.close();
-            resArea.classList.add('hidden');
+            resultArea.classList.add('hidden');
             statusBox.classList.remove('hidden');
-            statusBox.innerText = "🔒 Verifikasi Token & Upload ke Server AI...";
-            btn.disabled = true; 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            statusBox.innerText = "🔒 Verifikasi Keamanan & Upload...";
+            btn.disabled = true; btn.classList.add('opacity-50');
 
             try {
-                // 1. Kirim Data (termasuk Gambar Base64) ke Vercel
+                // 1. KIRIM REQUEST KE VERCEL (+ TIMESTAMP KEAMANAN)
                 const req = await fetch('/api/process', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         image_data: base64Image, 
-                        prompt: prompt, 
-                        ratio: ratio 
+                        prompt: document.getElementById('prompt').value, 
+                        ratio: "2:3",
+                        timestamp: Date.now() // <--- INI KUNCI KEAMANANNYA
                     })
                 });
 
                 const data = await req.json();
                 if (!req.ok) throw new Error(data.message || "Gagal Request");
 
-                // 2. Polling
-                statusBox.innerText = "⏳ Masuk Antrian... Menunggu render...";
+                // 2. MULAI MONITORING (POLLING)
+                statusBox.innerText = "⏳ Sedang merender video (Mohon tunggu)...";
                 const pollingUrl = `${data.space_url}/gradio_api/queue/data?session_hash=${data.session_hash}`;
                 
                 eventSource = new EventSource(pollingUrl);
@@ -136,37 +114,36 @@
                 eventSource.onmessage = (e) => {
                     const msg = JSON.parse(e.data);
                     
-                    if(msg.msg === 'process_starts') {
-                        statusBox.innerText = "🚀 AI sedang membuat video...";
-                    } 
-                    else if (msg.msg === 'process_completed') {
-                        statusBox.classList.add('hidden'); // Sembunyikan status loading
+                    if(msg.msg === 'process_completed') {
+                        // VIDEO JADI!
+                        statusBox.classList.add('hidden');
                         
-                        // Ambil Output
+                        // Ambil URL Video
                         const output = msg.output.data[0];
                         const videoUrl = output.url || output; 
 
-                        document.getElementById('videoPlayer').src = videoUrl;
-                        document.getElementById('downloadLink').href = videoUrl;
-                        resArea.classList.remove('hidden');
+                        // Tampilkan
+                        const videoPlayer = document.getElementById('videoPlayer');
+                        const downloadBtn = document.getElementById('downloadLink');
                         
-                        btn.disabled = false; 
-                        btn.innerHTML = 'GENERATE VIDEO';
-                        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        videoPlayer.src = videoUrl;
+                        downloadBtn.href = videoUrl;
+                        
+                        resultArea.classList.remove('hidden');
+                        btn.disabled = false; btn.classList.remove('opacity-50');
                         eventSource.close();
                     }
                 };
 
-                eventSource.onerror = () => {
-                   // Ignore minor connection errors
+                eventSource.onerror = (err) => {
+                   // Error koneksi kecil, biarkan lanjut
                 };
 
             } catch (err) {
-                alert("Error: " + err.message);
-                statusBox.innerText = "❌ Gagal: " + err.message;
-                btn.disabled = false; 
-                btn.innerHTML = 'GENERATE VIDEO';
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                statusBox.innerText = "❌ Error: " + err.message;
+                statusBox.classList.add('text-red-400');
+                statusBox.classList.remove('text-yellow-400');
+                btn.disabled = false; btn.classList.remove('opacity-50');
             }
         }
     </script>
