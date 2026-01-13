@@ -3,66 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Layanan - Ultimate UGC Tool</title>
+    <title>Ultimate UGC Tool - Orbit Bot</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Alpine JS (Untuk Klik FAQ) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Alpine JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    animation: {
+                        'fade-up': 'fadeUp 0.8s ease-out forwards',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        /* Tema Gelap Konsisten */
-        body { background-color: #0f172a; color: white; font-family: 'Segoe UI', sans-serif; }
-        
-        /* Navbar Kaca */
-        .glass-nav { 
-            background: rgba(15, 23, 42, 0.9); 
-            backdrop-filter: blur(10px); 
-            border-bottom: 1px solid #334155; 
+        body { 
+            background-color: #0B0F19; 
+            color: #E2E8F0; 
+            overflow-x: hidden;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
         }
-
-        /* Container Video Tutorial */
+        
+        /* Glassmorphism */
+        .glass-nav { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .glass-card { background: rgba(21, 27, 43, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+        
+        /* Video Container Magic */
         .video-container {
             position: relative;
-            padding-bottom: 56.25%; /* Rasio 16:9 agar responsive */
+            padding-bottom: 56.25%; 
             height: 0;
             overflow: hidden;
-            border-radius: 20px;
-            border: 1px solid #334155;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border-radius: 24px;
+            border: 1px solid rgba(168, 85, 247, 0.3); /* Purple Border for UGC */
+            box-shadow: 0 0 40px rgba(168, 85, 247, 0.15);
             background: #000;
         }
-        
-        /* PERBAIKAN DI SINI: Mengganti 'video' menjadi 'iframe' */
-        .video-container iframe {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-        }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
-        /* Style Kartu Harga */
-        .price-card {
-            background: #1e293b;
-            border: 1px solid #334155;
-            transition: transform 0.3s, border-color 0.3s;
-        }
-        .price-card:hover {
-            transform: translateY(-5px);
-            border-color: #3b82f6; /* Biru */
-        }
+        /* Accordion Transition */
+        .faq-content { transition: all 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
+        .faq-content.open { max-height: 200px; opacity: 1; padding-top: 1rem; }
     </style>
 </head>
-<body class="min-h-screen pb-20">
+<body class="min-h-screen pb-20 antialiased">
+
+    <!-- BACKGROUND BLOBS (Purple Theme for UGC) -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"></div>
+    </div>
 
     <!-- NAVIGASI -->
     <nav class="fixed top-0 w-full z-50 glass-nav">
-        <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="text-lg font-bold text-blue-400 flex items-center gap-2">
-                <i class="fas fa-video"></i> Ultimate UGC Tool
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-lg font-bold text-white flex items-center gap-2">
+                <span class="bg-purple-600 p-1.5 rounded-lg"><i class="fas fa-shopping-bag text-white text-xs"></i></span>
+                Ultimate UGC Tool
             </div>
-            <a href="dashboard.html" class="text-sm bg-slate-800 hover:bg-slate-700 border border-slate-600 px-4 py-2 rounded-full transition flex items-center gap-2">
-                <i class="fas fa-arrow-left"></i> Dashboard
+            <a href="dashboard.html" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-400 border border-slate-700 px-4 py-2.5 rounded-full transition flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Kembali ke Dashboard</span>
             </a>
         </div>
     </nav>
@@ -70,97 +89,135 @@
     <div class="max-w-4xl mx-auto px-6 pt-32">
 
         <!-- HEADER JUDUL -->
-        <div class="text-center mb-10">
-            <h1 class="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
-                Produksi konten affiliate jauh lebih cepat dan berkualitas dengan tool kami. Cukup upload foto produk, video + audio siap di download tak sampai 10 menit
+        <div class="text-center mb-12 animate-fade-up">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 mb-4">
+                <span class="animate-pulse-slow text-purple-400 text-[10px] font-bold tracking-widest uppercase">Affiliate Automation V2.0</span>
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+                <span class="text-white">Cukup Upload Foto Produk.</span><br>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-400">Jadi Video Viral + Suara + Script.</span>
             </h1>
-            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
-                Kamu bingung bikin video affiliate pakai AI untuk TikTok & Shopee? Gak tau harus mulai dari mana? Gak tau pakai tool apa? Gak tau gimana cara buat audio promosinya? Jangan khawatir, Ultimate UGC Tool adalah solusinya. Dengan alat ini kamu bisa produksi puluhan video AI tanpa ribet. Ini adalah alat All-In-One, hasilkan video dan audio promosi dalam sekali gerak.
+            
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+                Berhenti buang waktu ngedit video promosi manual. Biarkan AI menyulap <span class="text-white font-bold">1 Foto Diam</span> menjadi konten video "Racun Shopee/TikTok" lengkap dengan Voiceover sales yang menghipnotis pembeli. <span class="text-yellow-400 italic font-bold">Cuan sambil tidur? Ini rahasianya.</span>
             </p>
         </div>
 
-        <!-- VIDEO TUTORIAL -->
-        <div class="mb-16">
-            <div class="flex items-center gap-2 mb-4">
-                <span class="bg-red-600 text-xs font-bold px-2 py-1 rounded text-white">WAJIB TONTON</span>
-                <h3 class="font-bold text-lg">Tutorial Cara Menggunakan:</h3>
-            </div>
-            
-            <div class="video-container">
-                <!-- IFRAME YOUTUBE RESPONSIVE -->
-                <iframe 
-                    src="https://www.youtube.com/embed/liI5RAQyU_Q" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div>
+        <!-- VIDEO TUTORIAL SECTION -->
+        <div class="mb-20 animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="glass-card p-2 rounded-[28px]">
+                <div class="bg-slate-900/50 rounded-[24px] overflow-hidden relative group">
+                    
+                    <!-- Label -->
+                    <div class="absolute top-4 left-4 z-10 flex gap-2">
+                        <span class="bg-red-600/90 backdrop-blur-sm text-[10px] font-bold px-3 py-1.5 rounded-full text-white shadow-lg flex items-center gap-1">
+                            <i class="fas fa-play-circle"></i> WAJIB TONTON
+                        </span>
+                        <span class="bg-black/60 backdrop-blur-sm text-[10px] font-bold px-3 py-1.5 rounded-full text-white border border-white/10">
+                            Durasi: 2 Menit
+                        </span>
+                    </div>
 
-            <p class="text-center text-sm text-gray-500 mt-3">
-                *Tonton video di atas untuk memahami cara input token dan generate video.
+                    <div class="video-container">
+                        <!-- IFRAME YOUTUBE -->
+                        <!-- Ganti URL embed di bawah dengan link video tutorial asli Anda -->
+                        <iframe 
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                            title="Tutorial UGC Tool" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-sm text-slate-500 mt-4 flex items-center justify-center gap-2">
+                <i class="fas fa-info-circle"></i> 
+                <span>Pelajari cara input "Prompt Sales" agar script jualanmu makin tajam.</span>
             </p>
         </div>
 
-        <!-- CARA KERJA SINGKAT -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 text-center">
-            <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                <i class="fas fa-shopping-cart text-3xl text-blue-500 mb-4"></i>
-                <h4 class="font-bold">1. Beli Paket</h4>
-                <p class="text-xs text-gray-400">Pilih durasi langganan di bawah.</p>
+        <!-- KEUNGGULAN / CARA KERJA -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+            <!-- Step 1 -->
+            <div class="glass-card p-6 rounded-2xl relative group hover:-translate-y-2 transition duration-300">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-purple-500 group-hover:text-white transition">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h4 class="font-bold text-white text-lg mb-2">1. All-In-One AI</h4>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Kami menggabungkan <strong>Gemini 2.5 (Script), Nano Banana (Image), dan VEO (Video)</strong> bekerja bersamaan dalam sekali klik.
+                </p>
             </div>
-            <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                <i class="fas fa-key text-3xl text-yellow-500 mb-4"></i>
-                <h4 class="font-bold">2. Dapat Token</h4>
-                <p class="text-xs text-gray-400">Admin kirim kode akses via WA.</p>
+
+            <!-- Step 2 -->
+            <div class="glass-card p-6 rounded-2xl relative group hover:-translate-y-2 transition duration-300">
+                <div class="w-12 h-12 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-green-500 group-hover:text-white transition">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h4 class="font-bold text-white text-lg mb-2">2. Sales Hypnosis</h4>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    AI tidak hanya membuat video, tapi membuat <strong>Narasi Penjualan (Copywriting)</strong> yang dirancang psikologis untuk closing.
+                </p>
             </div>
-            <div class="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                <i class="fas fa-magic text-3xl text-purple-500 mb-4"></i>
-                <h4 class="font-bold">3. Generate</h4>
-                <p class="text-xs text-gray-400">Masuk ke Tool & mulai berkarya.</p>
+
+            <!-- Step 3 -->
+            <div class="glass-card p-6 rounded-2xl relative group hover:-translate-y-2 transition duration-300">
+                <div class="w-12 h-12 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-yellow-500 group-hover:text-white transition">
+                    <i class="fas fa-infinity"></i>
+                </div>
+                <h4 class="font-bold text-white text-lg mb-2">3. Benar-Benar Unlimited</h4>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Mau upload 100 produk sehari? <strong>GAS TERUS!</strong> Sistem kami didesain untuk produksi massal tanpa batasan kuota.
+                </p>
+            </div>
+        </div>
+        
+        <!-- FAQ SECTION -->
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-8 text-center text-white">Sering Ditanyakan (FAQ)</h2>
+            <div class="space-y-4" x-data="{ active: null }">
+                
+                <!-- Q1 -->
+                <div class="glass-card rounded-xl overflow-hidden hover:border-purple-500/50 transition">
+                    <button @click="active === 1 ? active = null : active = 1" class="w-full text-left px-6 py-4 font-semibold text-slate-200 flex justify-between items-center bg-slate-800/30 hover:bg-slate-800/60 transition">
+                        <span>Teknologi AI apa saja yang dipakai?</span>
+                        <i class="fas text-xs transition-transform duration-300" :class="active === 1 ? 'fa-minus rotate-180' : 'fa-plus'"></i>
+                    </button>
+                    <div x-show="active === 1" class="px-6 pb-4 pt-2 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50">
+                        Ini adalah "Dream Team" AI: <strong class="text-white">Gemini 2.5 Pro</strong> (Otak/Script), <strong class="text-white">Nano Banana Pro</strong> (Visual Artist), dan <strong class="text-white">VEO 3.1 + Grok</strong> (Video Engine). Semuanya bekerja otomatis untukmu.
+                    </div>
+                </div>
+
+                <!-- Q2 (REVISED NARRATIVE) -->
+                <div class="glass-card rounded-xl overflow-hidden hover:border-purple-500/50 transition">
+                    <button @click="active === 2 ? active = null : active = 2" class="w-full text-left px-6 py-4 font-semibold text-slate-200 flex justify-between items-center bg-slate-800/30 hover:bg-slate-800/60 transition">
+                        <span>Apakah benar-benar tanpa limit (Unlimited)?</span>
+                        <i class="fas text-xs transition-transform duration-300" :class="active === 2 ? 'fa-minus rotate-180' : 'fa-plus'"></i>
+                    </button>
+                    <div x-show="active === 2" class="px-6 pb-4 pt-2 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50">
+                        <span class="text-green-400 font-bold">100% UNLIMITED.</span> Kami menggunakan sistem <i>Smart Switching</i>. Ketika server prioritas (VEO) penuh, sistem otomatis beralih ke engine cadangan (Grok) yang tak terbatas. Jadi, produksi kontenmu tidak akan pernah terhenti oleh pesan "Kuota Habis". Hajar terus!
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="glass-card rounded-xl overflow-hidden hover:border-purple-500/50 transition">
+                    <button @click="active === 3 ? active = null : active = 3" class="w-full text-left px-6 py-4 font-semibold text-slate-200 flex justify-between items-center bg-slate-800/30 hover:bg-slate-800/60 transition">
+                        <span>Apakah hasil videonya original (No Copyright)?</span>
+                        <i class="fas text-xs transition-transform duration-300" :class="active === 3 ? 'fa-minus rotate-180' : 'fa-plus'"></i>
+                    </button>
+                    <div x-show="active === 3" class="px-6 pb-4 pt-2 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50">
+                        Sangat aman. Setiap video, gambar, dan musik yang digenerate oleh AI kami adalah unik dan bebas hak cipta. Kamu aman menguploadnya ke TikTok Shop, Shopee Video, atau YouTube Shorts tanpa takut kena pelanggaran.
+                    </div>
+                </div>
+
             </div>
         </div>
 
-
-        <!-- FAQ (TANYA JAWAB) -->
-        <h2 class="text-2xl font-bold mb-6 text-center">Pertanyaan Umum</h2>
-        <div class="space-y-4 max-w-2xl mx-auto" x-data="{ active: null }">
-            
-            <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
-                <button @click="active === 1 ? active = null : active = 1" class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-700/50 transition">
-                    <span>AI Apa yang digunakan?</span>
-                    <i class="fas" :class="active === 1 ? 'fa-minus' : 'fa-plus'"></i>
-                </button>
-                <div x-show="active === 1" class="px-6 py-4 text-gray-400 text-sm border-t border-slate-700 bg-slate-900/50">
-                    Kami menggunakan Gemini 2.5 Pro untuk membuat narasi dan suara, menggunakan Nano Banana Pro untuk membuat gambar, dan VEO 3.1 atau Grok Imagine untuk mengubah foto menjadi video.
-                </div>
-            </div>
-
-            <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
-                <button @click="active === 2 ? active = null : active = 2" class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-700/50 transition">
-                    <span>Apakah ada limit atau penggunaan dibatasi?</span>
-                    <i class="fas" :class="active === 2 ? 'fa-minus' : 'fa-plus'"></i>
-                </button>
-                <div x-show="active === 2" class="px-6 py-4 text-gray-400 text-sm border-t border-slate-700 bg-slate-900/50">
-                    Gemini 2.5 Pro dan Nano Banana Pro tidak ada limit, sementara VEO 3.1 dibatasi hanya 5-10 video. Saat kuota habis, foto akan diubah menjadi video dengan menggunakan Grok Imagine.
-                </div>
-            </div>
-
-             <div class="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
-                <button @click="active === 3 ? active = null : active = 3" class="w-full text-left px-6 py-4 font-semibold flex justify-between items-center hover:bg-slate-700/50 transition">
-                    <span>Apakah bisa tambah kuota generate untuk VEO 3.1?</span>
-                    <i class="fas" :class="active === 3 ? 'fa-minus' : 'fa-plus'"></i>
-                </button>
-                <div x-show="active === 3" class="px-6 py-4 text-gray-400 text-sm border-t border-slate-700 bg-slate-900/50">
-                    TENTU, Anda bisa tambah kuota generate untuk VEO 3.1. Langsung DM Admin, ya.
-                </div>
-            </div>
-
-        </div>
+        <!-- BOTTOM SPACE (NO BUTTON HERE) -->
+        <div class="h-20"></div>
 
     </div>
 </body>
 </html>
-
-
-
