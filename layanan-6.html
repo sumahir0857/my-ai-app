@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEO 3.1 & Seedance Pro - Orbit Bot</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Alpine JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    animation: {
+                        'fade-up': 'fadeUp 0.8s ease-out forwards',
+                        'pulse-slow': 'pulse 3s infinite',
+                    },
+                    keyframes: {
+                        fadeUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            background-color: #0B0F19; 
+            color: #E2E8F0; 
+            overflow-x: hidden;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        
+        /* Glassmorphism */
+        .glass-nav { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .glass-card { background: rgba(21, 27, 43, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
+        
+        /* Video Container Magic */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; 
+            height: 0;
+            overflow: hidden;
+            border-radius: 24px;
+            border: 1px solid rgba(16, 185, 129, 0.3); /* Green/Emerald Border */
+            box-shadow: 0 0 40px rgba(16, 185, 129, 0.15);
+            background: #000;
+        }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        /* Accordion Transition */
+        .faq-content { transition: all 0.3s ease-in-out; max-height: 0; overflow: hidden; opacity: 0; }
+        .faq-content.open { max-height: 200px; opacity: 1; padding-top: 1rem; }
+    </style>
+</head>
+<body class="min-h-screen pb-20 antialiased">
+
+    <!-- BACKGROUND BLOBS (Green/Teal Theme for VEO) -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-emerald-600/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- NAVIGASI -->
+    <nav class="fixed top-0 w-full z-50 glass-nav">
+        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="text-lg font-bold text-white flex items-center gap-2">
+                <span class="bg-emerald-600 p-1.5 rounded-lg"><i class="fas fa-clapperboard text-white text-xs"></i></span>
+                VEO 3.1 & Seedance Pro
+            </div>
+            <a href="dashboard.html" class="text-xs font-bold bg-slate-800 hover:bg-slate-700 hover:text-white text-slate-400 border border-slate-700 px-4 py-2.5 rounded-full transition flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Kembali ke Dashboard</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-6 pt-32">
+
+        <!-- HEADER JUDUL -->
+        <div class="text-center mb-12 animate-fade-up">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-4">
+                <span class="animate-pulse-slow text-emerald-400 text-[10px] font-bold tracking-widest uppercase">Multi-Ratio Video Generation</span>
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+                <span class="text-white">Satu Tool. Segala Platform.</span><br>
+                <span class="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">Vertikal? Horizontal? Bebas!</span>
+            </h1>
+            
+            <p class="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+                Ingin buat konten <strong>TikTok (9:16)</strong> atau film sinematik <strong>YouTube (16:9)</strong>? VEO 3.1 & Seedance 1.5 Pro memberikan kebebasan penuh. Ubah Teks atau Gambar menjadi video berkualitas tinggi tanpa memikirkan sisa kuota.
+            </p>
+        </div>
+
+        <!-- VIDEO TUTORIAL SECTION -->
+        <div class="mb-20 animate-fade-up" style="animation-delay: 0.1s;">
+            <div class="glass-card p-2 rounded-[28px]">
+                <div class="bg-slate-900/50 rounded-[24px] overflow-hidden relative group">
+                    
+                    <!-- Label -->
+                    <div class="absolute top-4 left-4 z-10 flex gap-2">
+                        <span class="bg-red-600/90 backdrop-blur-sm text-[10px] font-bold px-3 py-1.5 rounded-full text-white shadow-lg flex items-center gap-1">
+                            <i class="fas fa-play-circle"></i> WAJIB TONTON
+                        </span>
+                        <span class="bg-black/60 backdrop-blur-sm text-[10px] font-bold px-3 py-1.5 rounded-full text-white border border-white/10">
+                            Durasi: 3 Menit
+                        </span>
+                    </div>
+
+                    <div class="video-container">
+                        <!-- IFRAME YOUTUBE -->
+                        <!-- Ganti URL embed di bawah dengan link video tutorial asli Anda -->
+                        <iframe 
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ" 
+                            title="Tutorial VEO 3.1" 
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-sm text-slate-500 mt-4 flex items-center justify-center gap-2">
+                <i class="fas fa-info-circle"></i> 
+                <span>Pelajari cara mengatur "Aspect Ratio" dan mode "Image-to-Video" agar hasil maksimal.</span>
+            </p>
+        </div>
+
+        <!-- KEUNGGULAN / CARA KERJA -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+            <!-- Step 1 -->
+            <div class="glass-card p-6 rounded-2xl relative group hover:-translate-y-2 transition duration-300">
+                <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-emerald-500 group-hover:text-white transition">
+                    <i class="fas fa-crop-simple"></i>
+                </div>
+                <h4 class="font-bold text-white text-lg mb-2">1. Kontrol Rasio Penuh</h4>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Jangan biarkan tool membatasi karyamu. Pilih <strong>Potrait (9:16)</strong> untuk Shorts/Reels atau <strong>Landscape (16:9)</strong> untuk video panjang.
+                </p>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="glass-card p-6 rounded-2xl relative group hover:-translate-y-2 transition duration-300">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-cyan-500 group-hover:text-white transition">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                </div>
+                <h4 class="font-bold text-white text-lg mb-2">2. Text & Image Mode</h4>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Bisa ketik prompt teks: <i>"Cyberpunk city..."</i> atau upload gambar buatanmu sendiri untuk dihidupkan menjadi video bergerak.
+                </p>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="glass-card p-6 rounded-2xl relative group hover:-translate-y-2 transition duration-300">
+                <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-2xl mb-4 group-hover:bg-purple-500 group-hover:text-white transition">
+                    <i class="fas fa-infinity"></i>
+                </div>
+                <h4 class="font-bold text-white text-lg mb-2">3. Eksperimen Tanpa Batas</h4>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    AI itu tentang <i>Trial & Error</i>. Di sini, kamu bisa generate ulang ratusan kali sampai gerakannya sempurna. <strong>No Credit Limit.</strong>
+                </p>
+            </div>
+        </div>
+        
+        <!-- FAQ SECTION -->
+        <div class="max-w-2xl mx-auto">
+            <h2 class="text-2xl font-bold mb-8 text-center text-white">Sering Ditanyakan (FAQ)</h2>
+            <div class="space-y-4" x-data="{ active: null }">
+                
+                <!-- Q1 -->
+                <div class="glass-card rounded-xl overflow-hidden hover:border-emerald-500/50 transition">
+                    <button @click="active === 1 ? active = null : active = 1" class="w-full text-left px-6 py-4 font-semibold text-slate-200 flex justify-between items-center bg-slate-800/30 hover:bg-slate-800/60 transition">
+                        <span>Bisa bikin video apa saja?</span>
+                        <i class="fas text-xs transition-transform duration-300" :class="active === 1 ? 'fa-minus rotate-180' : 'fa-plus'"></i>
+                    </button>
+                    <div x-show="active === 1" class="px-6 pb-4 pt-2 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50">
+                        Hampir segalanya! Mulai dari pemandangan realistis, karakter anime, produk iklan, hingga efek visual abstrak. Dengan <strong>Seedance Pro</strong>, kamu bahkan bisa membuat karakter menari atau bergerak spesifik sesuai referensi.
+                    </div>
+                </div>
+
+                <!-- Q2 -->
+                <div class="glass-card rounded-xl overflow-hidden hover:border-emerald-500/50 transition">
+                    <button @click="active === 2 ? active = null : active = 2" class="w-full text-left px-6 py-4 font-semibold text-slate-200 flex justify-between items-center bg-slate-800/30 hover:bg-slate-800/60 transition">
+                        <span>Apakah benar-benar Unlimited untuk Image-to-Video?</span>
+                        <i class="fas text-xs transition-transform duration-300" :class="active === 2 ? 'fa-minus rotate-180' : 'fa-plus'"></i>
+                    </button>
+                    <div x-show="active === 2" class="px-6 pb-4 pt-2 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50">
+                        <span class="text-green-400 font-bold">YA, 100%.</span> Kami paham bahwa Image-to-Video sering butuh percobaan berulang agar wajah tidak "melting" (berubah aneh). Karena itu, kami membuka akses unlimited agar kamu bisa mencoba variasi parameter sampai hasilnya mulus.
+                    </div>
+                </div>
+
+                <!-- Q3 -->
+                <div class="glass-card rounded-xl overflow-hidden hover:border-emerald-500/50 transition">
+                    <button @click="active === 3 ? active = null : active = 3" class="w-full text-left px-6 py-4 font-semibold text-slate-200 flex justify-between items-center bg-slate-800/30 hover:bg-slate-800/60 transition">
+                        <span>Apa bedanya Vertikal dan Horizontal di tool ini?</span>
+                        <i class="fas text-xs transition-transform duration-300" :class="active === 3 ? 'fa-minus rotate-180' : 'fa-plus'"></i>
+                    </button>
+                    <div x-show="active === 3" class="px-6 pb-4 pt-2 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50">
+                        Tool kami menyesuaikan komposisi secara cerdas.
+                        <br>• <strong>Vertikal (9:16):</strong> Fokus objek di tengah, cocok untuk scroll HP.
+                        <br>• <strong>Horizontal (16:9):</strong> Sudut pandang sinematik lebar.
+                        <br>Kamu tinggal pilih toggle di dalam tool sebelum klik generate.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- BOTTOM SPACE (NO BUTTON) -->
+        <div class="h-20"></div>
+
+    </div>
+</body>
+</html>
