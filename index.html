@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbit Bot - The Next Generation of Automation</title>
-    <!-- Favicon (Logo Sendiri) -->
+    <title>Orbit Bot - Pusat Kendali AI Tanpa Batas</title>
+    <!-- Favicon -->
     <link rel="icon" href="/assets/logo.png" type="image/png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,7 +34,7 @@
                     animation: {
                         'blob': 'blob 7s infinite',
                         'fade-up': 'fadeUp 0.8s ease-out forwards',
-                        'marquee': 'marquee 25s linear infinite',
+                        'marquee': 'marquee 30s linear infinite', /* Diperlambat dikit biar enak baca */
                         'bounce-slow': 'bounce 3s infinite',
                     },
                     keyframes: {
@@ -90,60 +90,14 @@
         }
         .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
         
-        /* --- YOUTUBE LOGIC BARU (THUMBNAIL MODE) --- */
-        .video-wrapper { 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            position: relative; 
-            overflow: hidden; 
-            cursor: pointer;
-        }
-
-        /* 1. Gambar Thumbnail */
-        .video-thumb {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; 
-            opacity: 0.8;
-            transition: opacity 0.3s;
-            display: block;
-        }
-
+        /* Video Logic (Style Asli tetap dipertahankan) */
+        .video-wrapper { width: 100%; height: 100%; background: #000; position: relative; overflow: hidden; cursor: pointer; }
+        .video-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s; display: block; }
         .video-wrapper:hover .video-thumb { opacity: 0.6; }
-
-        /* 2. Tombol Play */
-        .play-button {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 0, 0, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            transition: transform 0.3s;
-            z-index: 10;
-        }
-
+        .play-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: rgba(255, 0, 0, 0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: transform 0.3s; z-index: 10; }
         .play-button i { color: white; font-size: 24px; margin-left: 4px; }
         .video-wrapper:hover .play-button { transform: translate(-50%, -50%) scale(1.1); }
-
-        /* 3. Iframe */
-        .yt-iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 20;
-            border: none;
-        }
-
+        .yt-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; border: none; }
         .caption { padding: 15px; font-size: 0.9rem; color: #cbd5e1; background: #151b2b; flex-grow: 1; border-top: 1px solid #334155; display: flex; align-items: center; }
 
         /* Floating WA */
@@ -163,47 +117,35 @@
         details > summary::-webkit-details-marker { display: none; }
         details[open] summary ~ * { animation: sweep .5s ease-in-out; }
         @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
-
-        /* MENU HORIZONTAL STYLE */
-        .menu-btn.active {
-            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
-            border-color: #60A5FA;
-            color: white;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
-        }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- 1. POP UP PROMO (NEW) -->
+    <!-- 1. POP UP PROMO -->
     <div id="promoPopup" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 backdrop-blur-md bg-black/60 transition-opacity duration-300">
         <div class="glass-card max-w-sm w-full p-6 rounded-3xl relative text-center border-t border-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.2)] animate-blob">
-            <!-- Close Button -->
             <button onclick="closePromo()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
-            
             <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg border-2 border-white/10 animate-bounce-slow">
                 <i class="fas fa-tags text-white text-3xl"></i>
             </div>
-            
             <h3 class="text-2xl font-extrabold text-white mb-2">DISKON SPESIAL 60%</h3>
             <p class="text-slate-300 mb-6 leading-relaxed">
-                Dapatkan semua akses premium!<br>
+                Buka akses <span class="text-yellow-400 font-bold">UNLIMITED</span> sepuasnya!<br>
                 <span class="text-red-400 line-through text-sm">Rp 37.000</span> 
                 <i class="fas fa-arrow-right text-xs mx-1 text-slate-500"></i> 
                 <span class="text-green-400 font-bold text-2xl">Rp 15.000</span>
             </p>
-            
             <a href="dashboard.html" class="block w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl transition transform hover:scale-[1.02] shadow-lg shadow-green-900/50">
-                AMBIL DISKON SEKARANG <i class="fas fa-bolt ml-1"></i>
+                AMBIL PROMO SAYA <i class="fas fa-bolt ml-1"></i>
             </a>
-            <p class="text-xs text-slate-500 mt-4">*Penawaran terbatas untuk kunjungan pertama.</p>
+            <p class="text-xs text-slate-500 mt-4">*Garansi server prioritas tanpa antri.</p>
         </div>
-    </div>
+    </div
 
     <!-- RUNNING TEXT NOTIFICATION -->
-    <div class="fixed top-0 w-full z-[60] bg-blue-900/90 border-b border-blue-500/30 text-xs font-bold text-blue-100 py-2 overflow-hidden whitespace-nowrap backdrop-blur-sm">
-        <div class="animate-marquee inline-block">
-            🚀 UPDATE: Server VEO 3.1 & Kling AI kini 2x lebih cepat! — 🎉 Diskon Member Pro 50% hanya hari ini — ⚡ Fitur Text-to-Video sekarang mendukung durasi hingga 10 detik tanpa putus. — 🤖 Gunakan AI dengan bijak.
+    <div class="fixed top-0 w-full z-[60] bg-gradient-to-r from-blue-900 to-purple-900 border-b border-white/10 text-xs font-bold text-white py-3 overflow-hidden whitespace-nowrap backdrop-blur-md shadow-lg">
+        <div class="animate-marquee inline-block tracking-wide">
+            🚀 <span class="text-yellow-300">INFO PENTING:</span> Di sini "Kuota Habis" hanyalah mitos! Semua fitur AI bersifat <span class="text-yellow-300">UNLIMITED</span> sepuasnya. — 🎉 Layanan baru ditambahkan setiap minggu tanpa biaya tambahan. — ⚡ Server VEO 3.1 & Kling AI kini dalam mode Turbo Speed. — 🤖 Mulai perjalanan kreatifmu sekarang!
         </div>
     </div>
 
@@ -214,13 +156,12 @@
     </div>
 
     <!-- NAVIGASI -->
-    <nav class="fixed top-8 w-full z-50 glass-nav transition-all duration-300">
+    <nav class="fixed top-12 w-full z-50 glass-nav transition-all duration-300">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <div class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 flex items-center gap-3">
                 <i class="fas fa-cube text-blue-500"></i> ORBITBOT
             </div>
             
-            <!-- Tombol Auth (Logic di JS) -->
             <button id="authBtn" onclick="openLogin()" class="group relative px-6 py-2.5 rounded-full bg-slate-800 text-white font-semibold border border-slate-700 overflow-hidden hover:border-blue-500 transition-all shadow-lg hover:shadow-blue-500/20">
                 <span id="authBtnText" class="relative z-10 group-hover:text-blue-400 transition-colors flex items-center gap-2">
                     <i class="fas fa-user-circle"></i> Masuk Member
@@ -230,26 +171,45 @@
         </div>
     </nav>
 
-    <!-- HERO SECTION -->
-    <header class="pt-48 pb-20 text-center px-4 relative">
-        <span class="inline-flex items-center gap-2 py-1 px-3 rounded-full bg-blue-900/30 border border-blue-500/30 text-blue-400 text-xs font-bold mb-6 tracking-wider animate-fade-up shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+    <!-- HERO SECTION (Narasi Baru) -->
+    <header class="pt-52 pb-24 text-center px-4 relative overflow-hidden">
+        <!-- Badge -->
+        <span class="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-400/30 text-blue-300 text-xs font-bold mb-8 tracking-wider animate-fade-up shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
             </span>
-            V1.1 STABLE RELEASE
+            SYSTEM STATUS: UNLIMITED ACCESS
         </span>
         
+        <!-- Headline Besar -->
         <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight animate-fade-up drop-shadow-2xl" style="animation-delay: 0.1s;">
-            <span class="text-white">Wujudkan Ide Liar</span><br>
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Cukup Sekali Klik</span>
+            <span class="text-white">Lupakan Kata "Batasan".</span><br>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Kamu Punya Segalanya.</span>
         </h1>
-        <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-up" style="animation-delay: 0.2s;">
-            Akses 5 Tools AI premium dalam satu dashboard. Mainkan imajinasimu, biarkan algoritma kami merender menjadi realitas visual yang menakjubkan.
-        </p>
+        
+        <!-- Sub Headline (Storytelling) -->
+        <div class="max-w-3xl mx-auto mb-10 space-y-4 animate-fade-up" style="animation-delay: 0.2s;">
+            <p class="text-slate-300 text-lg md:text-xl leading-relaxed">
+                Selamat datang di <span class="text-white font-bold">Gudang Senjata AI</span> pribadimu. Di sini, kami tidak menghitung berapa kali kamu menggunakannya.
+            </p>
+            <p class="text-slate-400 text-base md:text-lg">
+                Satu akses untuk puluhan alat canggih: VEO, Kling, Seedance, dan <span class="text-yellow-400 italic">banyak lagi yang akan datang</span>. Semuanya 100% tanpa batasan kuota. Eksplorasi, ciptakan, dan ulangi sesuka hatimu.
+            </p>
+        </div>
+
+        <!-- Tombol CTA -->
+        <div class="flex justify-center gap-4 animate-fade-up" style="animation-delay: 0.3s;">
+            <button onclick="document.querySelector('.swiper').scrollIntoView({behavior: 'smooth'})" class="px-8 py-4 bg-white text-blue-900 font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-105 transition transform flex items-center gap-2">
+                <i class="fas fa-play"></i> Lihat Keajaiban
+            </button>
+            <a href="dashboard.html" class="px-8 py-4 bg-slate-800/50 border border-slate-600 text-white font-bold rounded-xl hover:bg-slate-800 hover:border-blue-400 transition transform hover:scale-105">
+                Mulai Sekarang
+            </a>
+        </div>
     </header>
 
-    <!-- TECH SPECS -->
+    <!-- TECH SPECS (Disesuaikan agar terlihat banyak) -->
     <section class="max-w-6xl mx-auto px-4 mb-24 reveal">
         <div class="glass-card rounded-3xl p-1 overflow-hidden">
             <div class="bg-slate-900/80 p-8 rounded-[20px]">
@@ -257,49 +217,57 @@
                     <!-- LEFT: CURRENT ENGINE -->
                     <div class="flex-1 space-y-6">
                         <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-microchip text-blue-400 text-xl"></i>
-                            <h3 class="text-xl font-bold text-white">Available engines:</h3>
+                            <i class="fas fa-layer-group text-blue-400 text-xl"></i>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Arsenal AI Saat Ini</h3>
+                                <p class="text-xs text-slate-400">Semua tools ini milikmu, tanpa batas.</p>
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-                                <span class="font-semibold text-sm">VEO 3.1</span>
+                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
+                                <span class="font-semibold text-sm">VEO 3.1 Cinema</span>
                             </div>
-                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
                                 <span class="font-semibold text-sm">Seedance 1.5 Pro</span>
                             </div>
-                             <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                             <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
+                                <span class="font-semibold text-sm">Kling 2.5 Unlimited</span>
+                            </div>
+                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
+                                <span class="font-semibold text-sm">Gemini 2.5 Vision</span>
+                            </div>
+                             <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
+                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
                                 <span class="font-semibold text-sm">Grok Imagine</span>
                             </div>
-                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-                                <span class="font-semibold text-sm">Kling 2.5 Pro</span>
-                            </div>
-                             <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-                                <span class="font-semibold text-sm">Gemini 2.5 Pro</span>
-                            </div>
-                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
-                                <span class="font-semibold text-sm">NanoBanana Pro</span>
+                            <!-- More indication -->
+                            <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 p-3 rounded-xl flex items-center justify-center gap-2 tech-badge animate-pulse">
+                                <span class="font-bold text-xs text-blue-300">+ 15 Tools Lainnya</span>
                             </div>
                         </div>
                     </div>
                     <!-- DIVIDER -->
-                    <div class="hidden md:block w-px bg-slate-700/50"></div>
+                    <div class="hidden md:block w-px bg-gradient-to-b from-transparent via-slate-600 to-transparent"></div>
                     <!-- RIGHT: COMING SOON -->
                     <div class="flex-1 relative overflow-hidden rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-900/10 to-transparent p-6 group">
-                        <div class="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg">COMING SOON</div>
+                        <div class="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg shadow-lg">NEXT UPDATE</div>
                         <div class="flex items-center gap-3 mb-4">
-                            <i class="fas fa-bolt text-yellow-400 text-xl animate-pulse"></i>
-                            <h3 class="text-xl font-bold text-white group-hover:text-yellow-400 transition">Sora 2 Unlimited</h3>
+                            <div class="p-2 bg-yellow-500/10 rounded-lg">
+                                <i class="fas fa-rocket text-yellow-400 text-xl animate-bounce"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white group-hover:text-yellow-400 transition">Sora 2.0 & OpenAI o3</h3>
+                                <p class="text-xs text-slate-400">Segera hadir otomatis di dashboardmu.</p>
+                            </div>
                         </div>
-                        <ul class="space-y-2 text-sm text-slate-300">
-                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> No Watermark</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> HD Quality Output</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-500"></i> 12 Seconds / Generation</li>
+                        <ul class="space-y-2 text-sm text-slate-300 mt-4">
+                            <li class="flex items-center gap-2"><i class="fas fa-check-circle text-yellow-500"></i> No Watermark</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check-circle text-yellow-500"></i> Resolusi 4K Ultra HD</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check-circle text-yellow-500"></i> Render 5x Lebih Cepat</li>
                         </ul>
                     </div>
                 </div>
@@ -961,6 +929,7 @@
 </script>
 </body>
 </html>
+
 
 
 
