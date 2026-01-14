@@ -58,14 +58,14 @@
             </div>
 
             <!-- PAKET PRO (MODIFIKASI: Unlimited tapi Non-Prioritas) -->
-            <div onclick="pilihPaket('PRO', 49000, '30 Hari', 'Fitur Unlimited (Server Standard/Non-Prioritas)')" id="btn-pro"
+            <div onclick="pilihPaket('PRO', 49000, '15 Hari', 'Fitur Unlimited (Server Standard)')" id="btn-pro"
                  class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-purple-400">PRO <span class="text-xs text-white font-normal ml-1 bg-purple-600 px-2 py-0.5 rounded-full">1 Bulan</span></h3>
+                        <h3 class="font-bold text-purple-400">PRO <span class="text-xs text-white font-normal ml-1 bg-purple-600 px-2 py-0.5 rounded-full">15 Hari</span></h3>
                         <p class="text-[10px] leading-tight text-gray-300 mt-1">
                             Akses Unlimited semua fitur.<br>
-                            <span class="text-slate-500 italic">(Server Standard / Non-Prioritas)</span>
+                            <span class="text-slate-500 italic">(Server Standard)</span>
                         </p>
                     </div>
                     <div class="text-right">
@@ -173,11 +173,11 @@
 
         function updateLinkWA(hargaFormatted) {
             const pesan = `Halo Admin, saya mau beli paket: 
-📦 *${paketTerpilih}* (${durasiTerpilih})
-💰 Harga: *${hargaFormatted}*
-📝 Tipe: ${ketTerpilih}
+💌 *${paketTerpilih}* (${durasiTerpilih})
+💲 Harga: *${hargaFormatted}*
+✔ Tipe: ${ketTerpilih}
 
-Saya sudah transfer ke rekening yang tertera. Mohon segera diproses. Terima kasih!`;
+Saya sudah transfer ke rekening yang tertera, berikut ini screenshot bukti pembayarannya. Mohon segera diproses. Terima kasih!`;
             
             const link = `https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`;
             document.getElementById('waButton').href = link;
@@ -193,3 +193,4 @@ Saya sudah transfer ke rekening yang tertera. Mohon segera diproses. Terima kasi
     </script>
 </body>
 </html>
+
