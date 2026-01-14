@@ -39,14 +39,14 @@
             overflow: hidden;
             box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
             position: relative;
-            background: #000; /* Background hitam agar transisi loading tidak silau */
+            background: #000;
         }
 
         iframe {
             width: 100%;
             height: 100%;
             border: none;
-            display: block;
+            filter: contrast(1.05) brightness(1);
         }
 
         .float-nav {
@@ -137,19 +137,7 @@
 
     <!-- Container Iframe -->
     <div class="iframe-container">
-        <!-- 
-            MODIFIKASI PENTING:
-            Atribut 'allow' dan 'sandbox' di bawah ini kunci agar ZeroGPU/HuggingFace berjalan lancar.
-            clipboard-write: agar tombol copy berfungsi.
-            web-share: agar fitur share berfungsi.
-        -->
-        <iframe 
-            id="toolFrame" 
-            src="about:blank" 
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; camera; microphone; fullscreen; geolocation" 
-            sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-            loading="lazy">
-        </iframe>
+        <iframe id="toolFrame" src="about:blank" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; webcam; microphone" allowfullscreen></iframe>
     </div>
 
     <!-- Modal Peringatan -->
@@ -175,7 +163,7 @@
 
     <script>
         // --- 1. CONFIGURATION: DAFTAR LINK LAYANAN ---
-        // URL tetap menggunakan format .hf.space agar bisa di-embed.
+        // Anda bisa menambah atau mengubah link di sini tanpa mengubah link di Dashboard
         const toolLinks = {
             "servis1": "https://sumahir-filmmakerpro.hf.space",
             "servis2": "https://sumahir-ugcpromax.hf.space",
@@ -204,12 +192,7 @@
         const toolId = urlParams.get('id'); // Mengambil ?id=...
 
         if(toolId && toolLinks[toolId]) {
-            const iframe = document.getElementById('toolFrame');
-            // Menambahkan parameter theme=dark agar tampilan iframe cocok dengan website
-            const targetUrl = new URL(toolLinks[toolId]);
-            targetUrl.searchParams.set('__theme', 'dark');
-            
-            iframe.src = targetUrl.toString();
+            document.getElementById('toolFrame').src = toolLinks[toolId];
         } else {
             alert("Error: ID Layanan tidak valid atau tidak ditemukan.");
             window.location.href = "dashboard.html";
