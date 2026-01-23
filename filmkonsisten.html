@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 AI Film Maker Pro</title>
+    <script type="module">
+        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@1.5.0/dist/index.min.js";
+        window.GradioClient = Client;
+    </script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Login View */
+        #login-view {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border);
+        }
+
+        .login-card h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-card .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        /* App View */
+        #app-view {
+            display: none;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 45px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--secondary), #059669);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 10px 16px;
+            font-size: 0.875rem;
+        }
+
+        .btn-lg {
+            padding: 18px 36px;
+            font-size: 1.1rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* Grid Layout */
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Image Upload */
+        .image-upload-area {
+            border: 3px dashed var(--border);
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-input);
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .image-upload-area.has-image {
+            padding: 10px;
+        }
+
+        .image-upload-area img {
+            max-width: 100%;
+            max-height: 260px;
+            border-radius: 12px;
+            object-fit: contain;
+        }
+
+        .image-upload-area .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .image-upload-area p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .image-upload-area input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Status Box */
+        .status-box {
+            background: var(--bg-input);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-left: 4px solid var(--primary);
+            font-family: 'Consolas', monospace;
+        }
+
+        .status-box.success {
+            border-left-color: var(--success);
+        }
+
+        .status-box.error {
+            border-left-color: var(--danger);
+        }
+
+        .status-box.warning {
+            border-left-color: var(--warning);
+        }
+
+        /* Accordion */
+        .accordion {
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            padding: 18px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .accordion-header:hover {
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .accordion-header .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .accordion.open .accordion-header .arrow {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion.open .accordion-content {
+            max-height: 2000px;
+        }
+
+        .accordion-body {
+            padding: 0 24px 24px;
+        }
+
+        /* Scenes Container */
+        .scenes-container {
+            margin-top: 30px;
+        }
+
+        .scenes-title {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .scene-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        .scene-card.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .scene-header {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .scene-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .scene-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .scene-image-container {
+            text-align: center;
+        }
+
+        .scene-image {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            border-radius: 12px;
+            background: var(--bg-input);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+        }
+
+        .scene-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .scene-video video {
+            width: 100%;
+            border-radius: 12px;
+            background: #000;
+        }
+
+        .scene-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .scene-log {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            padding: 10px;
+            background: var(--bg-input);
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+        }
+
+        /* Loader */
+        .loader {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-overlay .loader {
+            width: 50px;
+            height: 50px;
+            border-width: 5px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* Info Text */
+        .info-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+
+        /* Divider */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 30px 0;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+
+        .toast {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            max-width: 350px;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Logout Button */
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        /* Scene Number Badge */
+        .scene-badge {
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .btn-lg {
+                padding: 14px 24px;
+                font-size: 1rem;
+            }
+
+            .scene-grid {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loader"></div>
+        <p id="loading-text">Memproses...</p>
+        <div class="progress-container" id="progress-container" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+            <p class="progress-text" id="progress-text">0/10</p>
+        </div>
+    </div>
+
+    <!-- LOGIN VIEW -->
+    <div id="login-view">
+        <div class="login-card">
+            <h1>🎬 Film Maker</h1>
+            <p class="subtitle">Buat Film Berkualitas dengan AI</p>
+            
+            <div class="form-group">
+                <label for="password-input">🔐 Password</label>
+                <input 
+                    type="password" 
+                    id="password-input" 
+                    placeholder="Masukkan password..."
+                    autocomplete="off"
+                >
+            </div>
+            
+            <button class="btn btn-primary btn-block btn-lg" id="btn-login">
+                🚀 Masuk
+            </button>
+            
+            <div class="status-box" id="login-status" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- APP VIEW -->
+    <div id="app-view" class="container">
+        <button class="btn btn-secondary btn-sm logout-btn" id="btn-logout">
+            🚪 Logout
+        </button>
+
+        <div class="header">
+            <h1>🎥 AI Film Maker Pro</h1>
+            <p>Buat film 10 scene berkualitas tinggi dengan karakter konsisten</p>
+        </div>
+
+        <div class="grid-3">
+            <!-- LEFT PANEL - Character Upload -->
+            <div class="card">
+                <h3 class="card-title">📸 Model/Karakter</h3>
+                <div class="image-upload-area" id="char-upload-area">
+                    <span class="upload-icon">📷</span>
+                    <p>Klik atau drag & drop foto model</p>
+                    <p class="info-text">Format: JPG, PNG, WebP</p>
+                    <input type="file" id="char-input" accept="image/*">
+                </div>
+                <p class="info-text" style="margin-top: 12px;">
+                    *Foto ini akan menjadi tokoh utama di semua adegan
+                </p>
+            </div>
+
+            <!-- MIDDLE PANEL - Settings -->
+            <div class="card">
+                <h3 class="card-title">⚙️ Pengaturan Film</h3>
+                
+                <div class="form-group">
+                    <label for="genre-select">🎭 Genre Film</label>
+                    <select id="genre-select">
+                        <option value="Aksi">Aksi</option>
+                        <option value="Komedi">Komedi</option>
+                        <option value="Drama" selected>Drama</option>
+                        <option value="Horor">Horor</option>
+                        <option value="Fiksi Ilmiah">Fiksi Ilmiah</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="style-select">🎨 Gaya Visual</label>
+                    <select id="style-select">
+                        <option value="Realistis" selected>Realistis</option>
+                        <option value="Anime">Anime</option>
+                        <option value="3D Cartoon">3D Cartoon</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="model-select">🎞️ Model Video</label>
+                    <select id="model-select">
+                        <option value="Seedance 1.5 Pro (10 detik)" selected>Seedance 1.5 Pro (10 detik)</option>
+                        <option value="Veo-3.1 (8 detik)">Veo-3.1 (8 detik)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="aspect-select">📐 Rasio Layar</label>
+                    <select id="aspect-select">
+                        <option value="Horizontal (16:9)" selected>Horizontal (16:9)</option>
+                        <option value="Vertical (9:16)">Vertical (9:16)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="lang-select">🗣️ Bahasa</label>
+                    <select id="lang-select">
+                        <option value="Indonesia" selected>Indonesia</option>
+                        <option value="English">English</option>
+                        <option value="Alami (Tanpa Dialog)">Alami (Tanpa Dialog)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL - Story Input -->
+            <div class="card">
+                <h3 class="card-title">📝 Konsep Cerita</h3>
+                
+                <div class="form-group">
+                    <label for="story-input">Deskripsikan konsep film Anda</label>
+                    <textarea 
+                        id="story-input" 
+                        rows="6"
+                        placeholder="Contoh: Seorang detektif muda yang menyelidiki kasus pembunuhan misterius di mansion tua. Ia menemukan petunjuk-petunjuk aneh yang mengarah pada hantu penghuni mansion..."
+                    ></textarea>
+                    <p class="info-text">
+                        Gemini akan menyempurnakan dan mengembangkan cerita Anda menjadi 10 adegan sinematik
+                    </p>
+                </div>
+
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    📊 <strong>Film akan terdiri dari 10 scene</strong>
+                </p>
+
+                <button class="btn btn-primary btn-block btn-lg" id="btn-generate">
+                    ✨ Generate Film Script
+                </button>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div class="status-box" id="main-status">
+            📊 Siap membuat film...
+        </div>
+
+        <!-- Full Story Accordion -->
+        <div class="accordion" id="story-accordion">
+            <div class="accordion-header" onclick="toggleAccordion('story-accordion')">
+                <span>📖 Cerita Lengkap</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="accordion-content">
+                <div class="accordion-body">
+                    <textarea 
+                        id="full-story-display" 
+                        rows="10" 
+                        readonly
+                        placeholder="Cerita lengkap akan muncul di sini setelah generate..."
+                        style="background: var(--bg-dark);"
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Scenes Container -->
+        <div class="scenes-container">
+            <h2 class="scenes-title">🎬 Scene Film (10 Adegan)</h2>
+            
+            <div id="scenes-wrapper">
+                <!-- Scenes will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        const SPACE_URL = "[URL_SPACE]"; // Ganti dengan URL Space Anda
+        const NUM_SCENES = 10;
+
+        // ==========================================
+        // STATE
+        // ==========================================
+        let client = null;
+        let userConfig = null;
+        let characterImage = null;
+        let sceneData = [];
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+        function generateSecurityToken() {
+            const secret = "SUMAHIR_SECRET_V99";
+            const currentMin = Math.floor(Date.now() / 1000 / 60);
+            return secret + currentMin;
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function showLoading(text = 'Memproses...', showProgress = false) {
+            const overlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            const progressContainer = document.getElementById('progress-container');
+            
+            loadingText.textContent = text;
+            progressContainer.style.display = showProgress ? 'block' : 'none';
+            overlay.classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').classList.remove('active');
+        }
+
+        function updateProgress(current, total) {
+            const fill = document.getElementById('progress-fill');
+            const text = document.getElementById('progress-text');
+            const percentage = (current / total) * 100;
+            fill.style.width = `${percentage}%`;
+            text.textContent = `${current}/${total}`;
+        }
+
+        function updateStatus(message, type = '') {
+            const statusBox = document.getElementById('main-status');
+            statusBox.textContent = message;
+            statusBox.className = 'status-box';
+            if (type) statusBox.classList.add(type);
+        }
+
+        async function imageToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function base64ToBlob(base64) {
+            const response = await fetch(base64);
+            return await response.blob();
+        }
+
+        function toggleAccordion(id) {
+            document.getElementById(id).classList.toggle('open');
+        }
+
+        // ==========================================
+        // INITIALIZE SCENES UI
+        // ==========================================
+        function initializeScenesUI() {
+            const wrapper = document.getElementById('scenes-wrapper');
+            wrapper.innerHTML = '';
+            sceneData = [];
+
+            for (let i = 0; i < NUM_SCENES; i++) {
+                const sceneCard = document.createElement('div');
+                sceneCard.className = 'scene-card';
+                sceneCard.id = `scene-${i}`;
+                sceneCard.innerHTML = `
+                    <div class="scene-header">
+                        <span class="scene-badge">Scene ${i + 1}</span>
+                    </div>
+                    <div class="scene-grid">
+                        <div class="scene-image-container">
+                            <div class="scene-image" id="scene-img-container-${i}">
+                                <span>🎨 Gambar akan muncul...</span>
+                            </div>
+                            <div class="scene-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="regenImage(${i})">
+                                    🔄 Regen Gambar
+                                </button>
+                            </div>
+                            <div class="scene-log" id="scene-regen-log-${i}"></div>
+                        </div>
+                        <div class="scene-content">
+                            <div class="form-group">
+                                <label>Prompt Scene ${i + 1}</label>
+                                <textarea 
+                                    id="scene-prompt-${i}" 
+                                    rows="4"
+                                    placeholder="Prompt untuk scene ini..."
+                                ></textarea>
+                                <p class="info-text">Edit prompt jika perlu, lalu regenerate gambar atau langsung buat video</p>
+                            </div>
+                            <button class="btn btn-success" onclick="genVideo(${i})">
+                                🎬 Generate Video Scene ${i + 1}
+                            </button>
+                            <div class="scene-video" id="scene-video-container-${i}" style="margin-top: 16px;">
+                                <!-- Video will appear here -->
+                            </div>
+                            <div class="scene-log" id="scene-video-log-${i}"></div>
+                        </div>
+                    </div>
+                `;
+                wrapper.appendChild(sceneCard);
+
+                sceneData.push({
+                    image: null,
+                    prompt: '',
+                    video: null
+                });
+            }
+        }
+
+        function showScene(index) {
+            const scene = document.getElementById(`scene-${index}`);
+            if (scene) {
+                scene.classList.add('visible');
+            }
+        }
+
+        function updateSceneImage(index, imageUrl) {
+            const container = document.getElementById(`scene-img-container-${index}`);
+            if (imageUrl) {
+                container.innerHTML = `<img src="${imageUrl}" alt="Scene ${index + 1}">`;
+                sceneData[index].image = imageUrl;
+            }
+        }
+
+        function updateScenePrompt(index, prompt) {
+            const textarea = document.getElementById(`scene-prompt-${index}`);
+            if (textarea) {
+                textarea.value = prompt;
+                sceneData[index].prompt = prompt;
+            }
+        }
+
+        function updateSceneVideo(index, videoUrl) {
+            const container = document.getElementById(`scene-video-container-${index}`);
+            if (videoUrl) {
+                container.innerHTML = `<video src="${videoUrl}" controls autoplay></video>`;
+                sceneData[index].video = videoUrl;
+            }
+        }
+
+        function updateSceneLog(index, type, message) {
+            const logId = type === 'regen' ? `scene-regen-log-${index}` : `scene-video-log-${index}`;
+            const log = document.getElementById(logId);
+            if (log) {
+                log.textContent = message;
+            }
+        }
+
+        // ==========================================
+        // API FUNCTIONS
+        // ==========================================
+        async function connectToSpace() {
+            try {
+                client = await window.GradioClient.connect(SPACE_URL);
+                console.log("Connected to Gradio Space");
+                return true;
+            } catch (error) {
+                console.error("Connection error:", error);
+                showToast("Gagal terhubung ke server", "error");
+                return false;
+            }
+        }
+
+        async function doLogin(password) {
+            if (!client) {
+                const connected = await connectToSpace();
+                if (!connected) return null;
+            }
+
+            try {
+                showLoading('Memverifikasi password...');
+                
+                const result = await client.predict("/do_login", {
+                    username: password
+                });
+
+                hideLoading();
+                
+                // Result format: [user_config, message, login_visible, app_visible]
+                const [config, message] = result.data;
+                
+                if (config) {
+                    userConfig = config;
+                    showToast(message, 'success');
+                    return config;
+                } else {
+                    showToast(message, 'error');
+                    return null;
+                }
+            } catch (error) {
+                hideLoading();
+                console.error("Login error:", error);
+                showToast("Login gagal: " + error.message, 'error');
+                return null;
+            }
+        }
+
+        async function runStoryProcess() {
+            if (!userConfig) {
+                showToast("Silakan login terlebih dahulu", "error");
+                return;
+            }
+
+            if (!characterImage) {
+                showToast("Upload foto model/karakter terlebih dahulu!", "error");
+                return;
+            }
+
+            const storyInput = document.getElementById('story-input').value;
+            if (!storyInput.trim()) {
+                showToast("Masukkan konsep cerita!", "error");
+                return;
+            }
+
+            const genre = document.getElementById('genre-select').value;
+            const style = document.getElementById('style-select').value;
+            const lang = document.getElementById('lang-select').value;
+            const aspect = document.getElementById('aspect-select').value;
+            const securityToken = generateSecurityToken();
+
+            try {
+                showLoading('Membuat cerita dan gambar...', true);
+                updateProgress(0, NUM_SCENES);
+                updateStatus("🔄 Memproses...", "warning");
+
+                // Convert image to proper format for Gradio
+                const imageBlob = await base64ToBlob(characterImage);
+
+                // Use submit for streaming
+                const job = client.submit("/run_story_process", {
+                    user_config: userConfig,
+                    char_img: imageBlob,
+                    story_concept: storyInput,
+                    genre: genre,
+                    style: style,
+                    lang: lang,
+                    aspect_ratio: aspect,
+                    security_token: securityToken
+                });
+
+                let completedImages = 0;
+
+                for await (const event of job) {
+                    if (event.type === "data") {
+                        const data = event.data;
+                        
+                        // Parse the output based on your backend structure
+                        // Each scene has: row, img, prompt, btn_vid (4 items per scene)
+                        // Plus: full_story_display, dummy, status (3 items at end)
+                        
+                        // Process scene updates
+                        for (let i = 0; i < NUM_SCENES; i++) {
+                            const baseIdx = i * 4;
+                            
+                            // Show scene row if visible
+                            if (data[baseIdx]?.visible) {
+                                showScene(i);
+                            }
+                            
+                            // Update image
+                            if (data[baseIdx + 1]?.value) {
+                                const imgData = data[baseIdx + 1].value;
+                                if (typeof imgData === 'string') {
+                                    updateSceneImage(i, imgData);
+                                } else if (imgData?.url) {
+                                    updateSceneImage(i, imgData.url);
+                                }
+                                completedImages = Math.max(completedImages, i + 1);
+                            }
+                            
+                            // Update prompt
+                            if (data[baseIdx + 2]?.value) {
+                                updateScenePrompt(i, data[baseIdx + 2].value);
+                            }
+                        }
+
+                        // Update full story
+                        const storyIdx = NUM_SCENES * 4;
+                        if (data[storyIdx]?.value) {
+                            document.getElementById('full-story-display').value = data[storyIdx].value;
+                        }
+
+                        // Update status
+                        const statusIdx = NUM_SCENES * 4 + 2;
+                        if (data[statusIdx]) {
+                            const statusMsg = typeof data[statusIdx] === 'string' ? data[statusIdx] : data[statusIdx].value || '';
+                            updateStatus(statusMsg, statusMsg.includes('✅') ? 'success' : 'warning');
+                            document.getElementById('loading-text').textContent = statusMsg;
+                        }
+
+                        updateProgress(completedImages, NUM_SCENES);
+                    }
+                }
+
+                hideLoading();
+                showToast("Film script berhasil dibuat!", "success");
+
+            } catch (error) {
+                hideLoading();
+                console.error("Story process error:", error);
+                updateStatus("❌ Error: " + error.message, "error");
+                showToast("Gagal membuat film script", "error");
+            }
+        }
+
+        // Make these functions global for onclick handlers
+        window.regenImage = async function(sceneIndex) {
+            if (!userConfig || !characterImage) {
+                showToast("Config atau gambar kosong!", "error");
+                return;
+            }
+
+            const prompt = document.getElementById(`scene-prompt-${sceneIndex}`).value;
+            const style = document.getElementById('style-select').value;
+            const aspect = document.getElementById('aspect-select').value;
+
+            try {
+                updateSceneLog(sceneIndex, 'regen', '🔄 Regenerating gambar...');
+                
+                const imageBlob = await base64ToBlob(characterImage);
+                
+                const result = await client.predict("/regen_single_image", {
+                    user_config: userConfig,
+                    char_img: imageBlob,
+                    prompt: prompt,
+                    style: style,
+                    aspect_ratio: aspect
+                });
+
+                const [newImage, message] = result.data;
+                
+                if (newImage) {
+                    const imgUrl = typeof newImage === 'string' ? newImage : newImage.url;
+                    updateSceneImage(sceneIndex, imgUrl);
+                    updateSceneLog(sceneIndex, 'regen', '✅ ' + message);
+                } else {
+                    updateSceneLog(sceneIndex, 'regen', '❌ ' + message);
+                }
+            } catch (error) {
+                updateSceneLog(sceneIndex, 'regen', '❌ Error: ' + error.message);
+            }
+        };
+
+        window.genVideo = async function(sceneIndex) {
+            if (!userConfig) {
+                showToast("Login terlebih dahulu!", "error");
+                return;
+            }
+
+            const sceneImage = sceneData[sceneIndex].image;
+            if (!sceneImage) {
+                showToast("Gambar scene kosong!", "error");
+                return;
+            }
+
+            const prompt = document.getElementById(`scene-prompt-${sceneIndex}`).value;
+            const modelChoice = document.getElementById('model-select').value;
+            const securityToken = generateSecurityToken();
+
+            try {
+                updateSceneLog(sceneIndex, 'video', '📤 Mengupload gambar...');
+
+                // Convert scene image to blob
+                const imageBlob = await base64ToBlob(sceneImage);
+
+                const job = client.submit("/generate_single_video", {
+                    user_config: userConfig,
+                    model_choice: modelChoice,
+                    pil_image: imageBlob,
+                    prompt: prompt,
+                    security_token: securityToken
+                });
+
+                for await (const event of job) {
+                    if (event.type === "data") {
+                        const [videoUrl, message] = event.data;
+                        
+                        updateSceneLog(sceneIndex, 'video', message);
+                        
+                        if (videoUrl) {
+                            const url = typeof videoUrl === 'string' ? videoUrl : videoUrl.url;
+                            updateSceneVideo(sceneIndex, url);
+                        }
+                    }
+                }
+            } catch (error) {
+                updateSceneLog(sceneIndex, 'video', '❌ Error: ' + error.message);
+            }
+        };
+
+        window.toggleAccordion = toggleAccordion;
+
+        // ==========================================
+        // EVENT LISTENERS
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize scenes UI
+            initializeScenesUI();
+
+            // Connect to space
+            await connectToSpace();
+
+            // Login button
+            document.getElementById('btn-login').addEventListener('click', async () => {
+                const password = document.getElementById('password-input').value;
+                if (!password) {
+                    showToast("Masukkan password!", "error");
+                    return;
+                }
+
+                const config = await doLogin(password);
+                if (config) {
+                    document.getElementById('login-view').style.display = 'none';
+                    document.getElementById('app-view').style.display = 'block';
+                } else {
+                    const statusBox = document.getElementById('login-status');
+                    statusBox.style.display = 'block';
+                    statusBox.textContent = '❌ Password salah!';
+                    statusBox.className = 'status-box error';
+                }
+            });
+
+            // Enter key for login
+            document.getElementById('password-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    document.getElementById('btn-login').click();
+                }
+            });
+
+            // Logout button
+            document.getElementById('btn-logout').addEventListener('click', () => {
+                userConfig = null;
+                characterImage = null;
+                document.getElementById('app-view').style.display = 'none';
+                document.getElementById('login-view').style.display = 'flex';
+                document.getElementById('password-input').value = '';
+                document.getElementById('login-status').style.display = 'none';
+                initializeScenesUI();
+                showToast("Logged out", "success");
+            });
+
+            // Character image upload
+            document.getElementById('char-input').addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    characterImage = await imageToBase64(file);
+                    const uploadArea = document.getElementById('char-upload-area');
+                    uploadArea.classList.add('has-image');
+                    uploadArea.innerHTML = `
+                        <img src="${characterImage}" alt="Character">
+                        <input type="file" id="char-input" accept="image/*">
+                    `;
+                    // Reattach event listener
+                    document.getElementById('char-input').addEventListener('change', arguments.callee);
+                }
+            });
+
+            // Generate button
+            document.getElementById('btn-generate').addEventListener('click', runStoryProcess);
+        });
+    </script>
+</body>
+</html>
