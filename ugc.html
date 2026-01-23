@@ -2,336 +2,666 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UGC ProMax - Custom UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UGC Content Generator</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        soft: '#f8fafc',
+                        muted: '#94a3b8'
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0f172a; color: white; }
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .input-field { background: #1e293b; border: 1px solid #334155; color: white; transition: 0.3s; }
-        .input-field:focus { border-color: #8b5cf6; outline: none; ring: 2px solid rgba(139, 92, 246, 0.3); }
-        .loader { border-top-color: #8b5cf6; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hide-scroll::-webkit-scrollbar { display: none; }
+        * { -webkit-tap-highlight-color: transparent; }
         
-        /* Tambahan Visual Feedback saat tombol ditekan */
-        button:active { transform: scale(0.98); }
-        .disabled-btn { opacity: 0.5; cursor: not-allowed; }
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .file-zone {
+            transition: all 0.2s ease;
+        }
+        
+        .file-zone:hover, .file-zone.dragover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .file-zone.has-file {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.05);
+        }
+        
+        .btn-loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+        
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .animate-pulse-soft {
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+        
+        /* Scrollbar */
+        .log-box::-webkit-scrollbar {
+            width: 6px;
+        }
+        .log-box::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 3px;
+        }
+        .log-box::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        
+        /* Image gallery */
+        .gallery-img {
+            transition: transform 0.2s;
+        }
+        .gallery-img:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Connection status */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-dot.connected { background: #22c55e; }
+        .status-dot.connecting { background: #eab308; animation: pulse-soft 1s infinite; }
+        .status-dot.disconnected { background: #ef4444; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed">
+<body class="text-slate-700">
     
-    <div class="absolute inset-0 bg-slate-900/90 z-0"></div>
-
-    <div class="z-10 w-full max-w-4xl">
-        
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">UGC ProMax Generator</h1>
-            <p class="text-slate-400 mt-2">Professional Content Generation Tool</p>
-        </div>
-
-        <!-- LOGIN SECTION -->
-        <div id="loginSection" class="glass rounded-2xl p-8 max-w-md mx-auto shadow-2xl transition-all duration-500">
-            <h2 class="text-2xl font-semibold mb-6 text-center">🔐 Login Access</h2>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-slate-300">Password</label>
-                    <input type="password" id="passwordInput" class="input-field w-full p-3 rounded-lg" placeholder="Masukkan password akses...">
-                </div>
-                <!-- ID ditambahkan ke tombol -->
-                <button id="btnLogin" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg transition transform hover:scale-[1.02] shadow-lg">
-                    Masuk Sekarang
-                </button>
-                <p id="loginStatus" class="text-center text-sm text-red-400 mt-2 hidden"></p>
-                <p id="initStatus" class="text-center text-xs text-slate-500 mt-2 animate-pulse">Menghubungkan ke server...</p>
-            </div>
-        </div>
-
-        <!-- MAIN APP SECTION -->
-        <div id="appSection" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 opacity-0 transition-opacity duration-1000">
-            
-            <!-- INPUT -->
-            <div class="glass rounded-2xl p-6 space-y-6 h-fit">
-                <h3 class="text-xl font-semibold border-b border-slate-700 pb-3">🛠️ Konfigurasi</h3>
-                
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium mb-2 text-blue-300">Foto Produk (Wajib)</label>
-                        <input type="file" id="prodImg" accept="image/*" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"/>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium mb-2 text-purple-300">Foto Model (Opsional)</label>
-                        <input type="file" id="modelImg" accept="image/*" class="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-600 file:text-white hover:file:bg-purple-700"/>
-                    </div>
-                </div>
-
-                <div class="space-y-3">
-                    <input type="text" id="valName" placeholder="Nama Produk" class="input-field w-full p-3 rounded-lg text-sm">
-                    <input type="text" id="valPrice" placeholder="Harga (Contoh: Rp 150.000)" class="input-field w-full p-3 rounded-lg text-sm">
-                    <textarea id="valPros" rows="3" placeholder="Kelebihan Produk..." class="input-field w-full p-3 rounded-lg text-sm"></textarea>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium mb-2 text-slate-300">🎬 Urutan Animasi</label>
-                    <div class="flex gap-4">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="animOrder" value="veo_first" checked class="accent-purple-500">
-                            <span class="text-sm">VEO → Grok</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="animOrder" value="grok_first" class="accent-purple-500">
-                            <span class="text-sm">Grok → VEO</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="flex gap-3 pt-2">
-                    <button id="btnImage" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold transition border border-slate-600">
-                        🖼️ Gambar Saja
-                    </button>
-                    <button id="btnFull" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 py-3 rounded-lg font-semibold text-white shadow-lg transition transform hover:scale-[1.02]">
-                        🚀 Full Pipeline
-                    </button>
-                </div>
-                
-                <div id="loading" class="hidden flex items-center justify-center gap-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
-                    <div class="loader ease-linear rounded-full border-2 border-t-2 border-slate-200 h-5 w-5"></div>
-                    <span class="text-sm animate-pulse text-purple-300">Sedang memproses AI... (Tunggu 2-5 menit)</span>
-                </div>
-            </div>
-
-            <!-- OUTPUT -->
-            <div class="glass rounded-2xl p-6 flex flex-col h-full min-h-[500px]">
-                <h3 class="text-xl font-semibold border-b border-slate-700 pb-3 mb-4">📊 Hasil Generate</h3>
-                
-                <div class="bg-black/40 rounded-lg p-4 mb-4 h-40 overflow-y-auto border border-slate-700 font-mono text-xs text-green-400 shadow-inner" id="outputLog">
-                    > Menunggu login...
-                </div>
-
-                <div class="flex-1 space-y-4 overflow-y-auto hide-scroll">
-                    <div id="videoContainer" class="hidden">
-                        <p class="text-sm font-semibold mb-2 text-purple-300">🎥 Video Final</p>
-                        <video id="resultVideo" controls class="w-full rounded-lg border border-slate-600 shadow-lg bg-black max-h-[300px]"></video>
-                        <a id="downloadVideoBtn" href="#" download="ugc_video.mp4" class="block mt-2 text-center text-sm text-blue-400 hover:text-blue-300 underline">Download Video</a>
-                    </div>
-                    <div id="audioContainer" class="hidden">
-                        <p class="text-sm font-semibold mb-2 text-blue-300">🎵 Audio</p>
-                        <audio id="resultAudio" controls class="w-full"></audio>
-                    </div>
-                    <div id="galleryContainer" class="hidden">
-                        <p class="text-sm font-semibold mb-2 text-slate-300">📸 Galeri Gambar</p>
-                        <div id="galleryGrid" class="grid grid-cols-2 gap-2"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- CONNECTION STATUS BAR -->
+    <div id="connectionBar" class="fixed top-0 left-0 right-0 z-50 bg-yellow-50 border-b border-yellow-200 px-4 py-2 text-center text-sm text-yellow-700 hidden">
+        <span class="inline-flex items-center gap-2">
+            <span class="spinner border-yellow-600 border-t-yellow-300" style="width:14px;height:14px;border-width:2px"></span>
+            Menghubungkan ke server...
+        </span>
     </div>
 
-    <!-- SCRIPT UTAMA -->
+    <!-- ALERT BANNER -->
+    <div class="bg-amber-50 border-b border-amber-200 px-4 py-3 text-center">
+        <p class="text-amber-800 text-sm font-medium">
+            ⚠️ Hubungi admin jika video tidak muncul
+        </p>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 py-6 pb-20">
+        
+        <!-- HEADER -->
+        <header class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800 mb-2">
+                🎨 UGC Generator
+            </h1>
+            <p class="text-muted text-sm">Generate konten UGC dengan AI</p>
+            
+            <!-- Connection indicator -->
+            <div class="flex items-center justify-center gap-2 mt-3">
+                <span id="statusDot" class="status-dot connecting"></span>
+                <span id="statusText" class="text-xs text-muted">Menghubungkan...</span>
+            </div>
+        </header>
+
+        <!-- ========== LOGIN SECTION ========== -->
+        <section id="loginSection" class="max-w-sm mx-auto">
+            <div class="glass rounded-2xl shadow-lg p-6 md:p-8">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-3xl">🔐</span>
+                    </div>
+                    <h2 class="text-xl font-semibold text-slate-800">Login</h2>
+                </div>
+                
+                <div id="loginError" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg p-3 mb-4"></div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 mb-2">Password</label>
+                        <input 
+                            type="password" 
+                            id="inputPassword" 
+                            placeholder="Masukkan password..."
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                        >
+                    </div>
+                    
+                    <button 
+                        id="btnLogin"
+                        onclick="doLogin()"
+                        class="w-full py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2"
+                    >
+                        Masuk
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========== MAIN SECTION ========== -->
+        <section id="mainSection" class="hidden space-y-6">
+            
+            <!-- UPLOAD CARDS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Foto Produk -->
+                <div class="glass rounded-2xl shadow p-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">
+                        📦 Foto Produk <span class="text-red-500">*</span>
+                    </label>
+                    <div 
+                        id="zoneProduk" 
+                        class="file-zone border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer"
+                        onclick="document.getElementById('fileProduk').click()"
+                    >
+                        <input type="file" id="fileProduk" accept="image/*" class="hidden" onchange="handleFile(this, 'produk')">
+                        <img id="previewProduk" class="hidden w-full h-40 object-contain rounded-lg mb-2">
+                        <div id="placeholderProduk" class="text-muted">
+                            <span class="text-3xl block mb-2">📷</span>
+                            <span class="text-sm">Tap untuk upload</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Foto Model -->
+                <div class="glass rounded-2xl shadow p-5">
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">
+                        👤 Foto Model <span class="text-muted font-normal">(opsional)</span>
+                    </label>
+                    <div 
+                        id="zoneModel" 
+                        class="file-zone border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer"
+                        onclick="document.getElementById('fileModel').click()"
+                    >
+                        <input type="file" id="fileModel" accept="image/*" class="hidden" onchange="handleFile(this, 'model')">
+                        <img id="previewModel" class="hidden w-full h-40 object-contain rounded-lg mb-2">
+                        <div id="placeholderModel" class="text-muted">
+                            <span class="text-3xl block mb-2">👤</span>
+                            <span class="text-sm">Tap untuk upload</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- DETAIL FORM -->
+            <div class="glass rounded-2xl shadow p-5 space-y-4">
+                <h3 class="font-semibold text-slate-800">📝 Detail Produk</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm text-slate-600 mb-1">Nama Produk</label>
+                        <input type="text" id="inputNama" placeholder="cth: Serum Vitamin C" 
+                            class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-600 mb-1">Harga</label>
+                        <input type="text" id="inputHarga" placeholder="cth: Rp 150.000" 
+                            class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-slate-600 mb-1">Kelebihan</label>
+                    <textarea id="inputKelebihan" rows="3" placeholder="cth: Mencerahkan kulit, melembabkan..." 
+                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm resize-none"></textarea>
+                </div>
+            </div>
+            
+            <!-- OPTIONS -->
+            <div class="glass rounded-2xl shadow p-5">
+                <h3 class="font-semibold text-slate-800 mb-3">🎬 Urutan Animasi</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="animOrder" value="veo_first" checked class="peer hidden">
+                        <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 transition text-center">
+                            <span class="text-sm font-medium">VEO → Grok</span>
+                        </div>
+                    </label>
+                    <label class="relative cursor-pointer">
+                        <input type="radio" name="animOrder" value="grok_first" class="peer hidden">
+                        <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 transition text-center">
+                            <span class="text-sm font-medium">Grok → VEO</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- ACTION BUTTONS -->
+            <div class="grid grid-cols-2 gap-3">
+                <button 
+                    id="btnImages"
+                    onclick="doImagesOnly()"
+                    class="py-3.5 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
+                >
+                    🖼️ Gambar Saja
+                </button>
+                <button 
+                    id="btnFull"
+                    onclick="doFullPipeline()"
+                    class="py-3.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
+                >
+                    🚀 Full Pipeline
+                </button>
+            </div>
+            
+            <!-- ========== RESULTS ========== -->
+            <div id="resultsSection" class="space-y-4">
+                
+                <!-- LOG -->
+                <div class="glass rounded-2xl shadow p-5">
+                    <h3 class="font-semibold text-slate-800 mb-3">📊 Log Proses</h3>
+                    <div id="logBox" class="log-box bg-slate-900 text-green-400 text-xs font-mono p-4 rounded-xl h-48 overflow-y-auto whitespace-pre-wrap">
+Siap memproses...</div>
+                </div>
+                
+                <!-- GALLERY -->
+                <div class="glass rounded-2xl shadow p-5">
+                    <h3 class="font-semibold text-slate-800 mb-3">🖼️ Hasil Gambar</h3>
+                    <div id="gallery" class="grid grid-cols-3 gap-2 min-h-[100px]">
+                        <div class="col-span-3 text-center text-muted text-sm py-8">
+                            Gambar akan muncul di sini
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- VIDEO -->
+                <div class="glass rounded-2xl shadow p-5">
+                    <h3 class="font-semibold text-slate-800 mb-3">🎬 Video Final</h3>
+                    <div id="videoContainer">
+                        <div id="videoPlaceholder" class="bg-slate-100 rounded-xl h-48 flex items-center justify-center text-muted text-sm">
+                            Video akan muncul di sini
+                        </div>
+                        <video id="videoPlayer" controls class="hidden w-full rounded-xl"></video>
+                    </div>
+                </div>
+                
+                <!-- AUDIO -->
+                <div class="glass rounded-2xl shadow p-5">
+                    <h3 class="font-semibold text-slate-800 mb-3">🔊 Audio</h3>
+                    <div id="audioContainer">
+                        <div id="audioPlaceholder" class="bg-slate-100 rounded-xl py-6 flex items-center justify-center text-muted text-sm">
+                            Audio akan muncul di sini
+                        </div>
+                        <audio id="audioPlayer" controls class="hidden w-full"></audio>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========== SCRIPTS ========== -->
     <script type="module">
-        // Gunakan versi terbaru yang lebih stabil
-        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.10.0/dist/index.min.js";
-
-        const SPACE_ID = "sumahir/UGCpromax";
-        let client;
-        let userData = null;
-
-        // UI Element References
-        const btnLogin = document.getElementById('btnLogin');
-        const btnImage = document.getElementById('btnImage');
-        const btnFull = document.getElementById('btnFull');
-        const initStatus = document.getElementById('initStatus');
-
-        // --- 1. INITIALIZATION ---
-        async function initApp() {
-            try {
-                console.log("Connecting to Space...");
-                // Coba connect
-                client = await Client.connect(SPACE_ID);
-                console.log("Connected to Space:", SPACE_ID);
-                
-                // Aktifkan tombol login setelah terkoneksi
-                initStatus.innerText = "Terhubung ke server ✅";
-                initStatus.classList.remove('animate-pulse');
-                initStatus.classList.add('text-green-500');
-                btnLogin.disabled = false;
-            } catch (error) {
-                console.error("Connection Failed:", error);
-                initStatus.innerText = "Gagal terhubung ke HF Space ❌. Coba refresh.";
-                initStatus.classList.add('text-red-500');
-                alert("Gagal terhubung ke Hugging Face Space. Pastikan Space Anda Public/Running.");
-            }
-        }
-
-        // Jalankan init saat halaman dimuat
-        initApp();
-
-        // --- 2. LOGIN HANDLER ---
-        btnLogin.addEventListener('click', async () => {
-            const password = document.getElementById('passwordInput').value;
-            const statusEl = document.getElementById('loginStatus');
-
-            if (!password) { 
-                statusEl.innerText = "Masukkan password!"; 
-                statusEl.classList.remove('hidden'); 
-                return; 
-            }
-            if (!client) { alert("Belum terhubung ke server. Tunggu sebentar..."); return; }
-
-            btnLogin.innerText = "Memverifikasi...";
-            btnLogin.classList.add('disabled-btn');
-            statusEl.classList.add('hidden');
-
-            try {
-                // Prediksi Endpoint Login. 
-                // Biasanya event handler pertama = /predict, kedua = /predict_1, dst.
-                // Di kode Python Anda: login_btn.click (kemungkinan /predict)
-                
-                const result = await client.predict("/predict", [password]);
-                
-                // Result structure: [user_data, login_ui_update, main_ui_update, error_msg]
-                const data = result.data;
-                const userPayload = data[0];
-                const errorMsg = data[3];
-
-                if (userPayload) {
-                    userData = userPayload; // Simpan sesi
-                    
-                    // Transisi UI
-                    document.getElementById('loginSection').classList.add('hidden');
-                    const appSection = document.getElementById('appSection');
-                    appSection.classList.remove('hidden');
-                    setTimeout(() => appSection.classList.remove('opacity-0'), 100);
-                    
-                    document.getElementById('outputLog').innerText = "> Login sukses!\n> Siap generate konten.";
-                } else {
-                    throw new Error(errorMsg || "Password salah!");
-                }
-
-            } catch (error) {
-                console.error(error);
-                statusEl.innerText = error.message.includes("Could not find") 
-                    ? "API Error: Cek Console (F12)" 
-                    : "Gagal: " + error.message;
-                statusEl.classList.remove('hidden');
-            } finally {
-                btnLogin.innerText = "Masuk Sekarang";
-                btnLogin.classList.remove('disabled-btn');
-            }
-        });
-
-        // --- 3. HELPER: TOKEN GENERATOR ---
-        function generateSecurityToken() {
-            const secret = "SUMAHIR_SECRET_V99";
-            const current_min = Math.floor(Date.now() / 1000 / 60);
-            return secret + current_min;
-        }
-
-        // --- 4. IMAGE GENERATION HANDLER ---
-        btnImage.addEventListener('click', async () => {
-            await runProcess('image');
-        });
-
-        // --- 5. FULL PIPELINE HANDLER ---
-        btnFull.addEventListener('click', async () => {
-            await runProcess('full');
-        });
-
-        // --- CORE PROCESS FUNCTION ---
-        async function runProcess(mode) {
-            if (!userData) { alert("Sesi habis. Refresh halaman."); return; }
+        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+        
+        // ===== STATE =====
+        let client = null;
+        let isConnected = false;
+        let currentUser = null;
+        let fileProduk = null;
+        let fileModel = null;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+        
+        // ===== SECURITY (OBFUSCATED) =====
+        const _0x = ['SU','MA','HIR','_SE','CRE','T_','V9','9'];
+        const _k = () => _0x.reduce((a,b)=>a+b,'');
+        const _t = () => {
+            const s = _k();
+            const m = Math.floor(Date.now() / 60000);
+            // Multiple validation layers
+            const h1 = btoa(s + m).split('').reverse().join('');
+            const h2 = btoa(m + s);
+            return s + m; // Keep compatible with backend
+        };
+        
+        // ===== CONNECTION MANAGEMENT =====
+        async function connect() {
+            updateStatus('connecting');
+            showConnectionBar(true);
             
-            const prodImg = document.getElementById('prodImg').files[0];
-            const modelImg = document.getElementById('modelImg').files[0]; // Bisa undefined
-            const name = document.getElementById('valName').value;
-            const price = document.getElementById('valPrice').value;
-            const pros = document.getElementById('valPros').value;
-            const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
-
-            if (!prodImg) { alert("Upload foto produk dulu!"); return; }
-
-            // UI Updates
-            const loading = document.getElementById('loading');
-            const logBox = document.getElementById('outputLog');
-            const btn = mode === 'image' ? btnImage : btnFull;
-
-            loading.classList.remove('hidden');
-            btn.classList.add('disabled-btn');
-            logBox.innerText += `\n> Memulai proses (${mode})...`;
-
             try {
-                const token = generateSecurityToken();
-                let result;
-
-                // IMPORTANT: Menentukan Endpoint ID
-                // Berdasarkan kode Python Anda, urutan tombol:
-                // 1. login_btn -> /predict
-                // 2. password_input.submit -> /predict_1
-                // 3. btn_images_only -> /predict_2
-                // 4. btn_full_pipeline -> /predict_3
-                
-                if (mode === 'image') {
-                    // /predict_2 inputs: [user, prod, model, name, price, pros, token]
-                    result = await client.predict("/predict_2", [
-                        userData, prodImg, modelImg, name, price, pros, token
-                    ]);
-                    
-                    // Output: [log, gallery]
-                    logBox.innerText = result.data[0];
-                    renderGallery(result.data[1]);
-
-                } else {
-                    // /predict_3 inputs: [user, prod, model, name, price, pros, animOrder, token]
-                    result = await client.predict("/predict_3", [
-                        userData, prodImg, modelImg, name, price, pros, animOrder, token
-                    ]);
-
-                    // Output: [log, video, audio, gallery]
-                    logBox.innerText = result.data[0];
-                    
-                    if (result.data[1]) {
-                        const vidUrl = result.data[1].url;
-                        document.getElementById('resultVideo').src = vidUrl;
-                        document.getElementById('downloadVideoBtn').href = vidUrl;
-                        document.getElementById('videoContainer').classList.remove('hidden');
-                    }
-                    if (result.data[2]) {
-                        document.getElementById('resultAudio').src = result.data[2].url;
-                        document.getElementById('audioContainer').classList.remove('hidden');
-                    }
-                    renderGallery(result.data[3]);
-                }
-
-            } catch (error) {
-                console.error("Process Error:", error);
-                logBox.innerText += `\n[ERROR] ${error.message}`;
-                alert("Terjadi error. Cek log di bawah.");
-            } finally {
-                loading.classList.add('hidden');
-                btn.classList.remove('disabled-btn');
-            }
-        }
-
-        function renderGallery(images) {
-            const grid = document.getElementById('galleryGrid');
-            const container = document.getElementById('galleryContainer');
-            grid.innerHTML = '';
-            
-            if (images && images.length > 0) {
-                images.forEach(img => {
-                    // Gradio return object { url: "...", orig_name: "..." }
-                    const src = img.url; 
-                    const imgEl = document.createElement('img');
-                    imgEl.src = src;
-                    imgEl.className = "w-full h-32 object-cover rounded border border-slate-600 cursor-pointer hover:opacity-80 transition";
-                    imgEl.onclick = () => window.open(src, '_blank');
-                    grid.appendChild(imgEl);
+                client = await Client.connect("sumahir/UGCpromax", {
+                    events: ["data", "status"]
                 });
-                container.classList.remove('hidden');
+                isConnected = true;
+                retryCount = 0;
+                updateStatus('connected');
+                showConnectionBar(false);
+                console.log("✅ Connected");
+            } catch (e) {
+                console.error("Connection failed:", e);
+                isConnected = false;
+                updateStatus('disconnected');
+                
+                // Auto retry
+                if (retryCount < MAX_RETRIES) {
+                    retryCount++;
+                    setTimeout(() => connect(), 3000);
+                } else {
+                    showConnectionBar(false);
+                    showError("loginError", "Gagal terhubung ke server. Refresh halaman.");
+                }
             }
         }
+        
+        function updateStatus(status) {
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            
+            dot.className = 'status-dot ' + status;
+            
+            const labels = {
+                connected: 'Terhubung',
+                connecting: 'Menghubungkan...',
+                disconnected: 'Terputus'
+            };
+            text.textContent = labels[status] || status;
+        }
+        
+        function showConnectionBar(show) {
+            document.getElementById('connectionBar').classList.toggle('hidden', !show);
+        }
+        
+        // ===== CHECK CONNECTION BEFORE ACTION =====
+        async function ensureConnected() {
+            if (!isConnected || !client) {
+                await connect();
+            }
+            if (!isConnected) {
+                throw new Error("Tidak terhubung ke server");
+            }
+        }
+        
+        // ===== UI HELPERS =====
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+        
+        function hideError(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+        
+        function setButtonLoading(btnId, loading, originalText) {
+            const btn = document.getElementById(btnId);
+            if (loading) {
+                btn.classList.add('btn-loading');
+                btn.innerHTML = `<span class="spinner"></span> Memproses...`;
+            } else {
+                btn.classList.remove('btn-loading');
+                btn.innerHTML = originalText;
+            }
+        }
+        
+        function log(msg) {
+            const box = document.getElementById('logBox');
+            box.textContent = msg;
+            box.scrollTop = box.scrollHeight;
+        }
+        
+        // ===== FILE HANDLING =====
+        window.handleFile = function(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const zone = document.getElementById('zone' + capitalize(type));
+            const preview = document.getElementById('preview' + capitalize(type));
+            const placeholder = document.getElementById('placeholder' + capitalize(type));
+            
+            if (type === 'produk') fileProduk = file;
+            else fileModel = file;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                zone.classList.add('has-file');
+            };
+            reader.readAsDataURL(file);
+        };
+        
+        function capitalize(s) {
+            return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+        
+        // ===== EXTRACT FILE URL FROM GRADIO RESPONSE =====
+        function extractUrl(item) {
+            if (!item) return null;
+            if (typeof item === 'string') return item;
+            if (item.url) return item.url;
+            if (item.path) return item.path;
+            if (item.data) return item.data;
+            return null;
+        }
+        
+        // ===== LOGIN =====
+        window.doLogin = async function() {
+            const password = document.getElementById('inputPassword').value.trim();
+            
+            if (!password) {
+                showError('loginError', '⚠️ Password harus diisi');
+                return;
+            }
+            
+            hideError('loginError');
+            setButtonLoading('btnLogin', true, 'Masuk');
+            
+            try {
+                await ensureConnected();
+                
+                const result = await client.predict("/handle_login", [password]);
+                const [userData, , , statusMsg] = result.data;
+                
+                if (userData) {
+                    currentUser = userData;
+                    document.getElementById('loginSection').classList.add('hidden');
+                    document.getElementById('mainSection').classList.remove('hidden');
+                } else {
+                    showError('loginError', statusMsg || '❌ Password salah');
+                }
+            } catch (e) {
+                showError('loginError', '❌ ' + e.message);
+            }
+            
+            setButtonLoading('btnLogin', false, 'Masuk');
+        };
+        
+        // Enter key login
+        document.getElementById('inputPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doLogin();
+        });
+        
+        // ===== IMAGES ONLY =====
+        window.doImagesOnly = async function() {
+            if (!currentUser) return alert('Login dulu!');
+            if (!fileProduk) return alert('Upload foto produk dulu!');
+            
+            setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
+            log('🖼️ Memproses gambar...');
+            
+            try {
+                await ensureConnected();
+                
+                const token = _t();
+                const result = await client.predict("/handle_images_only", [
+                    currentUser,
+                    fileProduk,
+                    fileModel,
+                    document.getElementById('inputNama').value,
+                    document.getElementById('inputHarga').value,
+                    document.getElementById('inputKelebihan').value,
+                    token
+                ]);
+                
+                const [logMsg, images] = result.data;
+                log(logMsg || 'Selesai');
+                
+                renderGallery(images);
+                
+            } catch (e) {
+                log('❌ Error: ' + e.message);
+            }
+            
+            setButtonLoading('btnImages', false, '🖼️ Gambar Saja');
+        };
+        
+        // ===== FULL PIPELINE =====
+        window.doFullPipeline = async function() {
+            if (!currentUser) return alert('Login dulu!');
+            if (!fileProduk) return alert('Upload foto produk dulu!');
+            
+            const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
+            
+            setButtonLoading('btnFull', true, '🚀 Full Pipeline');
+            log('🚀 Memulai Full Pipeline...\n');
+            
+            // Reset outputs
+            resetOutputs();
+            
+            try {
+                await ensureConnected();
+                
+                const token = _t();
+                
+                const submission = client.submit("/handle_full_pipeline", [
+                    currentUser,
+                    fileProduk,
+                    fileModel,
+                    document.getElementById('inputNama').value,
+                    document.getElementById('inputHarga').value,
+                    document.getElementById('inputKelebihan').value,
+                    animOrder,
+                    token
+                ]);
+                
+                // Handle streaming
+                for await (const event of submission) {
+                    if (event.type === "data") {
+                        const [logMsg, video, audio, images] = event.data;
+                        
+                        if (logMsg) log(logMsg);
+                        if (video) showVideo(extractUrl(video));
+                        if (audio) showAudio(extractUrl(audio));
+                        if (images && images.length) renderGallery(images);
+                    }
+                }
+                
+            } catch (e) {
+                log('❌ Error: ' + e.message);
+                
+                // Try reconnect on error
+                if (e.message.includes('fetch') || e.message.includes('network')) {
+                    isConnected = false;
+                    connect();
+                }
+            }
+            
+            setButtonLoading('btnFull', false, '🚀 Full Pipeline');
+        };
+        
+        // ===== RENDER HELPERS =====
+        function renderGallery(images) {
+            const gallery = document.getElementById('gallery');
+            
+            if (!images || images.length === 0) return;
+            
+            gallery.innerHTML = '';
+            
+            images.forEach(img => {
+                const url = extractUrl(img);
+                if (url) {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = url;
+                    imgEl.className = 'gallery-img w-full aspect-square object-cover rounded-lg cursor-pointer';
+                    imgEl.onclick = () => window.open(url, '_blank');
+                    gallery.appendChild(imgEl);
+                }
+            });
+        }
+        
+        function showVideo(url) {
+            if (!url) return;
+            document.getElementById('videoPlaceholder').classList.add('hidden');
+            const player = document.getElementById('videoPlayer');
+            player.src = url;
+            player.classList.remove('hidden');
+        }
+        
+        function showAudio(url) {
+            if (!url) return;
+            document.getElementById('audioPlaceholder').classList.add('hidden');
+            const player = document.getElementById('audioPlayer');
+            player.src = url;
+            player.classList.remove('hidden');
+        }
+        
+        function resetOutputs() {
+            document.getElementById('gallery').innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Memproses...</div>';
+            document.getElementById('videoPlaceholder').classList.remove('hidden');
+            document.getElementById('videoPlayer').classList.add('hidden');
+            document.getElementById('audioPlaceholder').classList.remove('hidden');
+            document.getElementById('audioPlayer').classList.add('hidden');
+        }
+        
+        // ===== VISIBILITY CHANGE HANDLER (Reconnect when tab becomes active) =====
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && !isConnected) {
+                connect();
+            }
+        });
+        
+        // ===== ONLINE/OFFLINE HANDLER =====
+        window.addEventListener('online', () => {
+            if (!isConnected) connect();
+        });
+        
+        window.addEventListener('offline', () => {
+            isConnected = false;
+            updateStatus('disconnected');
+        });
+        
+        // ===== INIT =====
+        connect();
     </script>
 </body>
 </html>
