@@ -13,13 +13,15 @@
         .input-field:focus { border-color: #8b5cf6; outline: none; ring: 2px solid rgba(139, 92, 246, 0.3); }
         .loader { border-top-color: #8b5cf6; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Hide scrollbar for gallery */
         .hide-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Tambahan Visual Feedback saat tombol ditekan */
+        button:active { transform: scale(0.98); }
+        .disabled-btn { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center bg-no-repeat bg-fixed">
     
-    <!-- Overlay Gelap -->
     <div class="absolute inset-0 bg-slate-900/90 z-0"></div>
 
     <div class="z-10 w-full max-w-4xl">
@@ -31,28 +33,29 @@
         </div>
 
         <!-- LOGIN SECTION -->
-        <div id="loginSection" class="glass rounded-2xl p-8 max-w-md mx-auto shadow-2xl">
+        <div id="loginSection" class="glass rounded-2xl p-8 max-w-md mx-auto shadow-2xl transition-all duration-500">
             <h2 class="text-2xl font-semibold mb-6 text-center">🔐 Login Access</h2>
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-2 text-slate-300">Password</label>
                     <input type="password" id="passwordInput" class="input-field w-full p-3 rounded-lg" placeholder="Masukkan password akses...">
                 </div>
-                <button onclick="doLogin()" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg transition transform hover:scale-[1.02]">
+                <!-- ID ditambahkan ke tombol -->
+                <button id="btnLogin" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold py-3 rounded-lg transition transform hover:scale-[1.02] shadow-lg">
                     Masuk Sekarang
                 </button>
                 <p id="loginStatus" class="text-center text-sm text-red-400 mt-2 hidden"></p>
+                <p id="initStatus" class="text-center text-xs text-slate-500 mt-2 animate-pulse">Menghubungkan ke server...</p>
             </div>
         </div>
 
-        <!-- MAIN APP SECTION (Hidden Awalnya) -->
-        <div id="appSection" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- MAIN APP SECTION -->
+        <div id="appSection" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-6 opacity-0 transition-opacity duration-1000">
             
-            <!-- KOLOM KIRI: INPUT -->
+            <!-- INPUT -->
             <div class="glass rounded-2xl p-6 space-y-6 h-fit">
                 <h3 class="text-xl font-semibold border-b border-slate-700 pb-3">🛠️ Konfigurasi</h3>
                 
-                <!-- Images -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium mb-2 text-blue-300">Foto Produk (Wajib)</label>
@@ -64,14 +67,12 @@
                     </div>
                 </div>
 
-                <!-- Text Details -->
                 <div class="space-y-3">
                     <input type="text" id="valName" placeholder="Nama Produk" class="input-field w-full p-3 rounded-lg text-sm">
                     <input type="text" id="valPrice" placeholder="Harga (Contoh: Rp 150.000)" class="input-field w-full p-3 rounded-lg text-sm">
                     <textarea id="valPros" rows="3" placeholder="Kelebihan Produk..." class="input-field w-full p-3 rounded-lg text-sm"></textarea>
                 </div>
 
-                <!-- Settings -->
                 <div>
                     <label class="block text-sm font-medium mb-2 text-slate-300">🎬 Urutan Animasi</label>
                     <div class="flex gap-4">
@@ -86,231 +87,249 @@
                     </div>
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="flex gap-3 pt-2">
-                    <button onclick="runProcess('image')" id="btnImage" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold transition border border-slate-600">
+                    <button id="btnImage" class="flex-1 bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold transition border border-slate-600">
                         🖼️ Gambar Saja
                     </button>
-                    <button onclick="runProcess('full')" id="btnFull" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 py-3 rounded-lg font-semibold text-white shadow-lg transition transform hover:scale-[1.02]">
+                    <button id="btnFull" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 py-3 rounded-lg font-semibold text-white shadow-lg transition transform hover:scale-[1.02]">
                         🚀 Full Pipeline
                     </button>
                 </div>
                 
-                <!-- Progress Loader -->
-                <div id="loading" class="hidden flex items-center justify-center gap-3 bg-slate-800/50 p-3 rounded-lg">
+                <div id="loading" class="hidden flex items-center justify-center gap-3 bg-slate-800/50 p-3 rounded-lg border border-slate-700">
                     <div class="loader ease-linear rounded-full border-2 border-t-2 border-slate-200 h-5 w-5"></div>
-                    <span class="text-sm animate-pulse text-purple-300">Sedang memproses AI... (Bisa 2-5 menit)</span>
+                    <span class="text-sm animate-pulse text-purple-300">Sedang memproses AI... (Tunggu 2-5 menit)</span>
                 </div>
             </div>
 
-            <!-- KOLOM KANAN: OUTPUT -->
+            <!-- OUTPUT -->
             <div class="glass rounded-2xl p-6 flex flex-col h-full min-h-[500px]">
                 <h3 class="text-xl font-semibold border-b border-slate-700 pb-3 mb-4">📊 Hasil Generate</h3>
                 
-                <!-- Logs -->
-                <div class="bg-black/30 rounded-lg p-3 mb-4 h-32 overflow-y-auto border border-slate-700 font-mono text-xs text-green-400" id="outputLog">
-                    > Menunggu input...
+                <div class="bg-black/40 rounded-lg p-4 mb-4 h-40 overflow-y-auto border border-slate-700 font-mono text-xs text-green-400 shadow-inner" id="outputLog">
+                    > Menunggu login...
                 </div>
 
-                <!-- Result Container -->
                 <div class="flex-1 space-y-4 overflow-y-auto hide-scroll">
-                    
-                    <!-- Video Result -->
                     <div id="videoContainer" class="hidden">
                         <p class="text-sm font-semibold mb-2 text-purple-300">🎥 Video Final</p>
-                        <video id="resultVideo" controls class="w-full rounded-lg border border-slate-600 shadow-lg bg-black"></video>
+                        <video id="resultVideo" controls class="w-full rounded-lg border border-slate-600 shadow-lg bg-black max-h-[300px]"></video>
                         <a id="downloadVideoBtn" href="#" download="ugc_video.mp4" class="block mt-2 text-center text-sm text-blue-400 hover:text-blue-300 underline">Download Video</a>
                     </div>
-
-                    <!-- Audio Result -->
                     <div id="audioContainer" class="hidden">
                         <p class="text-sm font-semibold mb-2 text-blue-300">🎵 Audio</p>
                         <audio id="resultAudio" controls class="w-full"></audio>
                     </div>
-
-                    <!-- Gallery Result -->
                     <div id="galleryContainer" class="hidden">
                         <p class="text-sm font-semibold mb-2 text-slate-300">📸 Galeri Gambar</p>
-                        <div id="galleryGrid" class="grid grid-cols-2 gap-2">
-                            <!-- Images injected here -->
-                        </div>
+                        <div id="galleryGrid" class="grid grid-cols-2 gap-2"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Script Module -->
+    <!-- SCRIPT UTAMA -->
     <script type="module">
-        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.1.4/dist/index.min.js";
+        // Gunakan versi terbaru yang lebih stabil
+        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client@0.10.0/dist/index.min.js";
 
-        // Global Variables
+        const SPACE_ID = "sumahir/UGCpromax";
         let client;
-        let userData = null; // Menyimpan session user setelah login
+        let userData = null;
 
-        // Konfigurasi Space (Ganti dengan space Anda)
-        const SPACE_ID = "sumahir/UGCpromax"; 
+        // UI Element References
+        const btnLogin = document.getElementById('btnLogin');
+        const btnImage = document.getElementById('btnImage');
+        const btnFull = document.getElementById('btnFull');
+        const initStatus = document.getElementById('initStatus');
 
-        // Fungsi Helper: Generate Token Keamanan (Sesuai Logic Python/JS Anda)
+        // --- 1. INITIALIZATION ---
+        async function initApp() {
+            try {
+                console.log("Connecting to Space...");
+                // Coba connect
+                client = await Client.connect(SPACE_ID);
+                console.log("Connected to Space:", SPACE_ID);
+                
+                // Aktifkan tombol login setelah terkoneksi
+                initStatus.innerText = "Terhubung ke server ✅";
+                initStatus.classList.remove('animate-pulse');
+                initStatus.classList.add('text-green-500');
+                btnLogin.disabled = false;
+            } catch (error) {
+                console.error("Connection Failed:", error);
+                initStatus.innerText = "Gagal terhubung ke HF Space ❌. Coba refresh.";
+                initStatus.classList.add('text-red-500');
+                alert("Gagal terhubung ke Hugging Face Space. Pastikan Space Anda Public/Running.");
+            }
+        }
+
+        // Jalankan init saat halaman dimuat
+        initApp();
+
+        // --- 2. LOGIN HANDLER ---
+        btnLogin.addEventListener('click', async () => {
+            const password = document.getElementById('passwordInput').value;
+            const statusEl = document.getElementById('loginStatus');
+
+            if (!password) { 
+                statusEl.innerText = "Masukkan password!"; 
+                statusEl.classList.remove('hidden'); 
+                return; 
+            }
+            if (!client) { alert("Belum terhubung ke server. Tunggu sebentar..."); return; }
+
+            btnLogin.innerText = "Memverifikasi...";
+            btnLogin.classList.add('disabled-btn');
+            statusEl.classList.add('hidden');
+
+            try {
+                // Prediksi Endpoint Login. 
+                // Biasanya event handler pertama = /predict, kedua = /predict_1, dst.
+                // Di kode Python Anda: login_btn.click (kemungkinan /predict)
+                
+                const result = await client.predict("/predict", [password]);
+                
+                // Result structure: [user_data, login_ui_update, main_ui_update, error_msg]
+                const data = result.data;
+                const userPayload = data[0];
+                const errorMsg = data[3];
+
+                if (userPayload) {
+                    userData = userPayload; // Simpan sesi
+                    
+                    // Transisi UI
+                    document.getElementById('loginSection').classList.add('hidden');
+                    const appSection = document.getElementById('appSection');
+                    appSection.classList.remove('hidden');
+                    setTimeout(() => appSection.classList.remove('opacity-0'), 100);
+                    
+                    document.getElementById('outputLog').innerText = "> Login sukses!\n> Siap generate konten.";
+                } else {
+                    throw new Error(errorMsg || "Password salah!");
+                }
+
+            } catch (error) {
+                console.error(error);
+                statusEl.innerText = error.message.includes("Could not find") 
+                    ? "API Error: Cek Console (F12)" 
+                    : "Gagal: " + error.message;
+                statusEl.classList.remove('hidden');
+            } finally {
+                btnLogin.innerText = "Masuk Sekarang";
+                btnLogin.classList.remove('disabled-btn');
+            }
+        });
+
+        // --- 3. HELPER: TOKEN GENERATOR ---
         function generateSecurityToken() {
             const secret = "SUMAHIR_SECRET_V99";
             const current_min = Math.floor(Date.now() / 1000 / 60);
             return secret + current_min;
         }
 
-        // ================= LOGIN FUNCTION =================
-        window.doLogin = async function() {
-            const password = document.getElementById('passwordInput').value;
-            const statusEl = document.getElementById('loginStatus');
-            const btn = document.querySelector('button[onclick="doLogin()"]');
+        // --- 4. IMAGE GENERATION HANDLER ---
+        btnImage.addEventListener('click', async () => {
+            await runProcess('image');
+        });
+
+        // --- 5. FULL PIPELINE HANDLER ---
+        btnFull.addEventListener('click', async () => {
+            await runProcess('full');
+        });
+
+        // --- CORE PROCESS FUNCTION ---
+        async function runProcess(mode) {
+            if (!userData) { alert("Sesi habis. Refresh halaman."); return; }
             
-            if (!password) { statusEl.innerText = "Masukkan password!"; statusEl.classList.remove('hidden'); return; }
-
-            btn.innerText = "Memverifikasi...";
-            btn.disabled = true;
-            statusEl.classList.add('hidden');
-
-            try {
-                // Connect ke Space
-                client = await Client.connect(SPACE_ID);
-                
-                // Panggil fungsi handle_login (Biasanya index 0 atau 1 tergantung urutan di Blocks)
-                // Kita coba panggil endpoint /predict pertama yang sesuai login
-                // Berdasarkan kode Anda: login_btn.click(fn=handle_login...)
-                
-                const result = await client.predict("/predict", [password]); 
-                // Catatan: Nama endpoint default Gradio biasanya /predict, /predict_1, dst.
-                // Jika error, coba cek API Info di footer Space HF -> "View API".
-                
-                // Result biasanya [userData, login_section_update, main_section_update, status_msg]
-                // Tapi lewat API client, kita dapat datanya langsung.
-                
-                const responseData = result.data;
-                const userPayload = responseData[0]; // Ini adalah user_data JSON
-                const errorMessage = responseData[3]; // Pesan error string
-
-                if (userPayload) {
-                    userData = userPayload; // Simpan data user di memori browser
-                    document.getElementById('loginSection').classList.add('hidden');
-                    document.getElementById('appSection').classList.remove('hidden');
-                    document.getElementById('appSection').classList.add('fade-in');
-                    console.log("Login Success. User Data loaded.");
-                } else {
-                    throw new Error(errorMessage || "Password Salah");
-                }
-
-            } catch (error) {
-                console.error(error);
-                statusEl.innerText = "Gagal: " + error.message;
-                statusEl.classList.remove('hidden');
-            } finally {
-                btn.innerText = "Masuk Sekarang";
-                btn.disabled = false;
-            }
-        }
-
-        // ================= PROCESS FUNCTION =================
-        window.runProcess = async function(mode) {
             const prodImg = document.getElementById('prodImg').files[0];
-            const modelImg = document.getElementById('modelImg').files[0];
+            const modelImg = document.getElementById('modelImg').files[0]; // Bisa undefined
             const name = document.getElementById('valName').value;
             const price = document.getElementById('valPrice').value;
             const pros = document.getElementById('valPros').value;
             const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
-            
-            // UI Elements
+
+            if (!prodImg) { alert("Upload foto produk dulu!"); return; }
+
+            // UI Updates
             const loading = document.getElementById('loading');
             const logBox = document.getElementById('outputLog');
-            const videoCont = document.getElementById('videoContainer');
-            const audioCont = document.getElementById('audioContainer');
-            const galleryCont = document.getElementById('galleryContainer');
-            const galleryGrid = document.getElementById('galleryGrid');
-
-            if (!userData) { alert("Sesi habis, silakan refresh dan login lagi."); return; }
-            if (!prodImg) { alert("Wajib upload foto produk!"); return; }
+            const btn = mode === 'image' ? btnImage : btnFull;
 
             loading.classList.remove('hidden');
-            logBox.innerText = "> Memulai proses ke server...\n";
-            
-            // Reset Output
-            videoCont.classList.add('hidden');
-            audioCont.classList.add('hidden');
-            galleryCont.classList.add('hidden');
-            galleryGrid.innerHTML = '';
+            btn.classList.add('disabled-btn');
+            logBox.innerText += `\n> Memulai proses (${mode})...`;
 
             try {
                 const token = generateSecurityToken();
-                console.log("Generated Token:", token);
-
                 let result;
+
+                // IMPORTANT: Menentukan Endpoint ID
+                // Berdasarkan kode Python Anda, urutan tombol:
+                // 1. login_btn -> /predict
+                // 2. password_input.submit -> /predict_1
+                // 3. btn_images_only -> /predict_2
+                // 4. btn_full_pipeline -> /predict_3
                 
                 if (mode === 'image') {
-                    // Endpoint untuk handle_images_only
-                    // Inputs: [user_data, prod, model, name, price, pros, token]
-                    // Perlu cek urutan API index yang benar. 
-                    // Asumsi: handle_images_only adalah fungsi kedua yang dibuat tombolnya
-                    
-                    result = await client.predict("/predict_1", [
+                    // /predict_2 inputs: [user, prod, model, name, price, pros, token]
+                    result = await client.predict("/predict_2", [
                         userData, prodImg, modelImg, name, price, pros, token
                     ]);
-
-                    // Outputs: [log, gallery]
+                    
+                    // Output: [log, gallery]
                     logBox.innerText = result.data[0];
-                    renderGallery(result.data[1]); // Image gallery
+                    renderGallery(result.data[1]);
 
                 } else {
-                    // Endpoint untuk handle_full_pipeline
-                    // Inputs: [user, prod, model, name, price, pros, anim_order, token]
-                    
-                    result = await client.predict("/predict_2", [
+                    // /predict_3 inputs: [user, prod, model, name, price, pros, animOrder, token]
+                    result = await client.predict("/predict_3", [
                         userData, prodImg, modelImg, name, price, pros, animOrder, token
                     ]);
 
-                    // Outputs: [log, video, audio, gallery]
+                    // Output: [log, video, audio, gallery]
                     logBox.innerText = result.data[0];
                     
-                    // Render Video
                     if (result.data[1]) {
-                        const videoUrl = result.data[1].url; // Gradio Client return object {url: ..., orig_name: ...}
-                        document.getElementById('resultVideo').src = videoUrl;
-                        document.getElementById('downloadVideoBtn').href = videoUrl;
-                        videoCont.classList.remove('hidden');
+                        const vidUrl = result.data[1].url;
+                        document.getElementById('resultVideo').src = vidUrl;
+                        document.getElementById('downloadVideoBtn').href = vidUrl;
+                        document.getElementById('videoContainer').classList.remove('hidden');
                     }
-
-                    // Render Audio
                     if (result.data[2]) {
                         document.getElementById('resultAudio').src = result.data[2].url;
-                        audioCont.classList.remove('hidden');
+                        document.getElementById('audioContainer').classList.remove('hidden');
                     }
-
-                    // Render Gallery
                     renderGallery(result.data[3]);
                 }
 
             } catch (error) {
-                console.error(error);
-                logBox.innerText += "\n[ERROR] " + error.message;
-                alert("Terjadi kesalahan proses. Cek log.");
+                console.error("Process Error:", error);
+                logBox.innerText += `\n[ERROR] ${error.message}`;
+                alert("Terjadi error. Cek log di bawah.");
             } finally {
                 loading.classList.add('hidden');
+                btn.classList.remove('disabled-btn');
             }
         }
 
         function renderGallery(images) {
-            const galleryGrid = document.getElementById('galleryGrid');
-            const galleryCont = document.getElementById('galleryContainer');
+            const grid = document.getElementById('galleryGrid');
+            const container = document.getElementById('galleryContainer');
+            grid.innerHTML = '';
             
             if (images && images.length > 0) {
                 images.forEach(img => {
-                    // img bisa berupa object {url: ...} atau base64 tergantung config
-                    const src = img.url || img; 
+                    // Gradio return object { url: "...", orig_name: "..." }
+                    const src = img.url; 
                     const imgEl = document.createElement('img');
                     imgEl.src = src;
                     imgEl.className = "w-full h-32 object-cover rounded border border-slate-600 cursor-pointer hover:opacity-80 transition";
                     imgEl.onclick = () => window.open(src, '_blank');
-                    galleryGrid.appendChild(imgEl);
+                    grid.appendChild(imgEl);
                 });
-                galleryCont.classList.remove('hidden');
+                container.classList.remove('hidden');
             }
         }
     </script>
