@@ -328,340 +328,341 @@ Siap memproses...</div>
     </div>
 
     <!-- ========== SCRIPTS ========== -->
-    <script type="module">
-        import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+<script type="module">
+    import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+    
+    // ===== STATE =====
+    let client = null;
+    let isConnected = false;
+    let currentUser = null;
+    let fileProduk = null;
+    let fileModel = null;
+    let retryCount = 0;
+    const MAX_RETRIES = 3;
+    
+    const _0x = ['SU','MA','HIR','_SE','CRE','T_','V9','9'];
+    const _k = () => _0x.reduce((a,b)=>a+b,'');
+    const _t = () => _k() + Math.floor(Date.now() / 60000);
+    
+    // ===== CONNECTION =====
+    async function connect() {
+        updateStatus('connecting');
+        showConnectionBar(true);
         
-        // ===== STATE =====
-        let client = null;
-        let isConnected = false;
-        let currentUser = null;
-        let fileProduk = null;
-        let fileModel = null;
-        let retryCount = 0;
-        const MAX_RETRIES = 3;
-        
-        // ===== SECURITY (OBFUSCATED) =====
-        const _0x = ['SU','MA','HIR','_SE','CRE','T_','V9','9'];
-        const _k = () => _0x.reduce((a,b)=>a+b,'');
-        const _t = () => {
-            const s = _k();
-            const m = Math.floor(Date.now() / 60000);
-            // Multiple validation layers
-            const h1 = btoa(s + m).split('').reverse().join('');
-            const h2 = btoa(m + s);
-            return s + m; // Keep compatible with backend
-        };
-        
-        // ===== CONNECTION MANAGEMENT =====
-        async function connect() {
-            updateStatus('connecting');
-            showConnectionBar(true);
+        try {
+            client = await Client.connect("sumahir/UGCpromax");
+            isConnected = true;
+            retryCount = 0;
+            updateStatus('connected');
+            showConnectionBar(false);
+            console.log("✅ Connected");
+        } catch (e) {
+            console.error("Connection failed:", e);
+            isConnected = false;
+            updateStatus('disconnected');
             
-            try {
-                client = await Client.connect("sumahir/UGCpromax", {
-                    events: ["data", "status"]
-                });
-                isConnected = true;
-                retryCount = 0;
-                updateStatus('connected');
-                showConnectionBar(false);
-                console.log("✅ Connected");
-            } catch (e) {
-                console.error("Connection failed:", e);
-                isConnected = false;
-                updateStatus('disconnected');
-                
-                // Auto retry
-                if (retryCount < MAX_RETRIES) {
-                    retryCount++;
-                    setTimeout(() => connect(), 3000);
-                } else {
-                    showConnectionBar(false);
-                    showError("loginError", "Gagal terhubung ke server. Refresh halaman.");
-                }
-            }
-        }
-        
-        function updateStatus(status) {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            
-            dot.className = 'status-dot ' + status;
-            
-            const labels = {
-                connected: 'Terhubung',
-                connecting: 'Menghubungkan...',
-                disconnected: 'Terputus'
-            };
-            text.textContent = labels[status] || status;
-        }
-        
-        function showConnectionBar(show) {
-            document.getElementById('connectionBar').classList.toggle('hidden', !show);
-        }
-        
-        // ===== CHECK CONNECTION BEFORE ACTION =====
-        async function ensureConnected() {
-            if (!isConnected || !client) {
-                await connect();
-            }
-            if (!isConnected) {
-                throw new Error("Tidak terhubung ke server");
-            }
-        }
-        
-        // ===== UI HELPERS =====
-        function showError(id, msg) {
-            const el = document.getElementById(id);
-            el.textContent = msg;
-            el.classList.remove('hidden');
-        }
-        
-        function hideError(id) {
-            document.getElementById(id).classList.add('hidden');
-        }
-        
-        function setButtonLoading(btnId, loading, originalText) {
-            const btn = document.getElementById(btnId);
-            if (loading) {
-                btn.classList.add('btn-loading');
-                btn.innerHTML = `<span class="spinner"></span> Memproses...`;
+            if (retryCount < MAX_RETRIES) {
+                retryCount++;
+                setTimeout(() => connect(), 3000);
             } else {
-                btn.classList.remove('btn-loading');
-                btn.innerHTML = originalText;
+                showConnectionBar(false);
+                showError("loginError", "Gagal terhubung. Refresh halaman.");
             }
         }
+    }
+    
+    function updateStatus(status) {
+        const dot = document.getElementById('statusDot');
+        const text = document.getElementById('statusText');
+        dot.className = 'status-dot ' + status;
+        text.textContent = {connected:'Terhubung', connecting:'Menghubungkan...', disconnected:'Terputus'}[status];
+    }
+    
+    function showConnectionBar(show) {
+        document.getElementById('connectionBar').classList.toggle('hidden', !show);
+    }
+    
+    async function ensureConnected() {
+        if (!isConnected || !client) await connect();
+        if (!isConnected) throw new Error("Tidak terhubung ke server");
+    }
+    
+    // ===== UI HELPERS =====
+    function showError(id, msg) {
+        const el = document.getElementById(id);
+        el.textContent = msg;
+        el.classList.remove('hidden');
+    }
+    
+    function hideError(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+    
+    function setButtonLoading(btnId, loading, originalText) {
+        const btn = document.getElementById(btnId);
+        btn.disabled = loading;
+        btn.innerHTML = loading ? `<span class="spinner"></span> Memproses...` : originalText;
+    }
+    
+    function log(msg) {
+        const box = document.getElementById('logBox');
+        box.textContent = msg;
+        box.scrollTop = box.scrollHeight;
+    }
+    
+    // ===== FILE HANDLING =====
+    window.handleFile = function(input, type) {
+        const file = input.files[0];
+        if (!file) return;
         
-        function log(msg) {
-            const box = document.getElementById('logBox');
-            box.textContent = msg;
-            box.scrollTop = box.scrollHeight;
-        }
+        const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+        const zone = document.getElementById('zone' + cap(type));
+        const preview = document.getElementById('preview' + cap(type));
+        const placeholder = document.getElementById('placeholder' + cap(type));
         
-        // ===== FILE HANDLING =====
-        window.handleFile = function(input, type) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const zone = document.getElementById('zone' + capitalize(type));
-            const preview = document.getElementById('preview' + capitalize(type));
-            const placeholder = document.getElementById('placeholder' + capitalize(type));
-            
-            if (type === 'produk') fileProduk = file;
-            else fileModel = file;
-            
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                preview.src = e.target.result;
-                preview.classList.remove('hidden');
-                placeholder.classList.add('hidden');
-                zone.classList.add('has-file');
-            };
-            reader.readAsDataURL(file);
+        if (type === 'produk') fileProduk = file;
+        else fileModel = file;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            zone.classList.add('has-file');
         };
+        reader.readAsDataURL(file);
+    };
+    
+    // ===== EXTRACT URL - DIPERBAIKI =====
+    function extractUrl(item) {
+        if (!item) return null;
         
-        function capitalize(s) {
-            return s.charAt(0).toUpperCase() + s.slice(1);
-        }
+        // Debug
+        console.log("📦 Raw item:", item);
         
-        // ===== EXTRACT FILE URL FROM GRADIO RESPONSE =====
-        function extractUrl(item) {
-            if (!item) return null;
-            if (typeof item === 'string') return item;
+        // String langsung
+        if (typeof item === 'string') return item;
+        
+        // Object dengan berbagai kemungkinan key
+        if (typeof item === 'object') {
+            // Gradio format baru
             if (item.url) return item.url;
             if (item.path) return item.path;
             if (item.data) return item.data;
-            return null;
+            
+            // Nested image object
+            if (item.image) return extractUrl(item.image);
+            
+            // Tuple format [url, caption]
+            if (Array.isArray(item) && item[0]) return extractUrl(item[0]);
         }
         
-        // ===== LOGIN =====
-        window.doLogin = async function() {
-            const password = document.getElementById('inputPassword').value.trim();
-            
-            if (!password) {
-                showError('loginError', '⚠️ Password harus diisi');
-                return;
-            }
-            
-            hideError('loginError');
-            setButtonLoading('btnLogin', true, 'Masuk');
-            
-            try {
-                await ensureConnected();
-                
-                const result = await client.predict("/handle_login", [password]);
-                const [userData, , , statusMsg] = result.data;
-                
-                if (userData) {
-                    currentUser = userData;
-                    document.getElementById('loginSection').classList.add('hidden');
-                    document.getElementById('mainSection').classList.remove('hidden');
-                } else {
-                    showError('loginError', statusMsg || '❌ Password salah');
-                }
-            } catch (e) {
-                showError('loginError', '❌ ' + e.message);
-            }
-            
-            setButtonLoading('btnLogin', false, 'Masuk');
-        };
+        return null;
+    }
+    
+    // ===== RENDER GALLERY - DIPERBAIKI =====
+    function renderGallery(images) {
+        const gallery = document.getElementById('gallery');
         
-        // Enter key login
-        document.getElementById('inputPassword').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') doLogin();
+        console.log("🖼️ Raw images data:", images);
+        
+        if (!images || (Array.isArray(images) && images.length === 0)) {
+            console.log("⚠️ No images to render");
+            return;
+        }
+        
+        // Pastikan images adalah array
+        const imgArray = Array.isArray(images) ? images : [images];
+        
+        gallery.innerHTML = '';
+        let rendered = 0;
+        
+        imgArray.forEach((img, i) => {
+            const url = extractUrl(img);
+            console.log(`  Image ${i}:`, url);
+            
+            if (url) {
+                const imgEl = document.createElement('img');
+                imgEl.src = url;
+                imgEl.className = 'gallery-img w-full aspect-square object-cover rounded-lg cursor-pointer';
+                imgEl.onclick = () => window.open(url, '_blank');
+                imgEl.onerror = () => console.error("❌ Failed to load:", url);
+                gallery.appendChild(imgEl);
+                rendered++;
+            }
         });
         
-        // ===== IMAGES ONLY =====
-        window.doImagesOnly = async function() {
-            if (!currentUser) return alert('Login dulu!');
-            if (!fileProduk) return alert('Upload foto produk dulu!');
+        if (rendered === 0) {
+            gallery.innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Tidak ada gambar</div>';
+        }
+    }
+    
+    function showVideo(url) {
+        if (!url) return;
+        console.log("🎬 Video URL:", url);
+        document.getElementById('videoPlaceholder').classList.add('hidden');
+        const player = document.getElementById('videoPlayer');
+        player.src = url;
+        player.classList.remove('hidden');
+    }
+    
+    function showAudio(url) {
+        if (!url) return;
+        console.log("🔊 Audio URL:", url);
+        document.getElementById('audioPlaceholder').classList.add('hidden');
+        const player = document.getElementById('audioPlayer');
+        player.src = url;
+        player.classList.remove('hidden');
+    }
+    
+    function resetOutputs() {
+        document.getElementById('gallery').innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Memproses...</div>';
+        document.getElementById('videoPlaceholder').classList.remove('hidden');
+        document.getElementById('videoPlayer').classList.add('hidden');
+        document.getElementById('audioPlaceholder').classList.remove('hidden');
+        document.getElementById('audioPlayer').classList.add('hidden');
+    }
+    
+    // ===== LOGIN =====
+    window.doLogin = async function() {
+        const password = document.getElementById('inputPassword').value.trim();
+        if (!password) return showError('loginError', '⚠️ Password harus diisi');
+        
+        hideError('loginError');
+        setButtonLoading('btnLogin', true, 'Masuk');
+        
+        try {
+            await ensureConnected();
+            const result = await client.predict("/handle_login", [password]);
+            console.log("🔐 Login result:", result.data);
             
-            setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
-            log('🖼️ Memproses gambar...');
+            const [userData, , , statusMsg] = result.data;
             
-            try {
-                await ensureConnected();
-                
-                const token = _t();
-                const result = await client.predict("/handle_images_only", [
-                    currentUser,
-                    fileProduk,
-                    fileModel,
-                    document.getElementById('inputNama').value,
-                    document.getElementById('inputHarga').value,
-                    document.getElementById('inputKelebihan').value,
-                    token
-                ]);
-                
-                const [logMsg, images] = result.data;
-                log(logMsg || 'Selesai');
-                
-                renderGallery(images);
-                
-            } catch (e) {
-                log('❌ Error: ' + e.message);
+            if (userData) {
+                currentUser = userData;
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('mainSection').classList.remove('hidden');
+            } else {
+                showError('loginError', statusMsg || '❌ Password salah');
             }
+        } catch (e) {
+            console.error("Login error:", e);
+            showError('loginError', '❌ ' + e.message);
+        } finally {
+            setButtonLoading('btnLogin', false, 'Masuk');
+        }
+    };
+    
+    document.getElementById('inputPassword').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') doLogin();
+    });
+    
+    // ===== IMAGES ONLY - DIPERBAIKI =====
+    window.doImagesOnly = async function() {
+        if (!currentUser) return alert('Login dulu!');
+        if (!fileProduk) return alert('Upload foto produk dulu!');
+        
+        setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
+        log('🖼️ Memproses gambar...');
+        
+        try {
+            await ensureConnected();
             
+            const result = await client.predict("/handle_images_only", [
+                currentUser,
+                fileProduk,
+                fileModel,
+                document.getElementById('inputNama').value,
+                document.getElementById('inputHarga').value,
+                document.getElementById('inputKelebihan').value,
+                _t()
+            ]);
+            
+            console.log("📸 Images result:", result.data);
+            
+            const [logMsg, images] = result.data;
+            log(logMsg || 'Selesai');
+            renderGallery(images);
+            
+        } catch (e) {
+            console.error("Images error:", e);
+            log('❌ Error: ' + e.message);
+        } finally {
+            // SELALU reset tombol
             setButtonLoading('btnImages', false, '🖼️ Gambar Saja');
-        };
+        }
+    };
+    
+    // ===== FULL PIPELINE - DIPERBAIKI =====
+    window.doFullPipeline = async function() {
+        if (!currentUser) return alert('Login dulu!');
+        if (!fileProduk) return alert('Upload foto produk dulu!');
         
-        // ===== FULL PIPELINE =====
-        window.doFullPipeline = async function() {
-            if (!currentUser) return alert('Login dulu!');
-            if (!fileProduk) return alert('Upload foto produk dulu!');
+        const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
+        
+        setButtonLoading('btnFull', true, '🚀 Full Pipeline');
+        log('🚀 Memulai Full Pipeline...\n');
+        resetOutputs();
+        
+        try {
+            await ensureConnected();
             
-            const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
+            const job = client.submit("/handle_full_pipeline", [
+                currentUser,
+                fileProduk,
+                fileModel,
+                document.getElementById('inputNama').value,
+                document.getElementById('inputHarga').value,
+                document.getElementById('inputKelebihan').value,
+                animOrder,
+                _t()
+            ]);
             
-            setButtonLoading('btnFull', true, '🚀 Full Pipeline');
-            log('🚀 Memulai Full Pipeline...\n');
-            
-            // Reset outputs
-            resetOutputs();
-            
-            try {
-                await ensureConnected();
+            // Handle streaming dengan for await
+            for await (const event of job) {
+                console.log("📡 Event:", event);
                 
-                const token = _t();
-                
-                const submission = client.submit("/handle_full_pipeline", [
-                    currentUser,
-                    fileProduk,
-                    fileModel,
-                    document.getElementById('inputNama').value,
-                    document.getElementById('inputHarga').value,
-                    document.getElementById('inputKelebihan').value,
-                    animOrder,
-                    token
-                ]);
-                
-                // Handle streaming
-                for await (const event of submission) {
-                    if (event.type === "data") {
-                        const [logMsg, video, audio, images] = event.data;
-                        
-                        if (logMsg) log(logMsg);
-                        if (video) showVideo(extractUrl(video));
-                        if (audio) showAudio(extractUrl(audio));
-                        if (images && images.length) renderGallery(images);
-                    }
+                if (event.type === "data") {
+                    const data = event.data;
+                    console.log("📦 Data received:", data);
+                    
+                    // data = [log, video, audio, images]
+                    if (data[0]) log(data[0]);
+                    if (data[1]) showVideo(extractUrl(data[1]));
+                    if (data[2]) showAudio(extractUrl(data[2]));
+                    if (data[3] && data[3].length > 0) renderGallery(data[3]);
                 }
                 
-            } catch (e) {
-                log('❌ Error: ' + e.message);
-                
-                // Try reconnect on error
-                if (e.message.includes('fetch') || e.message.includes('network')) {
-                    isConnected = false;
-                    connect();
+                if (event.type === "status" && event.stage === "complete") {
+                    console.log("✅ Stream complete");
+                    break;
                 }
             }
             
-            setButtonLoading('btnFull', false, '🚀 Full Pipeline');
-        };
-        
-        // ===== RENDER HELPERS =====
-        function renderGallery(images) {
-            const gallery = document.getElementById('gallery');
+        } catch (e) {
+            console.error("Pipeline error:", e);
+            log('❌ Error: ' + e.message);
             
-            if (!images || images.length === 0) return;
-            
-            gallery.innerHTML = '';
-            
-            images.forEach(img => {
-                const url = extractUrl(img);
-                if (url) {
-                    const imgEl = document.createElement('img');
-                    imgEl.src = url;
-                    imgEl.className = 'gallery-img w-full aspect-square object-cover rounded-lg cursor-pointer';
-                    imgEl.onclick = () => window.open(url, '_blank');
-                    gallery.appendChild(imgEl);
-                }
-            });
-        }
-        
-        function showVideo(url) {
-            if (!url) return;
-            document.getElementById('videoPlaceholder').classList.add('hidden');
-            const player = document.getElementById('videoPlayer');
-            player.src = url;
-            player.classList.remove('hidden');
-        }
-        
-        function showAudio(url) {
-            if (!url) return;
-            document.getElementById('audioPlaceholder').classList.add('hidden');
-            const player = document.getElementById('audioPlayer');
-            player.src = url;
-            player.classList.remove('hidden');
-        }
-        
-        function resetOutputs() {
-            document.getElementById('gallery').innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Memproses...</div>';
-            document.getElementById('videoPlaceholder').classList.remove('hidden');
-            document.getElementById('videoPlayer').classList.add('hidden');
-            document.getElementById('audioPlaceholder').classList.remove('hidden');
-            document.getElementById('audioPlayer').classList.add('hidden');
-        }
-        
-        // ===== VISIBILITY CHANGE HANDLER (Reconnect when tab becomes active) =====
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible' && !isConnected) {
+            if (e.message.includes('fetch') || e.message.includes('network')) {
+                isConnected = false;
                 connect();
             }
-        });
-        
-        // ===== ONLINE/OFFLINE HANDLER =====
-        window.addEventListener('online', () => {
-            if (!isConnected) connect();
-        });
-        
-        window.addEventListener('offline', () => {
-            isConnected = false;
-            updateStatus('disconnected');
-        });
-        
-        // ===== INIT =====
-        connect();
-    </script>
+        } finally {
+            // SELALU reset tombol
+            setButtonLoading('btnFull', false, '🚀 Full Pipeline');
+        }
+    };
+    
+    // ===== EVENT LISTENERS =====
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && !isConnected) connect();
+    });
+    
+    window.addEventListener('online', () => { if (!isConnected) connect(); });
+    window.addEventListener('offline', () => { isConnected = false; updateStatus('disconnected'); });
+    
+    // ===== INIT =====
+    connect();
+</script>
 </body>
 </html>
