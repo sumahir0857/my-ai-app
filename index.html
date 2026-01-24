@@ -424,63 +424,78 @@
     }
 
     // --- SMART VIDEO LOGIC (FIXED) ---
-    const swiperInstances = []; 
-    // Menggunakan class specific agar konfigurasi aman
-    ['.swiper-service-1', '.swiper-service-2'].forEach(selector => {
-        const s = new Swiper(selector, {
-            effect: "coverflow", 
-            loop: true, // Infinity Loop
-            grabCursor: true,    
-            centeredSlides: true,
-            slidesPerView: "auto", 
-            coverflowEffect: {
-                rotate: 0, stretch: 0, depth: 120, modifier: 1.5, slideShadows: true, 
+    var swiper = new Swiper('.swiper-ugc', {
+        slidesPerView: "auto",
+        spaceBetween: 20,
+        centeredSlides: true,
+        loop: true,
+        pagination: { el: ".swiper-pagination", clickable: true },
+        autoplay: { delay: 3500, disableOnInteraction: false },
+        on: {
+            slideChange: function () {
+                stopAllVideos(); // Matikan video saat geser
             },
-            pagination: { el: ".swiper-pagination", clickable: true },
-            autoplay: { delay: 2500, disableOnInteraction: false, pauseOnMouseEnter: true }
-        });
-        swiperInstances.push(s);
+            sliderMove: function () {
+                stopAllVideos(); // Matikan saat di-drag
+            }
+        }
     });
 
-    // ==========================================
-    // 6. LOGIC VIDEO YOUTUBE
-    // ==========================================
     function loadVideo(wrapper, videoId) {
-        if (wrapper.querySelector('iframe')) return; 
+        // 1. Matikan autoplay slider agar video gak keganggu
+        if(swiper && swiper.autoplay) swiper.autoplay.stop();
 
-        // Stop Slider
-        swiperInstances.forEach(instance => instance.autoplay.stop());
+        // 2. Reset video lain
+        stopAllVideos();
 
-        // Reset video lain
-        document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
-            resetVideo(frame.parentElement);
+        // 3. Buat iframe
+        const iframe = document.createElement('iframe');
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+        
+        iframe.style.width = "100%";
+        iframe.style.height = "100%";
+        iframe.style.position = "absolute";
+        iframe.style.top = "0";
+        iframe.style.left = "0";
+        iframe.style.border = "none";
+        iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.classList.add('active-iframe');
+        
+        // 4. Masukkan ke wrapper
+        wrapper.appendChild(iframe);
+        
+        // 5. Sembunyikan tombol play bawaan
+        const btn = wrapper.querySelector('.play-btn');
+        if(btn) btn.style.display = 'none';
+    }
+
+    function stopAllVideos() {
+        // Hapus semua iframe aktif
+        document.querySelectorAll('.active-iframe').forEach(iframe => {
+            const wrapper = iframe.parentElement;
+            iframe.remove();
+            // Munculkan kembali tombol play
+            const btn = wrapper.querySelector('.play-btn');
+            if(btn) btn.style.display = 'flex';
         });
 
-        const iframe = document.createElement('iframe');
-        iframe.className = 'yt-iframe w-full h-full rounded-xl';
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
-        iframe.allow = "autoplay; encrypted-media; fullscreen";
-        iframe.allowFullscreen = true;
-
-        wrapper.appendChild(iframe);
-        const playBtn = wrapper.querySelector('.play-button');
-        if(playBtn) playBtn.style.display = 'none';
+        // Nyalakan lagi autoplay slider jika user sudah selesai nonton (opsional, tapi bagus UX-nya)
+        // if(swiper && swiper.autoplay && !swiper.autoplay.running) swiper.autoplay.start();
     }
 
-    function resetVideo(wrapper) {
-        const iframe = wrapper.querySelector('iframe');
-        const playBtn = wrapper.querySelector('.play-button');
-        if (iframe) {
-            iframe.remove();
-            if(playBtn) playBtn.style.display = 'flex';
-        }
-    }
+    // Stop video saat scroll menjauh
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                stopAllVideos();
+            }
+        });
+    }, { threshold: 0.1 });
 
-    window.onload = () => {
-        checkSession();
-        reveal();
-        setTimeout(checkPromo, 1500);
-    };
+    document.querySelectorAll('.video-wrapper').forEach(el => observer.observe(el));
+
+    window.onload = checkSession;
 </script>
 </body>
 </html>
