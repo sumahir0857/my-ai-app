@@ -93,7 +93,7 @@
         /* Iframe (Video Player) */
         .video-wrapper iframe {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border: none; z-index: 5; /* Di atas gambar */
+            border: none; z-index: 10; /* Di atas gambar */
         }
 
         /* Play Button */
@@ -108,6 +108,7 @@
             display: flex; align-items: center; justify-content: center;
             color: white; transition: all 0.3s;
             z-index: 3; /* Di atas gambar, di bawah iframe */
+            pointer-events: none; /* Agar klik tembus ke wrapper */
         }
         .video-wrapper:hover .play-btn { background: #2563eb; border-color: #2563eb; transform: translate(-50%, -50%) scale(1.1); }
 
@@ -202,6 +203,7 @@
                 
                 <!-- Video 1 -->
                 <div class="swiper-slide">
+                    <!-- Gunakan thumbnail youtube otomatis jika gambar lokal rusak -->
                     <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
                         <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" alt="UGC 1">
                         <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
@@ -259,7 +261,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-blue-200 transition">
                 <div class="video-wrapper kling-wrapper mb-4" onclick="loadVideo(this, 'Y9xBJXGec7M')">
-                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/maxresdefault.jpg" class="opacity-90 group-hover:opacity-100">
+                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/hqdefault.jpg" class="opacity-90 group-hover:opacity-100">
                     <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                 </div>
                 <h3 class="font-bold text-slate-900">Kling 2.5 Pro</h3>
@@ -267,7 +269,7 @@
             </div>
             <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-blue-200 transition">
                 <div class="video-wrapper kling-wrapper mb-4" onclick="loadVideo(this, 'GN8bOzmlLQc')">
-                    <img src="https://img.youtube.com/vi/GN8bOzmlLQc/maxresdefault.jpg" class="opacity-90 group-hover:opacity-100">
+                    <img src="https://img.youtube.com/vi/GN8bOzmlLQc/hqdefault.jpg" class="opacity-90 group-hover:opacity-100">
                     <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                 </div>
                 <h3 class="font-bold text-slate-900">Kling 1.6 Consistency</h3>
@@ -448,14 +450,16 @@
 
         // 3. Buat iframe
         const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+        
         iframe.style.width = "100%";
         iframe.style.height = "100%";
         iframe.style.position = "absolute";
         iframe.style.top = "0";
         iframe.style.left = "0";
         iframe.style.border = "none";
-        iframe.allow = "autoplay; encrypted-media";
+        iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
+        iframe.setAttribute('allowfullscreen', '');
         iframe.classList.add('active-iframe');
         
         // 4. Masukkan ke wrapper
