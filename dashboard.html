@@ -2,21 +2,17 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbit Bot - The Canvas of Creation</title>
-    <!-- Favicon -->
-    <link rel="icon" href="/assets/logo.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Orbit Dashboard</title>
+    <link rel="shortcut icon" href="assets/logo.png" type="image/png">
     
-    <!-- Tailwind CSS -->
+    <!-- Tailwind & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Fonts (Sama persis dengan dashboard) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -28,350 +24,340 @@
                     colors: {
                         paper: '#f9f9f8', // Warm off-white
                         ink: '#383835',   // Soft black
-                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4', 300: '#d6d3d1' }
+                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 200: '#e7e5e4' }
                     },
                     animation: {
-                        'fade-up': 'fadeUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards',
-                        'reveal': 'reveal 0.8s ease-out forwards',
+                        'fade-in': 'fadeIn 0.6s ease-out forwards',
+                        'slide-in': 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     },
                     keyframes: {
-                        fadeUp: {
-                            '0%': { opacity: '0', transform: 'translateY(30px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        reveal: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        }
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideIn: { '0%': { transform: 'translateX(-100%)' }, '100%': { transform: 'translateX(0)' } }
                     }
                 }
             }
         }
     </script>
-
+    
     <style>
-        body { 
-            background-color: #f9f9f8; 
-            color: #383835; 
-            overflow-x: hidden;
-            /* Texture Kertas Sangat Halus */
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23d6d3d1' fill-opacity='0.15' fill-rule='evenodd'/%3E%3C/svg%3E");
-        }
-
-        /* Glass Nav yang Menyatu */
-        .glass-nav { 
-            background: rgba(249, 249, 248, 0.8); 
-            backdrop-filter: blur(8px); 
-            border-bottom: 1px solid rgba(0,0,0,0.03); 
-        }
-
-        /* Card Style - Canvas Like */
-        .art-card {
-            background: white;
-            border: 1px solid rgba(0,0,0,0.04);
-            border-radius: 2px; /* Lebih kotak, artistik */
-            box-shadow: 0 4px 20px -5px rgba(0,0,0,0.03);
-            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .art-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.06);
-        }
-
-        /* Typography Art */
-        .italic-accent { font-family: 'Newsreader', serif; font-style: italic; }
+        body { background-color: #f9f9f8; color: #383835; }
         
-        /* Video Container - Bersih */
-        .video-clean {
-            border-radius: 4px; /* Sudut lebih tajam */
-            overflow: hidden;
-            position: relative;
-            background: #f0f0f0;
+        /* Sidebar Transition */
+        #sidebar { transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1); }
+        .sidebar-open { transform: translateX(0) !important; }
+        .sidebar-closed { transform: translateX(-100%); }
+
+        /* Submenu Animation */
+        .submenu { 
+            max-height: 0; 
+            overflow: hidden; 
+            transition: max-height 0.3s ease-out, opacity 0.3s ease;
+            opacity: 0;
         }
-        .play-minimal {
-            width: 50px; height: 50px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
+        .submenu.open { 
+            max-height: 150px; /* Cukup untuk 2 tombol */
+            opacity: 1;
+        }
+
+        /* Soft Video Container */
+        .video-card {
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0,0,0,0.03);
             transition: transform 0.3s ease;
         }
-        .video-clean:hover .play-minimal { transform: scale(1.1); }
+        .video-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
 
-        /* QnA Accordion */
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        details[open] summary ~ * { animation: reveal 0.3s ease; }
-
-        /* Floating WA */
-        .float-minimal {
-            position: fixed; bottom: 30px; right: 30px;
-            width: 50px; height: 50px;
-            background: #383835; color: white;
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
-            z-index: 50;
-        }
-        .float-minimal:hover { transform: scale(1.1); }
+        .premium-lock { color: #d6d3d1; }
+        .is-premium .premium-lock { display: none; }
     </style>
 </head>
-<body class="antialiased">
+<body class="min-h-screen w-full relative overflow-x-hidden selection:bg-orange-100">
 
-    <!-- NAVBAR -->
-    <nav class="glass-nav fixed w-full z-50 top-0 h-20 flex items-center">
-        <div class="max-w-4xl mx-auto w-full px-6 flex justify-between items-center">
-            <!-- Logo Simple Text -->
-            <div class="flex items-center gap-2">
-                <div class="w-2 h-2 bg-ink rounded-full"></div>
-                <span class="font-serif text-lg tracking-wide text-ink">Orbit<span class="italic text-stone-400">Bot</span></span>
-            </div>
+    <!-- BACKDROP (Untuk menutup menu) -->
+    <div id="backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-stone-900/10 backdrop-blur-[2px] z-40 hidden transition-opacity duration-300 opacity-0"></div>
 
-            <!-- Login Button Minimalis -->
-            <button id="authBtn" onclick="openLogin()" class="text-xs font-sans font-medium text-stone-500 hover:text-ink transition border-b border-transparent hover:border-ink pb-0.5">
-                Masuk Member
+    <!-- SIDEBAR (76% Width) -->
+    <div id="sidebar" class="sidebar-closed fixed top-0 left-0 h-full w-[76%] max-w-sm bg-[#f9f9f8] z-50 shadow-2xl flex flex-col border-r border-stone-200">
+        
+        <!-- Sidebar Header -->
+        <div class="p-6 border-b border-stone-100 flex items-center justify-between">
+            <h2 class="font-serif text-xl italic text-ink">Daftar Layanan</h2>
+            <button onclick="toggleSidebar()" class="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center hover:bg-red-50 hover:text-red-400 transition">
+                <i class="fas fa-times text-sm"></i>
             </button>
         </div>
-    </nav>
 
-    <!-- HERO SECTION (Artistic Layout) -->
-    <header class="pt-40 pb-20 px-6 min-h-[80vh] flex flex-col justify-center items-center text-center relative">
-        <!-- Dekorasi Garis Miring -->
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] border border-stone-200 rounded-[100%] rotate-12 -z-10 opacity-50"></div>
-        
-        <p class="font-sans text-[10px] uppercase tracking-[0.3em] text-stone-400 mb-6 animate-fade-up">Automated Creativity</p>
-        
-        <h1 class="text-5xl md:text-7xl text-ink font-serif leading-[1.1] mb-8 animate-fade-up" style="animation-delay: 0.1s">
-            <span class="italic text-stone-400 font-light">The</span> Canvas <br> 
-            <span class="font-light">of</span> Automation
-        </h1>
-        
-        <p class="font-sans text-sm text-stone-500 max-w-md mx-auto leading-relaxed mb-12 animate-fade-up" style="animation-delay: 0.2s">
-            Platform AI minimalis untuk kreator. Tanpa gangguan. Tanpa kerumitan. Fokus pada hasil karya murni melalui UGC & Kling Engine.
-        </p>
+        <!-- Service List (Scrollable) -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-2">
+            
+            <!-- SERVICE 1 (Premium) -->
+            <div class="group premium-only-wrapper">
+                <div onclick="toggleSubmenu('sub2')" class="p-4 rounded-xl bg-white border border-stone-100 cursor-pointer hover:border-stone-300 transition flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-hashtag text-stone-400 w-5"></i>
+                        <span class="font-sans text-sm font-medium text-stone-600">Ultimate UGC</span>
+                    </div>
+                    <i class="fas fa-lock text-[10px] text-stone-300 premium-lock"></i>
+                    <i class="fas fa-chevron-down text-xs text-stone-300 hidden is-premium-arrow" id="arrow-sub2"></i>
+                </div>
+                <div id="sub2" class="submenu bg-stone-50 rounded-b-xl mx-2 border-x border-b border-stone-100">
+                    <div class="p-3 flex gap-2">
+                        <a href="layanan-2.html" class="flex-1 py-2 text-center text-xs font-serif italic text-stone-500 hover:bg-white rounded-lg transition">Detail</a>
+                        <a href="tool.html?id=servis2" class="flex-1 py-2 text-center text-xs font-bold bg-stone-800 text-white rounded-lg flex items-center justify-center gap-1 hover:bg-black transition">
+                            Buka Tool
+                        </a>
+                    </div>
+                </div>
+            </div>
 
-        <div class="flex flex-col sm:flex-row gap-5 animate-fade-up" style="animation-delay: 0.3s">
-            <a href="dashboard.html" class="px-8 py-3 bg-ink text-white font-sans text-xs uppercase tracking-widest hover:bg-black transition shadow-lg shadow-stone-200">
-                Mulai Berkarya
+            <!-- SERVICE 2 (Premium) -->
+            <div class="group premium-only-wrapper">
+                <div onclick="toggleSubmenu('sub3')" class="p-4 rounded-xl bg-white border border-stone-100 cursor-pointer hover:border-stone-300 transition flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-film text-stone-400 w-5"></i>
+                        <span class="font-sans text-sm font-medium text-stone-600">Kling 2.5 Pro</span>
+                    </div>
+                    <i class="fas fa-lock text-[10px] text-stone-300 premium-lock"></i>
+                    <i class="fas fa-chevron-down text-xs text-stone-300 hidden is-premium-arrow" id="arrow-sub3"></i>
+                </div>
+                <div id="sub3" class="submenu bg-stone-50 rounded-b-xl mx-2 border-x border-b border-stone-100">
+                    <div class="p-3 flex gap-2">
+                        <a href="layanan-3.html" class="flex-1 py-2 text-center text-xs font-serif italic text-stone-500 hover:bg-white rounded-lg transition">Detail</a>
+                        <a href="tool.html?id=servis3" class="flex-1 py-2 text-center text-xs font-bold bg-stone-800 text-white rounded-lg flex items-center justify-center gap-1 hover:bg-black transition">
+                            Buka Tool
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SERVICE 3 (Premium) -->
+            <div class="group premium-only-wrapper">
+                <div onclick="toggleSubmenu('sub4')" class="p-4 rounded-xl bg-white border border-stone-100 cursor-pointer hover:border-stone-300 transition flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-layer-group text-stone-400 w-5"></i>
+                        <span class="font-sans text-sm font-medium text-stone-600">Kling v1.6 Frame-to-Frame</span>
+                    </div>
+                    <i class="fas fa-lock text-[10px] text-stone-300 premium-lock"></i>
+                    <i class="fas fa-chevron-down text-xs text-stone-300 hidden is-premium-arrow" id="arrow-sub4"></i>
+                </div>
+                <div id="sub4" class="submenu bg-stone-50 rounded-b-xl mx-2 border-x border-b border-stone-100">
+                    <div class="p-3 flex gap-2">
+                        <a href="layanan-4.html" class="flex-1 py-2 text-center text-xs font-serif italic text-stone-500 hover:bg-white rounded-lg transition">Detail</a>
+                        <a href="tool.html?id=servis4" class="flex-1 py-2 text-center text-xs font-bold bg-stone-800 text-white rounded-lg flex items-center justify-center gap-1 hover:bg-black transition">
+                            Buka Tool
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <a href="https://wa.me/6285841244290" target="_blank" class="block p-4 mt-4 text-center text-xs text-stone-400 hover:text-stone-600 transition">
+                <i class="fab fa-whatsapp mr-1"></i> Request Fitur Baru
             </a>
-            <button onclick="document.getElementById('showcase').scrollIntoView({behavior: 'smooth'})" class="px-8 py-3 bg-transparent text-ink border border-stone-200 font-sans text-xs uppercase tracking-widest hover:border-ink transition">
-                Lihat Galeri
-            </button>
-        </div>
-    </header>
-
-    <!-- SHOWCASE (Clean Grid) -->
-    <section id="showcase" class="max-w-4xl mx-auto px-6 py-20">
-        <div class="flex items-end justify-between mb-12 border-b border-stone-200 pb-4">
-            <h2 class="font-serif text-2xl italic text-ink">Karya Pilihan</h2>
-            <span class="font-sans text-[10px] text-stone-400">POWERED BY KLING & UGC</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            
-            <!-- Item 1 -->
-            <div class="group">
-                <div class="video-clean aspect-video mb-4 shadow-sm" onclick="loadVideo(this, '-jYccBBAD7c')">
-                    <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700" alt="UGC">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="play-minimal"><i class="fas fa-play text-xs text-ink"></i></div>
-                    </div>
-                </div>
-                <div class="flex justify-between items-baseline">
-                    <h3 class="font-serif text-lg text-ink">UGC Automation</h3>
-                    <span class="font-sans text-[10px] text-stone-400">1080p • Auto Script</span>
-                </div>
-            </div>
-
-            <!-- Item 2 -->
-            <div class="group">
-                <div class="video-clean aspect-video mb-4 shadow-sm" onclick="loadVideo(this, 'Y9xBJXGec7M')">
-                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/maxresdefault.jpg" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-700" alt="Kling">
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <div class="play-minimal"><i class="fas fa-play text-xs text-ink"></i></div>
-                    </div>
-                </div>
-                <div class="flex justify-between items-baseline">
-                    <h3 class="font-serif text-lg text-ink">Kling 2.5 Cinema</h3>
-                    <span class="font-sans text-[10px] text-stone-400">High Fidelity</span>
-                </div>
-            </div>
 
         </div>
-    </section>
-
-    <!-- PRICING (Single Elegant Plan) -->
-    <section class="py-24 bg-white border-y border-stone-100">
-        <div class="max-w-lg mx-auto px-6 text-center">
-            <i class="fas fa-infinity text-2xl text-stone-300 mb-6"></i>
-            <h2 class="font-serif text-3xl text-ink mb-2">Membership</h2>
-            <p class="font-sans text-xs text-stone-400 mb-10 tracking-wide">SATU PAKET. AKSES PENUH.</p>
-
-            <div class="art-card p-10 relative">
-                <!-- Simple Price -->
-                <div class="flex justify-center items-baseline gap-1 mb-8">
-                    <span class="font-serif text-lg text-stone-400 italic">idr</span>
-                    <span class="font-sans text-5xl font-light text-ink">49k</span>
-                </div>
-
-                <!-- Features List (Minimalist) -->
-                <ul class="space-y-4 mb-10 text-left w-max mx-auto">
-                    <li class="flex items-center gap-4">
-                        <span class="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>
-                        <span class="font-sans text-sm text-stone-600">Durasi Aktif <b class="text-ink">28 Hari</b></span>
-                    </li>
-                    <li class="flex items-center gap-4">
-                        <span class="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>
-                        <span class="font-sans text-sm text-stone-600">Akses Kling 2.5 & 1.6</span>
-                    </li>
-                    <li class="flex items-center gap-4">
-                        <span class="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>
-                        <span class="font-sans text-sm text-stone-600">UGC Auto Generator</span>
-                    </li>
-                    <li class="flex items-center gap-4">
-                        <span class="w-1.5 h-1.5 bg-stone-300 rounded-full"></span>
-                        <span class="font-sans text-sm text-stone-600">Priority Render</span>
-                    </li>
-                </ul>
-
-                <a href="pembayaran.html" class="block w-full py-3 border border-stone-200 text-ink font-sans text-xs uppercase tracking-widest hover:bg-ink hover:text-white transition">
-                    Pilih Paket
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- QnA & TERMS (Accordion Style) -->
-    <section class="max-w-2xl mx-auto px-6 py-20">
-        <h2 class="font-serif text-xl italic text-ink mb-8 text-center">Pertanyaan & Ketentuan</h2>
         
-        <div class="space-y-4">
-            <!-- Q1 -->
-            <details class="group bg-white border border-stone-100 p-4 cursor-pointer">
-                <summary class="flex justify-between items-center font-sans text-sm text-stone-600">
-                    Apakah ini sistem berlangganan otomatis?
-                    <i class="fas fa-plus text-[10px] text-stone-400 group-open:hidden"></i>
-                    <i class="fas fa-minus text-[10px] text-stone-400 hidden group-open:block"></i>
-                </summary>
-                <div class="mt-4 font-serif text-sm text-stone-500 italic leading-relaxed">
-                    Tidak. Ini adalah sistem sekali bayar untuk durasi 28 hari. Tidak ada tagihan otomatis yang mengejutkan kartu kredit Anda.
-                </div>
-            </details>
-
-            <!-- Q2 -->
-            <details class="group bg-white border border-stone-100 p-4 cursor-pointer">
-                <summary class="flex justify-between items-center font-sans text-sm text-stone-600">
-                    Bagaimana jika server error/down?
-                    <i class="fas fa-plus text-[10px] text-stone-400 group-open:hidden"></i>
-                    <i class="fas fa-minus text-[10px] text-stone-400 hidden group-open:block"></i>
-                </summary>
-                <div class="mt-4 font-serif text-sm text-stone-500 italic leading-relaxed">
-                    Kami menggunakan engine pihak ketiga (Kling/Google). Jika pusat mengalami gangguan, kami akan berusaha memperbaiki koneksi API secepatnya, namun kami tidak bertanggung jawab atas downtime dari penyedia layanan utama.
-                </div>
-            </details>
-
-            <!-- TERMS DEVELOPER -->
-            <details class="group bg-stone-50 border border-stone-200 p-4 cursor-pointer mt-8">
-                <summary class="flex justify-between items-center font-sans text-xs font-bold text-stone-500 uppercase tracking-wide">
-                    Syarat & Ketentuan Developer (Wajib Baca)
-                    <i class="fas fa-exclamation-circle text-stone-400"></i>
-                </summary>
-                <div class="mt-4 font-sans text-[11px] text-stone-400 space-y-2 leading-relaxed text-justify">
-                    <p>1. <b>Ketersediaan Layanan:</b> Layanan ini bergantung pada API pihak ketiga (Kling AI & Google). Jika mereka mengubah kebijakan, harga, atau menutup akses, fitur di dashboard mungkin berubah tanpa pemberitahuan.</p>
-                    <p>2. <b>No Refund Policy:</b> Karena sifat produk digital yang langsung dapat digunakan, kami tidak melayani pengembalian dana dengan alasan apapun setelah akun aktif.</p>
-                    <p>3. <b>Fair Usage:</b> Penggunaan bot/script otomatis untuk melakukan spamming generate akan mengakibatkan pemblokiran akun permanen tanpa refund.</p>
-                    <p>4. <b>Tanggung Jawab Konten:</b> Segala video yang dihasilkan adalah tanggung jawab pengguna. Kami tidak bertanggung jawab atas penyalahgunaan konten deepfake atau pelanggaran hak cipta.</p>
-                </div>
-            </details>
-        </div>
-    </section>
-
-    <!-- FOOTER SIMPLE -->
-    <footer class="text-center py-10 border-t border-stone-200">
-        <p class="font-serif italic text-stone-400 text-sm">Orbit Bot System © 2026</p>
-    </footer>
-
-    <!-- FLOAT WA -->
-    <a href="https://wa.me/6285841244290" target="_blank" class="float-minimal" title="Chat">
-        <i class="fab fa-whatsapp"></i>
-    </a>
-
-    <!-- LOGIN MODAL (Canvas Style) -->
-    <div id="loginModal" class="fixed inset-0 bg-stone-100/80 z-[100] hidden items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white p-8 w-full max-w-sm shadow-xl border border-stone-100 relative">
-            <button onclick="closeLogin()" class="absolute top-4 right-4 text-stone-300 hover:text-ink"><i class="fas fa-times"></i></button>
-            
-            <h2 class="font-serif text-2xl text-ink mb-1">Masuk</h2>
-            <p class="font-sans text-xs text-stone-400 mb-8">Akses dashboard creator Anda.</p>
-            
-            <div class="space-y-4">
-                <input type="email" id="emailInput" placeholder="Email" class="w-full bg-stone-50 border-b border-stone-200 p-3 text-sm outline-none focus:border-ink transition font-serif placeholder-stone-300">
-                <input type="password" id="passInput" placeholder="Password" class="w-full bg-stone-50 border-b border-stone-200 p-3 text-sm outline-none focus:border-ink transition font-serif placeholder-stone-300">
-                
-                <div class="pt-4 flex gap-3">
-                    <button onclick="handleLogin()" class="flex-1 bg-ink text-white py-3 text-xs uppercase tracking-widest hover:bg-black transition">Masuk</button>
-                    <button onclick="handleSignup()" class="flex-1 border border-stone-200 text-stone-500 py-3 text-xs uppercase tracking-widest hover:border-ink hover:text-ink transition">Daftar</button>
-                </div>
-                <p id="statusMsg" class="text-center text-[10px] mt-2 text-ink min-h-[15px]"></p>
-            </div>
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-stone-100 bg-stone-50">
+             <div onclick="doLogout()" class="flex items-center gap-3 cursor-pointer hover:bg-stone-200 p-2 rounded-lg transition">
+                 <div class="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-500 text-xs font-bold">
+                     <span id="sidebarInitial">U</span>
+                 </div>
+                 <div class="flex-1">
+                     <p class="text-xs font-bold text-stone-700">Logout</p>
+                     <p class="text-[10px] text-stone-400" id="sidebarEmail">user@email.com</p>
+                 </div>
+                 <i class="fas fa-sign-out-alt text-stone-400 text-xs"></i>
+             </div>
         </div>
     </div>
 
-<script>
-    // SUPABASE
-    const { createClient } = supabase;
-    const _supabase = createClient(
-        'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
-    );
 
-    async function checkSession() {
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (session) {
-            const btn = document.getElementById('authBtn');
-            btn.innerText = "Buka Dashboard";
-            btn.onclick = () => window.location.href = "dashboard.html";
-            btn.className = "text-xs font-bold text-ink border-b border-ink pb-0.5";
+    <!-- MAIN CONTENT -->
+    <div class="relative w-full max-w-md mx-auto px-6 pt-24 pb-12 flex flex-col items-center z-10">
+
+        <!-- HEADER SECTION (Composition Balanced) -->
+        <header class="w-full text-center mb-10 animate-fade-in">
+            <!-- Profile Icon (Absolute Top Right for Symmetry) -->
+            <div class="absolute top-6 right-6 flex items-center gap-2">
+                <div class="text-[10px] font-medium text-stone-400 tracking-wide" id="onlineCount">..</div>
+                <div class="w-8 h-8 rounded-full bg-white border border-stone-100 shadow-sm flex items-center justify-center text-ink text-xs font-serif italic">
+                    <span id="headerInitial">A</span>
+                    <!-- Premium Dot -->
+                    <div id="premiumDot" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-yellow-400 rounded-full border-2 border-white"></div>
+                </div>
+            </div>
+
+            <!-- Greeting Text -->
+            <div class="flex flex-col items-center gap-2">
+                <p class="font-sans text-xs font-medium text-stone-400 tracking-widest uppercase">Dashboard</p>
+                <h1 class="font-serif text-3xl md:text-4xl text-ink leading-tight">
+                    Selamat Pagi, <br><span id="userName" class="italic text-stone-500">Creator</span>
+                </h1>
+            </div>
+
+            <!-- Trigger Button (Centered & Symmetrical) -->
+            <div onclick="toggleSidebar()" class="mt-8 mx-auto w-full max-w-[280px] bg-white border border-stone-200 rounded-full py-3 px-5 flex items-center justify-between shadow-sm hover:shadow-md hover:border-stone-300 transition-all cursor-pointer group">
+                <span class="font-sans text-sm text-stone-400 group-hover:text-stone-600 pl-2">Pilih Layanan...</span>
+                <div class="w-8 h-8 rounded-full bg-stone-50 flex items-center justify-center text-stone-400 group-hover:bg-stone-100 group-hover:text-stone-600 transition">
+                    <i class="fas fa-layer-group text-xs"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- SEPARATOR (Visual Balance) -->
+        <div class="w-12 h-[1px] bg-stone-200 mb-8"></div>
+
+        <!-- HISTORY / GALLERY SECTION -->
+        <div class="w-full animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="flex items-center justify-between mb-4 px-1">
+                <h3 class="font-serif italic text-stone-500 text-lg">Temukan inspirasi</h3>
+                <span class="text-[10px] bg-stone-100 px-2 py-1 rounded text-stone-400">youtube feed</span>
+            </div>
+
+            <!-- Video Grid (Soft & Clean) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- Video 1 -->
+                <div class="video-card aspect-video relative group">
+                    <iframe class="w-full h-full" src=" title="Lofi Girl" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                </div>
+
+                <!-- Video 2 -->
+                <div class="video-card aspect-video relative group">
+                    <iframe class="w-full h-full" src=" title="Lofi Hip Hop" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                </div>
+                
+                 <!-- Video 3 -->
+                <div class="video-card aspect-video relative group">
+                    <iframe class="w-full h-full" src=" title="Lofi Hip Hop" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+                </div>
+
+            </div>
+            
+            <!-- Future Placeholder -->
+            <div class="mt-6 text-center">
+                <p class="text-[10px] text-stone-300">Riwayat generate kamu akan muncul di sini nanti.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LOGIC -->
+    <script>
+        // --- UI FUNCTIONS ---
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('backdrop');
+
+        function toggleSidebar() {
+            const isOpen = sidebar.classList.contains('sidebar-open');
+            
+            if (isOpen) {
+                // Close
+                sidebar.classList.remove('sidebar-open');
+                backdrop.classList.remove('opacity-100');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            } else {
+                // Open
+                backdrop.classList.remove('hidden');
+                // Small delay to allow transition
+                setTimeout(() => backdrop.classList.add('opacity-100'), 10);
+                sidebar.classList.add('sidebar-open');
+            }
         }
-    }
 
-    async function handleLogin() {
-        const email = document.getElementById('emailInput').value;
-        const password = document.getElementById('passInput').value;
-        const msg = document.getElementById('statusMsg');
-        if(!email || !password) { msg.innerText = "Isi data lengkap."; return; }
-        msg.innerText = "Memproses...";
-        const { error } = await _supabase.auth.signInWithPassword({ email, password });
-        if (error) msg.innerText = "Gagal. Cek email/password.";
-        else window.location.href = "dashboard.html";
-    }
+        function toggleSubmenu(id) {
+            // Cek apakah user premium sebelum membuka accordion untuk item premium
+            const isPremium = document.body.classList.contains('is-premium');
+            const element = document.getElementById(id);
+            const parent = element.parentElement;
+            
+            // Jika item ini premium-only dan user belum premium
+            if (parent.classList.contains('premium-only-wrapper') && !isPremium) {
+                if(confirm("Layanan ini khusus Pro Member. Upgrade sekarang?")) {
+                    window.location.href = "pembayaran.html";
+                }
+                return; 
+            }
 
-    async function handleSignup() {
-        const email = document.getElementById('emailInput').value;
-        const password = document.getElementById('passInput').value;
-        const msg = document.getElementById('statusMsg');
-        if(password.length < 6) { msg.innerText = "Password min 6 karakter."; return; }
-        msg.innerText = "Mendaftar...";
-        const { error } = await _supabase.auth.signUp({ email, password });
-        if (error) msg.innerText = error.message;
-        else msg.innerText = "Cek email konfirmasi.";
-    }
+            // Toggle Logic
+            const arrow = document.getElementById('arrow-' + id);
+            
+            if (element.classList.contains('open')) {
+                element.classList.remove('open');
+                if(arrow) arrow.style.transform = 'rotate(0deg)';
+            } else {
+                // Close others first (Exclusive Accordion)
+                document.querySelectorAll('.submenu.open').forEach(el => {
+                    el.classList.remove('open');
+                    // Reset arrows
+                    const arrId = 'arrow-' + el.id;
+                    const arr = document.getElementById(arrId);
+                    if(arr) arr.style.transform = 'rotate(0deg)';
+                });
 
-    function openLogin() {
-        document.getElementById('loginModal').classList.remove('hidden');
-        document.getElementById('loginModal').classList.add('flex');
-    }
-    function closeLogin() {
-        document.getElementById('loginModal').classList.add('hidden');
-        document.getElementById('loginModal').classList.remove('flex');
-    }
+                element.classList.add('open');
+                if(arrow) arrow.style.transform = 'rotate(180deg)';
+            }
+        }
 
-    function loadVideo(wrapper, videoId) {
-        if (wrapper.querySelector('iframe')) return;
-        wrapper.innerHTML = `<iframe style="width:100%;height:100%;border:none;" src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-    }
+        // --- SUPABASE LOGIC ---
+        const { createClient } = supabase;
+        const _supabase = createClient(
+            'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
+        );
 
-    window.onload = checkSession;
-</script>
+        async function init() {
+            const { data: { session } } = await _supabase.auth.getSession();
+            if (!session) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const user = session.user;
+            const name = user.email.split('@')[0].replace(/[0-9]/g, ''); 
+            const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+            const initial = formattedName.charAt(0);
+            
+            // Set UI Data
+            document.getElementById('userName').innerText = formattedName;
+            document.getElementById('headerInitial').innerText = initial;
+            document.getElementById('sidebarInitial').innerText = initial;
+            document.getElementById('sidebarEmail').innerText = user.email;
+
+            // Check Premium
+            let isPremium = false;
+            try {
+                const { data } = await _supabase.from('profiles').select('is_premium').eq('id', user.id).single();
+                if (data && data.is_premium) isPremium = true;
+            } catch (e) {}
+
+            if (isPremium) {
+                document.body.classList.add('is-premium');
+                document.getElementById('premiumDot').classList.remove('hidden');
+                // Show arrows for premium items
+                document.querySelectorAll('.is-premium-arrow').forEach(el => el.classList.remove('hidden'));
+            } else {
+                document.body.classList.remove('is-premium');
+            }
+
+            // Fake Live Count
+            document.getElementById('onlineCount').innerText = (Math.floor(Math.random() * 8) + 3) + " ON";
+        }
+
+        async function doLogout() {
+            if(confirm('Keluar dari akun?')) {
+                await _supabase.auth.signOut();
+                window.location.href = "index.html";
+            }
+        }
+
+        init();
+    </script>
 </body>
 </html>
+
+
