@@ -9,8 +9,11 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Supabase (Tetap ada untuk login) -->
+    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     
     <!-- Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -66,7 +69,7 @@
             border-color: #cbd5e1;
         }
 
-        /* --- VIDEO WRAPPER (SIMPEL & CERDAS) --- */
+        /* VIDEO WRAPPER FIXED */
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -75,50 +78,60 @@
             overflow: hidden;
             cursor: pointer;
             box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+            z-index: 1; /* Base z-index */
         }
         
-        /* Rasio Aspect */
-        .ugc-ratio { aspect-ratio: 9/16; } /* Portrait untuk UGC */
-        .kling-ratio { aspect-ratio: 16/9; } /* Landscape untuk Kling */
-        
-        /* Gambar Thumbnail */
+        /* Image Thumbnail */
         .video-wrapper img {
             width: 100%; height: 100%; object-fit: cover;
             transition: transform 0.5s;
             display: block;
+            z-index: 2;
         }
         .video-wrapper:hover img { transform: scale(1.05); }
         
-        /* Iframe Youtube */
+        /* Iframe (Video Player) */
         .video-wrapper iframe {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border: none; z-index: 10;
+            border: none; z-index: 10; /* Di atas gambar */
         }
 
-        /* Tombol Play */
+        /* Play Button */
         .play-btn {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px; height: 60px;
+            width: 50px; height: 50px;
             background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.6);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.5);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            color: white; 
-            font-size: 20px;
-            transition: all 0.3s;
-            z-index: 5;
-            /* PENTING: pointer-events-none agar saat diklik tembus ke div wrapper */
-            pointer-events: none; 
+            color: white; transition: all 0.3s;
+            z-index: 3; /* Di atas gambar, di bawah iframe */
+            pointer-events: none; /* Agar klik tembus ke wrapper */
         }
-        .video-wrapper:hover .play-btn { 
-            background: #2563eb; 
-            border-color: #2563eb; 
-            transform: translate(-50%, -50%) scale(1.1); 
-        }
+        .video-wrapper:hover .play-btn { background: #2563eb; border-color: #2563eb; transform: translate(-50%, -50%) scale(1.1); }
 
-        /* WA Button */
+        .ugc-wrapper { aspect-ratio: 9/16; }
+        .kling-wrapper { aspect-ratio: 16/9; }
+
+        /* SWIPER */
+        .swiper-slide { width: 260px; height: auto; padding: 10px; }
+        
+        /* ACCORDION */
+        details { 
+            background: white; border: 1px solid #f1f5f9; 
+            border-radius: 12px; margin-bottom: 10px; overflow: hidden;
+            transition: all 0.3s;
+        }
+        details[open] { border-color: #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        details > summary { 
+            list-style: none; padding: 15px; cursor: pointer; font-weight: 500;
+            display: flex; justify-content: space-between; items-center;
+        }
+        details > summary::-webkit-details-marker { display: none; }
+        
+        /* WA */
         .float-wa {
             position: fixed; bottom: 30px; right: 30px;
             width: 60px; height: 60px; background: #25d366; color: white;
@@ -152,13 +165,16 @@
             <span class="inline-block py-1 px-4 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-widest mb-6 animate-fade-up">
                 AI Automation Suite
             </span>
+            
             <h1 class="text-5xl md:text-7xl font-bold text-slate-900 mb-6 leading-tight animate-fade-up" style="animation-delay: 0.1s">
                 Satu Dashboard.<br>
                 <span class="font-artistic font-normal text-blue-600">Semua Kekuatan AI.</span>
             </h1>
+            
             <p class="text-lg text-slate-500 mb-10 max-w-2xl mx-auto animate-fade-up" style="animation-delay: 0.2s">
-                Platform all-in-one untuk kreator. Buat video <span class="font-bold text-slate-700">UGC Otomatis</span> dan animasi cinematic tanpa skill editing.
+                Platform all-in-one untuk kreator. Buat video <span class="font-bold text-slate-700">UGC Otomatis</span> dan animasi cinematic tanpa skill editing yang rumit.
             </p>
+
             <div class="flex justify-center gap-4 animate-fade-up" style="animation-delay: 0.3s">
                 <a href="dashboard.html" class="px-8 py-3.5 bg-slate-900 text-white font-medium rounded-xl shadow-lg hover:bg-slate-800 hover:shadow-xl transition transform hover:-translate-y-1">
                     Mulai Sekarang
@@ -170,79 +186,90 @@
         </div>
     </header>
 
-            <!-- Swiper Container -->
-        <div class="swiper swiper-service-2 w-full pb-10">
-            <div class="swiper-wrapper">
-                <!-- Slide 1 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, '-jYccBBAD7c')">
-                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Celana Kerja Pria</p>
-                    </div>
-                </div>
-                <!-- Slide 2 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'WxtmgW5oesU')">
-                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Jas Hujan Anti Air</p>
-                    </div>
-                </div>
-                <!-- Slide 3 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'H10_Oz0VVs4')">
-                        <img src="https://img.youtube.com/vi/H10_Oz0VVs4/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Penumbuh Rambut</p>
-                    </div>
-                </div>
-                <!-- Slide 4 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'p2yGWw4rPBc')">
-                        <img src="https://img.youtube.com/vi/p2yGWw4rPBc/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Sweater Hoodie</p>
-                    </div>
-                </div>
+    <!-- UGC SHOWCASE -->
+    <section id="ugc-showcase" class="py-16 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-end">
+            <div>
+                <h2 class="text-3xl font-bold text-slate-900">UGC Creator</h2>
+                <p class="text-slate-500 mt-2 font-artistic text-lg">Upload foto, jadi video review otomatis.</p>
             </div>
+            <div class="hidden md:flex gap-2">
+                <span class="text-xs font-bold bg-blue-100 text-blue-600 px-2 py-1 rounded">5 Video Demo</span>
+            </div>
+        </div>
+
+        <div class="swiper swiper-ugc px-6">
+            <div class="swiper-wrapper pb-10">
+                
+                <!-- Video 1 -->
+                <div class="swiper-slide">
+                    <!-- Gunakan thumbnail youtube otomatis jika gambar lokal rusak -->
+                    <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
+                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" alt="UGC 1">
+                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
+                    </div>
+                    <p class="mt-3 text-sm font-bold text-slate-800 text-center">Fashion Pria</p>
+                </div>
+
+                <!-- Video 2 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, 'WxtmgW5oesU')">
+                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" alt="UGC 2">
+                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
+                    </div>
+                    <p class="mt-3 text-sm font-bold text-slate-800 text-center">Jas Hujan</p>
+                </div>
+
+                <!-- Video 3 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, 'H10_Oz0VVs4')">
+                        <img src="https://img.youtube.com/vi/H10_Oz0VVs4/hqdefault.jpg" alt="UGC 3">
+                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
+                    </div>
+                    <p class="mt-3 text-sm font-bold text-slate-800 text-center">Penumbuh Rambut</p>
+                </div>
+
+                <!-- Video 4 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, 'p2yGWw4rPBc')">
+                        <img src="https://img.youtube.com/vi/p2yGWw4rPBc/hqdefault.jpg" alt="UGC 4">
+                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
+                    </div>
+                    <p class="mt-3 text-sm font-bold text-slate-800 text-center">Sweater Hoodie</p>
+                </div>
+
+                <!-- Video 5 -->
+                <div class="swiper-slide">
+                    <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
+                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" alt="UGC 5">
+                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
+                    </div>
+                    <p class="mt-3 text-sm font-bold text-slate-800 text-center">Produk Viral</p>
+                </div>
+
+            </div>
+            <div class="swiper-pagination"></div>
         </div>
     </section>
 
     <!-- SECONDARY FEATURES (KLING) -->
-    <section class="max-w-5xl mx-auto px-6 py-16 border-t border-slate-100">
+    <section class="max-w-5xl mx-auto px-6 py-10">
         <div class="text-center mb-10">
             <h2 class="text-2xl font-bold text-slate-900">Kling AI Studio</h2>
             <p class="font-artistic text-slate-500">Cinematic Engine</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-blue-200 transition">
-                <div class="video-wrapper kling-ratio mb-4" onclick="playVideo(this, 'Y9xBJXGec7M')">
-                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/maxresdefault.jpg" class="opacity-90 group-hover:opacity-100">
+                <div class="video-wrapper kling-wrapper mb-4" onclick="loadVideo(this, 'Y9xBJXGec7M')">
+                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/hqdefault.jpg" class="opacity-90 group-hover:opacity-100">
                     <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                 </div>
                 <h3 class="font-bold text-slate-900">Kling 2.5 Pro</h3>
                 <p class="text-xs text-slate-500">1080p High Fidelity</p>
             </div>
             <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-blue-200 transition">
-                <div class="video-wrapper kling-ratio mb-4" onclick="playVideo(this, 'GN8bOzmlLQc')">
-                    <img src="https://img.youtube.com/vi/GN8bOzmlLQc/maxresdefault.jpg" class="opacity-90 group-hover:opacity-100">
+                <div class="video-wrapper kling-wrapper mb-4" onclick="loadVideo(this, 'GN8bOzmlLQc')">
+                    <img src="https://img.youtube.com/vi/GN8bOzmlLQc/hqdefault.jpg" class="opacity-90 group-hover:opacity-100">
                     <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                 </div>
                 <h3 class="font-bold text-slate-900">Kling 1.6 Consistency</h3>
@@ -258,6 +285,8 @@
             <p class="font-artistic text-slate-500 mb-12 text-lg">Investasi Kecil, Hasil Maksimal.</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+                
+                <!-- PLAN 1: 15k -->
                 <div class="btn-glass p-8 rounded-3xl text-center relative hover:-translate-y-2 transition duration-300">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Tester</h3>
                     <div class="text-4xl font-extrabold text-slate-900 mb-2">15k</div>
@@ -265,9 +294,12 @@
                     <ul class="text-sm text-slate-600 space-y-3 mb-8 text-left pl-8">
                         <li><i class="fas fa-check text-green-500 mr-2"></i> Akses Semua Tool</li>
                         <li><i class="fas fa-check text-green-500 mr-2"></i> Server Standard</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i> Cocok untuk Coba</li>
                     </ul>
                     <a href="pembayaran.html" class="block w-full py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition">Pilih Paket</a>
                 </div>
+
+                <!-- PLAN 2: 49k (25 HARI) -->
                 <div class="bg-slate-900 p-8 rounded-3xl text-center relative hover:-translate-y-2 transition duration-300 shadow-2xl shadow-blue-900/20">
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full">RECOMMENDED</div>
                     <h3 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Pro Access</h3>
@@ -276,15 +308,45 @@
                     <ul class="text-sm text-slate-300 space-y-3 mb-8 text-left pl-8">
                         <li><i class="fas fa-check text-blue-500 mr-2"></i> <b>Akses Tanpa Batas</b></li>
                         <li><i class="fas fa-check text-blue-500 mr-2"></i> Semua Fitur AI</li>
+                        <li><i class="fas fa-bolt text-yellow-400 mr-2"></i> Priority Server</li>
                     </ul>
                     <a href="pembayaran.html" class="block w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/30">Ambil Sekarang</a>
                 </div>
+
             </div>
         </div>
     </section>
 
+    <!-- QnA & TERMS -->
+    <section class="max-w-2xl mx-auto px-6 py-16">
+        <h2 class="text-xl font-bold text-slate-900 mb-6 text-center">Pertanyaan & Ketentuan</h2>
+        
+        <details>
+            <summary class="text-slate-700 text-sm">Apakah ini langganan otomatis? <i class="fas fa-chevron-down text-slate-400"></i></summary>
+            <div class="p-4 pt-0 text-sm text-slate-500 leading-relaxed font-artistic">
+                Tidak. Ini sistem sekali bayar. Tidak ada tagihan tersembunyi.
+            </div>
+        </details>
+        
+        <details>
+            <summary class="text-slate-700 text-sm">Gaptek, bisa pakai? <i class="fas fa-chevron-down text-slate-400"></i></summary>
+            <div class="p-4 pt-0 text-sm text-slate-500 leading-relaxed font-artistic">
+                Sangat bisa. Dashboard didesain semudah main sosmed.
+            </div>
+        </details>
+
+        <details class="bg-red-50 border-red-100">
+            <summary class="text-red-600 text-sm font-bold">⚠️ Syarat Developer (Wajib Baca) <i class="fas fa-exclamation-circle"></i></summary>
+            <div class="p-4 pt-0 text-xs text-slate-500 leading-relaxed space-y-2 mt-2">
+                <p>1. <b>Ketersediaan Layanan:</b> Layanan bergantung pada API pihak ketiga (Kling AI & Google). Jika mereka mengubah kebijakan/harga, fitur mungkin berubah.</p>
+                <p>2. <b>No Refund:</b> Produk digital tidak dapat dikembalikan dananya setelah aktif.</p>
+                <p>3. <b>Fair Usage:</b> Dilarang spamming bot/script otomatis.</p>
+            </div>
+        </details>
+    </section>
+
     <!-- FOOTER -->
-    <footer class="py-10 text-center border-t border-slate-100 mt-10">
+    <footer class="py-10 text-center border-t border-slate-100">
         <p class="font-artistic text-slate-400 text-sm">Orbit Bot System © 2026</p>
     </footer>
 
@@ -311,44 +373,15 @@
         </div>
     </div>
 
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-    // --- SUPABASE CONFIG ---
+    // SUPABASE
     const { createClient } = supabase;
     const _supabase = createClient(
         'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
     );
 
-    // --- SMART VIDEO LOGIC (SIMPLE & ROBUST) ---
-    function playVideo(wrapper, videoId) {
-        // 1. Reset semua video lain yang mungkin sedang menyala (Smart Feature)
-        // Ini memastikan hanya 1 video yang berbunyi/jalan
-        document.querySelectorAll('.video-wrapper iframe').forEach(iframe => {
-            // Hapus iframe dari DOM
-            iframe.remove();
-        });
-
-        // Munculkan kembali tombol play di semua wrapper
-        document.querySelectorAll('.video-wrapper .play-btn').forEach(btn => {
-            btn.style.display = 'flex';
-        });
-
-        // 2. Buat iframe baru untuk video yang diklik
-        const iframe = document.createElement('iframe');
-        // 'autoplay=1' memutar otomatis, 'rel=0' agar rekomendasi di akhir relevan
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-        iframe.allow = "autoplay; encrypted-media; picture-in-picture";
-        iframe.allowFullscreen = true;
-        
-        // 3. Masukkan ke dalam wrapper
-        wrapper.appendChild(iframe);
-        
-        // 4. Sembunyikan tombol play di wrapper ini saja
-        const myBtn = wrapper.querySelector('.play-btn');
-        if(myBtn) myBtn.style.display = 'none';
-    }
-
-    // --- AUTH LOGIC ---
     async function checkSession() {
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
@@ -358,6 +391,7 @@
             btn.className = "px-6 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition shadow-lg shadow-slate-900/20";
         }
     }
+
     async function handleLogin() {
         const email = document.getElementById('emailInput').value;
         const password = document.getElementById('passInput').value;
@@ -368,9 +402,85 @@
         if (error) msg.innerText = "Gagal. Cek email/password.";
         else window.location.href = "dashboard.html";
     }
+
     async function handleSignup() {
         const email = document.getElementById('emailInput').value;
         const password = document.getElementById('passInput').value;
         const msg = document.getElementById('statusMsg');
-        if(password.length < 6) { msg.innerText = "Password min 6 karakte
+        if(password.length < 6) { msg.innerText = "Password min 6 karakter."; return; }
+        msg.innerText = "Mendaftar...";
+        const { error } = await _supabase.auth.signUp({ email, password });
+        if (error) msg.innerText = error.message;
+        else msg.innerText = "Cek email konfirmasi.";
+    }
 
+    function openLogin() {
+        document.getElementById('loginModal').classList.remove('hidden');
+        document.getElementById('loginModal').classList.add('flex');
+    }
+    function closeLogin() {
+        document.getElementById('loginModal').classList.add('hidden');
+        document.getElementById('loginModal').classList.remove('flex');
+    }
+
+    // --- SMART VIDEO LOGIC (FIXED) ---
+    const swiperInstances = []; 
+    // Menggunakan class specific agar konfigurasi aman
+    ['.swiper-service-1', '.swiper-service-2'].forEach(selector => {
+        const s = new Swiper(selector, {
+            effect: "coverflow", 
+            loop: true, // Infinity Loop
+            grabCursor: true,    
+            centeredSlides: true,
+            slidesPerView: "auto", 
+            coverflowEffect: {
+                rotate: 0, stretch: 0, depth: 120, modifier: 1.5, slideShadows: true, 
+            },
+            pagination: { el: ".swiper-pagination", clickable: true },
+            autoplay: { delay: 2500, disableOnInteraction: false, pauseOnMouseEnter: true }
+        });
+        swiperInstances.push(s);
+    });
+
+    // ==========================================
+    // 6. LOGIC VIDEO YOUTUBE
+    // ==========================================
+    function loadVideo(wrapper, videoId) {
+        if (wrapper.querySelector('iframe')) return; 
+
+        // Stop Slider
+        swiperInstances.forEach(instance => instance.autoplay.stop());
+
+        // Reset video lain
+        document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
+            resetVideo(frame.parentElement);
+        });
+
+        const iframe = document.createElement('iframe');
+        iframe.className = 'yt-iframe w-full h-full rounded-xl';
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+        iframe.allow = "autoplay; encrypted-media; fullscreen";
+        iframe.allowFullscreen = true;
+
+        wrapper.appendChild(iframe);
+        const playBtn = wrapper.querySelector('.play-button');
+        if(playBtn) playBtn.style.display = 'none';
+    }
+
+    function resetVideo(wrapper) {
+        const iframe = wrapper.querySelector('iframe');
+        const playBtn = wrapper.querySelector('.play-button');
+        if (iframe) {
+            iframe.remove();
+            if(playBtn) playBtn.style.display = 'flex';
+        }
+    }
+
+    window.onload = () => {
+        checkSession();
+        reveal();
+        setTimeout(checkPromo, 1500);
+    };
+</script>
+</body>
+</html>
