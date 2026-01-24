@@ -601,7 +601,6 @@ Siap memproses...</div>
     const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
     const btnFull = document.getElementById('btnFull');
     
-    // Set loading
     btnFull.disabled = true;
     btnFull.innerHTML = '<span class="spinner"></span> Memproses...';
     
@@ -622,61 +621,29 @@ Siap memproses...</div>
             _t()
         ]);
         
-        // Handle streaming dengan timeout safety
-        let streamEnded = false;
-        
-        const streamPromise = (async () => {
-            try {
-                for await (const event of job) {
-                    console.log("📡 Event:", event);
-                    
-                    // Handle data
-                    if (event.type === "data") {
-                        const data = event.data;
-                        if (data[0]) log(data[0]);
-                        if (data[1]) showVideo(extractUrl(data[1]));
-                        if (data[2]) showAudio(extractUrl(data[2]));
-                        if (data[3] && data[3].length > 0) renderGallery(data[3]);
-                    }
-                    
-                    // Deteksi selesai - multiple kondisi
-                    if (event.type === "status") {
-                        console.log("📊 Status:", event.stage, event);
-                        if (event.stage === "complete" || event.stage === "error") {
-                            streamEnded = true;
-                            break;
-                        }
-                    }
+        for await (const event of job) {
+            if (event.type === "data") {
+                const data = event.data;
+                
+                if (data[0]) log(data[0]);
+                if (data[1]) showVideo(extractUrl(data[1]));
+                if (data[2]) showAudio(extractUrl(data[2]));
+                if (data[3] && data[3].length > 0) renderGallery(data[3]);
+                
+                // DETEKSI SELESAI
+                if (data[0] && data[0].includes('PIPELINE SELESAI')) {
+                    break;
                 }
-            } catch (e) {
-                console.log("Stream ended:", e.message);
             }
-            streamEnded = true;
-        })();
-        
-        // Timeout safety: max 10 menit
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("Timeout")), 600000);
-        });
-        
-        await Promise.race([streamPromise, timeoutPromise]);
+        }
         
     } catch (e) {
-        console.error("Pipeline error:", e);
-        if (e.message !== "Timeout") {
-            log('❌ Error: ' + e.message);
-        }
-        
-        if (e.message.includes('fetch') || e.message.includes('network')) {
-            isConnected = false;
-            connect();
-        }
+        log('❌ Error: ' + e.message);
     }
     
-    // PASTI reset tombol
+    // Reset tombol
     btnFull.disabled = false;
     btnFull.innerHTML = '🚀 Full Pipeline';
-    console.log("✅ Button reset done");
 };
     
     // ===== EVENT LISTENERS =====
