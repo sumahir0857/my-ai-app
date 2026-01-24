@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orbit Bot - Enterprise AI Solutions</title>
+    <!-- Ganti href ini dengan lokasi favicon Anda -->
     <link rel="icon" href="/assets/logo.png" type="image/png">
     
     <!-- Tailwind CSS -->
@@ -69,7 +70,7 @@
             border-color: #cbd5e1;
         }
 
-        /* VIDEO WRAPPER FIXED */
+        /* --- VIDEO PLAYER STYLES --- */
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -78,22 +79,28 @@
             overflow: hidden;
             cursor: pointer;
             box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
-            z-index: 1; /* Base z-index */
+            z-index: 1;
+            transition: transform 0.3s;
         }
         
         /* Image Thumbnail */
         .video-wrapper img {
             width: 100%; height: 100%; object-fit: cover;
-            transition: transform 0.5s;
+            transition: opacity 0.3s;
             display: block;
             z-index: 2;
+            opacity: 1;
         }
-        .video-wrapper:hover img { transform: scale(1.05); }
         
-        /* Iframe (Video Player) */
+        /* Iframe Container */
         .video-wrapper iframe {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            border: none; z-index: 10; /* Di atas gambar */
+            border: none; z-index: 10; 
+            opacity: 0; 
+            transition: opacity 0.5s ease-in;
+        }
+        .video-wrapper iframe.show-video {
+            opacity: 1;
         }
 
         /* Play Button */
@@ -101,17 +108,18 @@
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             width: 50px; height: 50px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
             backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.6);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: white; transition: all 0.3s;
-            z-index: 3; /* Di atas gambar, di bawah iframe */
-            pointer-events: none; /* Agar klik tembus ke wrapper */
+            z-index: 3;
+            pointer-events: none;
         }
         .video-wrapper:hover .play-btn { background: #2563eb; border-color: #2563eb; transform: translate(-50%, -50%) scale(1.1); }
 
+        /* Aspect Ratios */
         .ugc-wrapper { aspect-ratio: 9/16; }
         .kling-wrapper { aspect-ratio: 16/9; }
 
@@ -131,7 +139,7 @@
         }
         details > summary::-webkit-details-marker { display: none; }
         
-        /* WA */
+        /* WA FLOAT */
         .float-wa {
             position: fixed; bottom: 30px; right: 30px;
             width: 60px; height: 60px; background: #25d366; color: white;
@@ -176,7 +184,7 @@
             </p>
 
             <div class="flex justify-center gap-4 animate-fade-up" style="animation-delay: 0.3s">
-                <a href="dashboard.html" class="px-8 py-3.5 bg-slate-900 text-white font-medium rounded-xl shadow-lg hover:bg-slate-800 hover:shadow-xl transition transform hover:-translate-y-1">
+                <a href="#" class="px-8 py-3.5 bg-slate-900 text-white font-medium rounded-xl shadow-lg hover:bg-slate-800 hover:shadow-xl transition transform hover:-translate-y-1">
                     Mulai Sekarang
                 </a>
                 <button onclick="document.getElementById('ugc-showcase').scrollIntoView({behavior: 'smooth'})" class="px-8 py-3.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition">
@@ -186,7 +194,7 @@
         </div>
     </header>
 
-    <!-- UGC SHOWCASE -->
+    <!-- UGC SHOWCASE (FIXED) -->
     <section id="ugc-showcase" class="py-16 overflow-hidden">
         <div class="max-w-7xl mx-auto px-6 mb-8 flex justify-between items-end">
             <div>
@@ -203,9 +211,10 @@
                 
                 <!-- Video 1 -->
                 <div class="swiper-slide">
-                    <!-- Gunakan thumbnail youtube otomatis jika gambar lokal rusak -->
+                    <!-- Gunakan ID Video Youtube yang Valid -->
                     <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
-                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" alt="UGC 1">
+                        <!-- Gambar otomatis di-inject oleh JS -->
+                        <img class="yt-thumb" data-id="-jYccBBAD7c" src="" alt="Thumbnail">
                         <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                     </div>
                     <p class="mt-3 text-sm font-bold text-slate-800 text-center">Fashion Pria</p>
@@ -214,7 +223,7 @@
                 <!-- Video 2 -->
                 <div class="swiper-slide">
                     <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, 'WxtmgW5oesU')">
-                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" alt="UGC 2">
+                        <img class="yt-thumb" data-id="WxtmgW5oesU" src="" alt="Thumbnail">
                         <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                     </div>
                     <p class="mt-3 text-sm font-bold text-slate-800 text-center">Jas Hujan</p>
@@ -223,7 +232,7 @@
                 <!-- Video 3 -->
                 <div class="swiper-slide">
                     <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, 'H10_Oz0VVs4')">
-                        <img src="https://img.youtube.com/vi/H10_Oz0VVs4/hqdefault.jpg" alt="UGC 3">
+                        <img class="yt-thumb" data-id="H10_Oz0VVs4" src="" alt="Thumbnail">
                         <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                     </div>
                     <p class="mt-3 text-sm font-bold text-slate-800 text-center">Penumbuh Rambut</p>
@@ -232,19 +241,19 @@
                 <!-- Video 4 -->
                 <div class="swiper-slide">
                     <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, 'p2yGWw4rPBc')">
-                        <img src="https://img.youtube.com/vi/p2yGWw4rPBc/hqdefault.jpg" alt="UGC 4">
+                        <img class="yt-thumb" data-id="p2yGWw4rPBc" src="" alt="Thumbnail">
                         <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                     </div>
                     <p class="mt-3 text-sm font-bold text-slate-800 text-center">Sweater Hoodie</p>
                 </div>
 
-                <!-- Video 5 -->
-                <div class="swiper-slide">
-                    <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
-                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" alt="UGC 5">
+                 <!-- Video 5 -->
+                 <div class="swiper-slide">
+                    <div class="video-wrapper ugc-wrapper" onclick="loadVideo(this, '9r-mF2F_w-s')">
+                        <img class="yt-thumb" data-id="9r-mF2F_w-s" src="" alt="Thumbnail">
                         <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                     </div>
-                    <p class="mt-3 text-sm font-bold text-slate-800 text-center">Produk Viral</p>
+                    <p class="mt-3 text-sm font-bold text-slate-800 text-center">Gadget Review</p>
                 </div>
 
             </div>
@@ -261,7 +270,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-blue-200 transition">
                 <div class="video-wrapper kling-wrapper mb-4" onclick="loadVideo(this, 'Y9xBJXGec7M')">
-                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/hqdefault.jpg" class="opacity-90 group-hover:opacity-100">
+                    <img class="yt-thumb opacity-90 group-hover:opacity-100" data-id="Y9xBJXGec7M" src="">
                     <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                 </div>
                 <h3 class="font-bold text-slate-900">Kling 2.5 Pro</h3>
@@ -269,7 +278,7 @@
             </div>
             <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 group hover:border-blue-200 transition">
                 <div class="video-wrapper kling-wrapper mb-4" onclick="loadVideo(this, 'GN8bOzmlLQc')">
-                    <img src="https://img.youtube.com/vi/GN8bOzmlLQc/hqdefault.jpg" class="opacity-90 group-hover:opacity-100">
+                    <img class="yt-thumb opacity-90 group-hover:opacity-100" data-id="GN8bOzmlLQc" src="">
                     <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
                 </div>
                 <h3 class="font-bold text-slate-900">Kling 1.6 Consistency</h3>
@@ -286,7 +295,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-2xl mx-auto">
                 
-                <!-- PLAN 1: 15k -->
+                <!-- PLAN 1 -->
                 <div class="btn-glass p-8 rounded-3xl text-center relative hover:-translate-y-2 transition duration-300">
                     <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Tester</h3>
                     <div class="text-4xl font-extrabold text-slate-900 mb-2">15k</div>
@@ -294,12 +303,11 @@
                     <ul class="text-sm text-slate-600 space-y-3 mb-8 text-left pl-8">
                         <li><i class="fas fa-check text-green-500 mr-2"></i> Akses Semua Tool</li>
                         <li><i class="fas fa-check text-green-500 mr-2"></i> Server Standard</li>
-                        <li><i class="fas fa-check text-green-500 mr-2"></i> Cocok untuk Coba</li>
                     </ul>
-                    <a href="pembayaran.html" class="block w-full py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition">Pilih Paket</a>
+                    <a href="#" class="block w-full py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition">Pilih Paket</a>
                 </div>
 
-                <!-- PLAN 2: 49k (25 HARI) -->
+                <!-- PLAN 2 -->
                 <div class="bg-slate-900 p-8 rounded-3xl text-center relative hover:-translate-y-2 transition duration-300 shadow-2xl shadow-blue-900/20">
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full">RECOMMENDED</div>
                     <h3 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Pro Access</h3>
@@ -310,7 +318,7 @@
                         <li><i class="fas fa-check text-blue-500 mr-2"></i> Semua Fitur AI</li>
                         <li><i class="fas fa-bolt text-yellow-400 mr-2"></i> Priority Server</li>
                     </ul>
-                    <a href="pembayaran.html" class="block w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/30">Ambil Sekarang</a>
+                    <a href="#" class="block w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/30">Ambil Sekarang</a>
                 </div>
 
             </div>
@@ -332,15 +340,6 @@
             <summary class="text-slate-700 text-sm">Gaptek, bisa pakai? <i class="fas fa-chevron-down text-slate-400"></i></summary>
             <div class="p-4 pt-0 text-sm text-slate-500 leading-relaxed font-artistic">
                 Sangat bisa. Dashboard didesain semudah main sosmed.
-            </div>
-        </details>
-
-        <details class="bg-red-50 border-red-100">
-            <summary class="text-red-600 text-sm font-bold">⚠️ Syarat Developer (Wajib Baca) <i class="fas fa-exclamation-circle"></i></summary>
-            <div class="p-4 pt-0 text-xs text-slate-500 leading-relaxed space-y-2 mt-2">
-                <p>1. <b>Ketersediaan Layanan:</b> Layanan bergantung pada API pihak ketiga (Kling AI & Google). Jika mereka mengubah kebijakan/harga, fitur mungkin berubah.</p>
-                <p>2. <b>No Refund:</b> Produk digital tidak dapat dikembalikan dananya setelah aktif.</p>
-                <p>3. <b>Fair Usage:</b> Dilarang spamming bot/script otomatis.</p>
             </div>
         </details>
     </section>
@@ -375,7 +374,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-    // SUPABASE
+    // --- 1. SUPABASE CONFIG ---
     const { createClient } = supabase;
     const _supabase = createClient(
         'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
@@ -386,9 +385,11 @@
         const { data: { session } } = await _supabase.auth.getSession();
         if (session) {
             const btn = document.querySelector('nav button');
-            btn.innerText = "Buka Dashboard";
-            btn.onclick = () => window.location.href = "dashboard.html";
-            btn.className = "px-6 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition shadow-lg shadow-slate-900/20";
+            if(btn) {
+                btn.innerText = "Buka Dashboard";
+                btn.onclick = () => window.location.href = "dashboard.html";
+                btn.className = "px-6 py-2 rounded-full bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition shadow-lg shadow-slate-900/20";
+            }
         }
     }
 
@@ -423,7 +424,19 @@
         document.getElementById('loginModal').classList.remove('flex');
     }
 
-    // --- SMART VIDEO LOGIC (FIXED) ---
+    // --- 2. SMART VIDEO PLAYER LOGIC (FIXED) ---
+    
+    // Inisialisasi Thumbnail Otomatis
+    function initThumbnails() {
+        document.querySelectorAll('.yt-thumb').forEach(img => {
+            const vidId = img.getAttribute('data-id');
+            if(vidId) {
+                // Mengambil thumbnail kualitas tinggi dari YouTube
+                img.src = `https://img.youtube.com/vi/${vidId}/hqdefault.jpg`;
+            }
+        });
+    }
+
     var swiper = new Swiper('.swiper-ugc', {
         slidesPerView: "auto",
         spaceBetween: 20,
@@ -442,60 +455,79 @@
     });
 
     function loadVideo(wrapper, videoId) {
-        // 1. Matikan autoplay slider agar video gak keganggu
+        // Jika sudah ada iframe aktif di wrapper ini, jangan reload
+        if(wrapper.querySelector('iframe')) return;
+
+        // 1. Matikan autoplay slider biar gak geser sendiri pas nonton
         if(swiper && swiper.autoplay) swiper.autoplay.stop();
 
-        // 2. Reset video lain
+        // 2. Matikan video lain yang sedang main
         stopAllVideos();
 
-        // 3. Buat iframe
+        // 3. Buat element iframe
         const iframe = document.createElement('iframe');
-        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
-        
-        iframe.style.width = "100%";
-        iframe.style.height = "100%";
-        iframe.style.position = "absolute";
-        iframe.style.top = "0";
-        iframe.style.left = "0";
-        iframe.style.border = "none";
+        // Syntax error yang lama sudah diperbaiki di baris ini:
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
         iframe.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
         iframe.setAttribute('allowfullscreen', '');
-        iframe.classList.add('active-iframe');
         
         // 4. Masukkan ke wrapper
         wrapper.appendChild(iframe);
         
-        // 5. Sembunyikan tombol play bawaan
+        // 5. Animasi Fade In (tambah class show-video)
+        setTimeout(() => {
+            iframe.classList.add('show-video');
+        }, 100);
+
+        // 6. Sembunyikan tombol play bawaan visual
         const btn = wrapper.querySelector('.play-btn');
         if(btn) btn.style.display = 'none';
+        
+        // 7. Sembunyikan gambar cover (biar bersih)
+        const img = wrapper.querySelector('img');
+        if(img) img.style.opacity = '0';
     }
 
     function stopAllVideos() {
-        // Hapus semua iframe aktif
-        document.querySelectorAll('.active-iframe').forEach(iframe => {
+        // Cari semua iframe di dalam video-wrapper
+        document.querySelectorAll('.video-wrapper iframe').forEach(iframe => {
             const wrapper = iframe.parentElement;
+            
+            // Hapus iframe
             iframe.remove();
-            // Munculkan kembali tombol play
+            
+            // Munculkan kembali elemen UI awal
             const btn = wrapper.querySelector('.play-btn');
             if(btn) btn.style.display = 'flex';
+            
+            const img = wrapper.querySelector('img');
+            if(img) img.style.opacity = '1';
         });
 
-        // Nyalakan lagi autoplay slider jika user sudah selesai nonton (opsional, tapi bagus UX-nya)
-        // if(swiper && swiper.autoplay && !swiper.autoplay.running) swiper.autoplay.start();
+        // Nyalakan lagi autoplay slider jika user selesai (opsional)
+        if(swiper && swiper.autoplay && !swiper.autoplay.running) {
+             swiper.autoplay.start();
+        }
     }
 
-    // Stop video saat scroll menjauh
+    // Stop video saat scroll halaman menjauh (Intersection Observer)
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (!entry.isIntersecting) {
-                stopAllVideos();
+                // Jika video keluar dari layar, matikan
+                const iframe = entry.target.querySelector('iframe');
+                if(iframe) stopAllVideos();
             }
         });
-    }, { threshold: 0.1 });
+    }, { threshold: 0.1 }); // 10% terlihat
 
     document.querySelectorAll('.video-wrapper').forEach(el => observer.observe(el));
 
-    window.onload = checkSession;
+    // Jalankan saat load
+    window.onload = function() {
+        checkSession();
+        initThumbnails();
+    };
 </script>
 </body>
 </html>
