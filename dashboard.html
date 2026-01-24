@@ -3,39 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard - Orbit Bot</title>
-    <!-- Favicon -->
+    <title>Orbit</title>
     <link rel="shortcut icon" href="assets/logo.png" type="image/png">
     
-    <!-- Libraries -->
+    <!-- Tailwind & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Serif elegan ala Claude (Merriweather/Newsreader) & Sans untuk UI -->
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    fontFamily: { 
+                        serif: ['Newsreader', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    },
                     colors: {
-                        primary: '#6366f1', // Indigo soft
-                        secondary: '#8b5cf6', // Violet soft
-                        premium: '#f59e0b', // Gold soft
+                        paper: '#f9f9f8', // Warm off-white ala Claude
+                        ink: '#383835',   // Soft black
+                        accent: '#d97757' // Clay orange subtle
                     },
                     animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'slide-up': 'slideUp 0.5s ease-out forwards',
+                        'fade-in': 'fadeIn 0.4s ease-out forwards',
+                        'pop': 'pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     },
                     keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
-                        },
-                        slideUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        pop: { '0%': { opacity: '0', transform: 'scale(0.95)' }, '100%': { opacity: '1', transform: 'scale(1)' } }
                     }
                 }
             }
@@ -43,445 +41,256 @@
     </script>
     
     <style>
-        * { -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f9f9f8; color: #383835; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
         
-        body {
-            /* Soft Gradient Background */
-            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
-            color: #334155;
-            min-height: 100vh;
-            overflow-x: hidden;
+        /* Menu Trigger (Input Lookalike) */
+        .search-bar {
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: all 0.2s ease;
+            border: 1px solid #e5e5e0;
+        }
+        .search-bar:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: #d4d4d0;
+            cursor: pointer;
         }
 
-        /* Glassmorphism Classes */
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+        /* Tool Item */
+        .tool-item {
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .tool-item:hover {
+            background: #f0f0ef;
+            border-color: #e5e5e0;
         }
 
-        .glass-card {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .glass-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1);
-            border-color: #c7d2fe;
-        }
-
-        /* Loading Screen */
-        #loadingScreen { 
-            position: fixed; inset: 0; 
-            background: #f8fafc; 
-            z-index: 999; 
-            display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; 
-            transition: opacity 0.5s ease;
-        }
-        
-        .spinner {
-            width: 40px; height: 40px; 
-            border: 3px solid #e2e8f0; 
-            border-top-color: #6366f1; 
-            border-radius: 50%; 
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Icon Boxes */
-        .icon-box {
-            width: 48px; height: 48px;
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.25rem;
-            transition: all 0.3s ease;
-        }
-
-        /* Premium Theme Override */
-        body.is-premium {
-            background: linear-gradient(135deg, #fffbeb 0%, #fff1f2 100%);
-        }
-        .is-premium .glass-card:hover {
-            box-shadow: 0 10px 20px -3px rgba(245, 158, 11, 0.15);
-            border-color: #fcd34d;
-        }
+        /* Premium Logic */
+        .is-premium .premium-lock { display: none; }
+        .is-free .premium-only { pointer-events: none; opacity: 0.5; filter: grayscale(100%); }
     </style>
 </head>
-<body class="antialiased selection:bg-primary/20 selection:text-primary">
+<body class="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden selection:bg-orange-100">
 
-    <!-- LOADING SCREEN -->
-    <div id="loadingScreen">
-        <div class="spinner mb-4"></div>
-        <div class="text-slate-400 text-xs font-medium tracking-widest">MEMUAT DATA...</div>
+    <!-- LOADING OVERLAY (Minimalist) -->
+    <div id="loader" class="fixed inset-0 bg-[#f9f9f8] z-50 flex items-center justify-center">
+        <div class="w-2 h-2 bg-ink rounded-full animate-ping"></div>
     </div>
 
-    <!-- DECORATION BLOBS -->
-    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float"></div>
-        <div class="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-secondary/5 rounded-full blur-3xl animate-float" style="animation-delay: 2s"></div>
+    <!-- BACKGROUND ORNAMENTS -->
+    <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-white to-transparent opacity-50 pointer-events-none"></div>
+
+    <!-- TOP RIGHT: User Profile (Super Minimal) -->
+    <div class="absolute top-6 right-6 z-20 flex items-center gap-3 animate-fade-in">
+        <div class="text-xs text-stone-400 font-sans tracking-wide" id="userStatus">...</div>
+        <div class="relative group cursor-pointer" onclick="doLogout()">
+            <div class="w-8 h-8 rounded-full bg-[#ebebeb] flex items-center justify-center text-stone-600 text-xs font-serif italic border border-transparent group-hover:border-red-200 group-hover:text-red-500 transition-all">
+                <span id="userInitial">U</span>
+            </div>
+            <!-- Gold Dot if Premium -->
+            <div id="premiumDot" class="hidden absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-yellow-500 rounded-full border-2 border-[#f9f9f8]"></div>
+        </div>
     </div>
 
-    <!-- MAIN CONTAINER -->
-    <div class="max-w-2xl mx-auto px-4 py-6 min-h-screen flex flex-col">
+    <!-- MAIN CONTENT -->
+    <main class="w-full max-w-2xl px-6 flex flex-col items-center z-10">
         
-        <!-- HEADER: Profile & Logout -->
-        <header class="flex justify-between items-center mb-8 animate-slide-up">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary text-white flex items-center justify-center text-lg font-bold shadow-lg shadow-primary/20">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-slate-800 leading-tight">OrbitBot</h1>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span class="text-[10px] font-medium text-slate-400" id="toolUserCount">... Online</span>
-                    </div>
-                </div>
+        <!-- 1. GREETING (Serif, Elegant) -->
+        <div class="mb-8 text-center animate-fade-in">
+            <h1 class="font-serif text-3xl md:text-4xl text-ink mb-2">
+                Selamat pagi, <span id="userName" class="italic text-stone-500">Creator</span>.
+            </h1>
+            <p class="font-sans text-stone-400 text-sm">Apa yang ingin kamu ciptakan hari ini?</p>
+        </div>
+
+        <!-- 2. THE TRIGGER (Looks like Claude's Input) -->
+        <div onclick="openMenu()" class="search-bar w-full bg-white rounded-xl p-4 flex items-center justify-between group animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="flex items-center gap-3 text-stone-400">
+                <i class="fas fa-sparkles text-orange-300"></i>
+                <span class="font-sans text-stone-400 text-sm group-hover:text-stone-600 transition">Pilih layanan...</span>
             </div>
+            <div class="w-6 h-6 rounded bg-stone-100 flex items-center justify-center text-[10px] text-stone-400">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 3. MODAL MENU (Hidden by default) -->
+    <div id="menuOverlay" class="fixed inset-0 z-40 bg-[#f9f9f8]/95 backdrop-blur-sm hidden flex-col items-center justify-center p-6 opacity-0 transition-opacity duration-300">
+        
+        <!-- Close Button -->
+        <button onclick="closeMenu()" class="absolute top-6 right-6 w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-800 transition">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="w-full max-w-2xl grid grid-cols-2 md:grid-cols-4 gap-3 animate-pop">
             
-            <button onclick="doLogout()" class="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
-                <i class="fas fa-power-off"></i>
-            </button>
-        </header>
-
-        <!-- WELCOME CARD -->
-        <section class="mb-8 animate-slide-up" style="animation-delay: 0.1s;">
-            <div class="text-center mb-6">
-                <p class="text-slate-500 text-sm mb-1">Selamat datang kembali,</p>
-                <h2 class="text-3xl font-bold text-slate-800 tracking-tight">
-                    <span id="welcomeName">Creator</span>
-                    <span id="premiumCrown" class="hidden text-premium ml-1 text-2xl align-top"><i class="fas fa-crown"></i></span>
-                </h2>
-            </div>
-
-            <!-- Status/Upgrade Badge -->
-            <div id="statusContainer" class="flex justify-center">
-                <!-- Diisi via JS -->
-            </div>
-        </section>
-
-        <!-- TOOLS LIST -->
-        <main class="space-y-3 flex-1 pb-12 animate-slide-up" style="animation-delay: 0.2s;">
-            
-            <div class="flex items-center justify-between px-2 mb-2">
-                <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider">Daftar Layanan</h3>
-                <span class="text-[10px] bg-slate-100 px-2 py-1 rounded-full text-slate-400">v2.5</span>
-            </div>
-
-            <!-- Tool 1: Filmmaker -->
-            <div class="glass-card rounded-2xl overflow-hidden group">
-                <div onclick="toggleService('s1')" class="p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="icon-box bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-slate-700 text-sm truncate">Filmmaker Studio</h4>
-                        <p class="text-slate-400 text-xs truncate">VEO 3.1 & Seedance integration</p>
-                    </div>
-                    <i id="arrow-s1" class="fas fa-chevron-down text-slate-300 text-sm transition-transform duration-300"></i>
-                </div>
-                <div id="s1" class="hidden bg-slate-50/50 border-t border-slate-100 p-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <button class="py-2 rounded-xl text-xs font-medium text-slate-500 hover:bg-white transition">Info</button>
-                        <a href="#" class="tool-btn py-2 rounded-xl text-xs font-bold bg-slate-800 text-white flex items-center justify-center gap-2 hover:bg-slate-700 transition">
-                            Buka Tool <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tool 2: UGC -->
-            <div class="glass-card rounded-2xl overflow-hidden group">
-                <div onclick="toggleService('s2')" class="p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="icon-box bg-purple-50 text-purple-500 group-hover:bg-purple-500 group-hover:text-white">
-                        <i class="fas fa-hashtag"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-slate-700 text-sm truncate">Ultimate UGC</h4>
-                        <p class="text-slate-400 text-xs truncate">Affiliate automation suite</p>
-                    </div>
-                    <i id="arrow-s2" class="fas fa-chevron-down text-slate-300 text-sm transition-transform duration-300"></i>
-                </div>
-                <div id="s2" class="hidden bg-slate-50/50 border-t border-slate-100 p-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="layanan-2.html" class="py-2 rounded-xl text-xs font-medium text-slate-500 text-center hover:bg-white transition">Tutorial</a>
-                        <a href="tool.html?id=servis2" class="tool-btn py-2 rounded-xl text-xs font-bold bg-primary text-white flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-lg shadow-primary/20">
-                            Buka Tool <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tool 3: Kling 2.5 -->
-            <div class="glass-card rounded-2xl overflow-hidden group">
-                <div onclick="toggleService('s3')" class="p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="icon-box bg-green-50 text-green-500 group-hover:bg-green-500 group-hover:text-white">
-                        <i class="fas fa-film"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-slate-700 text-sm truncate">Kling 2.5 Pro</h4>
-                        <p class="text-slate-400 text-xs truncate">Generate video 1080p</p>
-                    </div>
-                    <i id="arrow-s3" class="fas fa-chevron-down text-slate-300 text-sm transition-transform duration-300"></i>
-                </div>
-                <div id="s3" class="hidden bg-slate-50/50 border-t border-slate-100 p-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="layanan-3.html" class="py-2 rounded-xl text-xs font-medium text-slate-500 text-center hover:bg-white transition">Tutorial</a>
-                        <a href="tool.html?id=servis3" class="tool-btn py-2 rounded-xl text-xs font-bold bg-primary text-white flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-lg shadow-primary/20">
-                            Buka Tool <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tool 4: F2F -->
-            <div class="glass-card rounded-2xl overflow-hidden group">
-                <div onclick="toggleService('s4')" class="p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="icon-box bg-yellow-50 text-yellow-500 group-hover:bg-yellow-500 group-hover:text-white">
-                        <i class="fas fa-layer-group"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-slate-700 text-sm truncate">Kling Frame-to-Frame</h4>
-                        <p class="text-slate-400 text-xs truncate">Konsistensi gerakan karakter</p>
-                    </div>
-                    <i id="arrow-s4" class="fas fa-chevron-down text-slate-300 text-sm transition-transform duration-300"></i>
-                </div>
-                <div id="s4" class="hidden bg-slate-50/50 border-t border-slate-100 p-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="layanan-4.html" class="py-2 rounded-xl text-xs font-medium text-slate-500 text-center hover:bg-white transition">Tutorial</a>
-                        <a href="tool.html?id=servis4" class="tool-btn py-2 rounded-xl text-xs font-bold bg-primary text-white flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-lg shadow-primary/20">
-                            Buka Tool <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tool 5: Seedance -->
-            <div class="glass-card rounded-2xl overflow-hidden group">
-                <div onclick="toggleService('s5')" class="p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="icon-box bg-pink-50 text-pink-500 group-hover:bg-pink-500 group-hover:text-white">
-                        <i class="fas fa-music"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-slate-700 text-sm truncate">Seedance Pro</h4>
-                        <p class="text-slate-400 text-xs truncate">AI Dance Generator</p>
-                    </div>
-                    <i id="arrow-s5" class="fas fa-chevron-down text-slate-300 text-sm transition-transform duration-300"></i>
-                </div>
-                <div id="s5" class="hidden bg-slate-50/50 border-t border-slate-100 p-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="layanan-5.html" class="py-2 rounded-xl text-xs font-medium text-slate-500 text-center hover:bg-white transition">Tutorial</a>
-                        <a href="tool.html?id=servis5" class="tool-btn py-2 rounded-xl text-xs font-bold bg-primary text-white flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-lg shadow-primary/20">
-                            Buka Tool <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tool 6: VEO -->
-            <div class="glass-card rounded-2xl overflow-hidden group">
-                <div onclick="toggleService('s6')" class="p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="icon-box bg-indigo-50 text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white">
-                        <i class="fas fa-magic"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-slate-700 text-sm truncate">VEO 3.1 & Seedance</h4>
-                        <p class="text-slate-400 text-xs truncate">Unlimited text/img to video</p>
-                    </div>
-                    <i id="arrow-s6" class="fas fa-chevron-down text-slate-300 text-sm transition-transform duration-300"></i>
-                </div>
-                <div id="s6" class="hidden bg-slate-50/50 border-t border-slate-100 p-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="layanan-6.html" class="py-2 rounded-xl text-xs font-medium text-slate-500 text-center hover:bg-white transition">Tutorial</a>
-                        <a href="tool.html?id=servis6" class="tool-btn py-2 rounded-xl text-xs font-bold bg-primary text-white flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-lg shadow-primary/20">
-                            Buka Tool <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tool 7: Konsisten -->
-            <div class="glass-card rounded-2xl overflow-hidden group">
-                <div onclick="toggleService('s7')" class="p-4 flex items-center gap-4 cursor-pointer">
-                    <div class="icon-box bg-orange-50 text-orange-500 group-hover:bg-orange-500 group-hover:text-white">
-                        <i class="fas fa-users-viewfinder"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-slate-700 text-sm truncate">Character Consistent</h4>
-                        <p class="text-slate-400 text-xs truncate">Adegan film satu tokoh</p>
-                    </div>
-                    <i id="arrow-s7" class="fas fa-chevron-down text-slate-300 text-sm transition-transform duration-300"></i>
-                </div>
-                <div id="s7" class="hidden bg-slate-50/50 border-t border-slate-100 p-3">
-                    <div class="grid grid-cols-2 gap-2">
-                        <a href="layanan-7.html" class="py-2 rounded-xl text-xs font-medium text-slate-500 text-center hover:bg-white transition">Tutorial</a>
-                        <a href="tool.html?id=servis7" class="tool-btn py-2 rounded-xl text-xs font-bold bg-primary text-white flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-lg shadow-primary/20">
-                            Buka Tool <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- REQUEST (Minimalist) -->
-            <a href="https://wa.me/6285841244290?text=Halo%20Admin%2C%20Request%20Tool..." target="_blank" class="block text-center py-4 opacity-60 hover:opacity-100 transition">
-                <p class="text-xs text-slate-400 font-medium"><i class="fab fa-whatsapp mr-1"></i> Request Fitur Baru</p>
+            <!-- ITEM 1: Filmmaker -->
+            <a href="#" class="tool-item p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer">
+                <div class="text-xl text-stone-700"><i class="fas fa-video"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-600">Filmmaker</span>
             </a>
 
-        </main>
+            <!-- ITEM 2: UGC (Premium) -->
+            <a href="tool.html?id=servis2" class="tool-item premium-only p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer relative">
+                <div class="text-xl text-stone-700"><i class="fas fa-hashtag"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-600">UGC Auto</span>
+                <i class="fas fa-lock absolute top-3 right-3 text-[8px] text-stone-300 premium-lock"></i>
+            </a>
+
+            <!-- ITEM 3: Kling (Premium) -->
+            <a href="tool.html?id=servis3" class="tool-item premium-only p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer relative">
+                <div class="text-xl text-stone-700"><i class="fas fa-film"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-600">Kling Pro</span>
+                <i class="fas fa-lock absolute top-3 right-3 text-[8px] text-stone-300 premium-lock"></i>
+            </a>
+
+            <!-- ITEM 4: F2F (Premium) -->
+            <a href="tool.html?id=servis4" class="tool-item premium-only p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer relative">
+                <div class="text-xl text-stone-700"><i class="fas fa-layer-group"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-600">Consistent</span>
+                <i class="fas fa-lock absolute top-3 right-3 text-[8px] text-stone-300 premium-lock"></i>
+            </a>
+
+            <!-- ITEM 5: Seedance (Premium) -->
+            <a href="tool.html?id=servis5" class="tool-item premium-only p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer relative">
+                <div class="text-xl text-stone-700"><i class="fas fa-music"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-600">Seedance</span>
+                <i class="fas fa-lock absolute top-3 right-3 text-[8px] text-stone-300 premium-lock"></i>
+            </a>
+
+            <!-- ITEM 6: VEO (Premium) -->
+            <a href="tool.html?id=servis6" class="tool-item premium-only p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer relative">
+                <div class="text-xl text-stone-700"><i class="fas fa-magic"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-600">VEO 3.1</span>
+                <i class="fas fa-lock absolute top-3 right-3 text-[8px] text-stone-300 premium-lock"></i>
+            </a>
+            
+             <!-- ITEM 7: Character (Premium) -->
+            <a href="tool.html?id=servis7" class="tool-item premium-only p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer relative">
+                <div class="text-xl text-stone-700"><i class="fas fa-user-circle"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-600">Character</span>
+                <i class="fas fa-lock absolute top-3 right-3 text-[8px] text-stone-300 premium-lock"></i>
+            </a>
+
+            <!-- Request -->
+            <a href="https://wa.me/6285841244290" target="_blank" class="tool-item p-4 rounded-xl flex flex-col items-center gap-3 text-center cursor-pointer">
+                <div class="text-xl text-stone-300"><i class="fab fa-whatsapp"></i></div>
+                <span class="font-sans text-xs font-medium text-stone-400">Request</span>
+            </a>
+
+        </div>
+
+        <!-- Upgrade Prompt (Only Visible if Free) -->
+        <div id="upgradePrompt" class="mt-8 hidden">
+            <a href="pembayaran.html" class="text-xs font-sans text-stone-400 hover:text-stone-800 border-b border-stone-200 pb-0.5 transition">
+                Unlock All Features (Upgrade)
+            </a>
+        </div>
     </div>
 
-    <!-- LOGIC SYSTEM -->
-    <script>
-        // --- 1. UI INTERACTION ---
-        function toggleService(id) {
-            const el = document.getElementById(id);
-            const arrow = document.getElementById('arrow-' + id);
-            
-            // Tutup yang lain agar rapi (Accordion Effect)
-            const allContent = document.querySelectorAll('[id^="s"]');
-            const allArrows = document.querySelectorAll('[id^="arrow-s"]');
-            
-            allContent.forEach(item => {
-                if(item.id !== id) item.classList.add('hidden');
-            });
-            allArrows.forEach(item => {
-                if(item.id !== 'arrow-' + id) item.classList.remove('rotate-180');
-            });
+    <!-- FOOTER -->
+    <footer class="absolute bottom-6 font-sans text-[10px] text-stone-300 uppercase tracking-widest">
+        Orbit Systems &copy; 2026
+    </footer>
 
-            // Toggle yang diklik
-            if (el.classList.contains('hidden')) {
-                el.classList.remove('hidden');
-                arrow.classList.add('rotate-180');
-            } else {
-                el.classList.add('hidden');
-                arrow.classList.remove('rotate-180');
-            }
+    <!-- LOGIC -->
+    <script>
+        // --- UI Control ---
+        const menuOverlay = document.getElementById('menuOverlay');
+
+        function openMenu() {
+            menuOverlay.classList.remove('hidden');
+            // Sedikit delay biar transisi opacity jalan
+            setTimeout(() => {
+                menuOverlay.classList.remove('opacity-0');
+            }, 10);
         }
 
-        // --- 2. SUPABASE LOGIC ---
-        const { createClient } = supabase
+        function closeMenu() {
+            menuOverlay.classList.add('opacity-0');
+            setTimeout(() => {
+                menuOverlay.classList.add('hidden');
+            }, 300);
+        }
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeMenu();
+        });
+
+        // --- Supabase & Logic ---
+        const { createClient } = supabase;
         const _supabase = createClient(
             'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM'
-        )
+        );
 
-        async function checkAccess() {
-            const { data: { session } } = await _supabase.auth.getSession()
+        async function init() {
+            const { data: { session } } = await _supabase.auth.getSession();
             if (!session) {
-                window.location.href = "index.html"
+                window.location.href = "index.html";
                 return;
             }
 
             const user = session.user;
-            const email = user.email;
-            // Ambil nama depan dari email
-            const name = email.split('@')[0].replace(/[0-9]/g, ''); 
+            const name = user.email.split('@')[0].replace(/[0-9]/g, ''); 
             const formattedName = name.charAt(0).toUpperCase() + name.slice(1);
             
-            document.getElementById('welcomeName').innerText = formattedName;
+            document.getElementById('userName').innerText = formattedName;
+            document.getElementById('userInitial').innerText = formattedName.charAt(0);
 
-            // Cek Status Premium
-            let isSubscribed = false;
+            // Check Premium
+            let isPremium = false;
             try {
-                const { data, error } = await _supabase
-                    .from('profiles') 
-                    .select('is_premium')
-                    .eq('id', user.id)
-                    .single();
-                
-                if (data && data.is_premium === true) {
-                    isSubscribed = true;
-                }
-            } catch (err) {
-                console.log("Mode: Free Tier");
-            }
+                const { data } = await _supabase.from('profiles').select('is_premium').eq('id', user.id).single();
+                if (data && data.is_premium) isPremium = true;
+            } catch (e) {}
 
-            renderStatus(isSubscribed);
-            initLiveCounter();
+            applyStatus(isPremium);
             
             // Hide Loader
-            const loader = document.getElementById('loadingScreen');
-            loader.style.opacity = '0';
-            setTimeout(() => { loader.style.display = 'none'; }, 500);
+            setTimeout(() => {
+                document.getElementById('loader').style.display = 'none';
+            }, 500);
+
+            // Live User (Fake+Real)
+            document.getElementById('userStatus').innerText = (Math.floor(Math.random() * 5) + 2) + " Online";
         }
 
-        function renderStatus(isPremium) {
-            const container = document.getElementById('statusContainer');
-            
+        function applyStatus(isPremium) {
+            const body = document.body;
             if (isPremium) {
-                // UI PREMIUM
-                document.body.classList.add('is-premium');
-                document.getElementById('premiumCrown').classList.remove('hidden');
-                
-                container.innerHTML = `
-                    <div class="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-amber-100 to-amber-50 border border-amber-200 rounded-full shadow-sm">
-                        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-                        <span class="text-amber-700 text-xs font-bold tracking-wide">PRO MEMBER ACTIVE</span>
-                    </div>
-                `;
+                body.classList.add('is-premium');
+                document.getElementById('premiumDot').classList.remove('hidden');
+                // document.getElementById('userStatus').innerText += " • Pro";
             } else {
-                // UI FREE
-                container.innerHTML = `
-                    <a href="pembayaran.html" class="group relative inline-flex items-center gap-3 px-6 py-2.5 bg-slate-900 rounded-full text-white shadow-xl shadow-slate-200 transition-all hover:scale-105 active:scale-95">
-                        <span class="text-xs font-semibold">Upgrade ke Pro</span>
-                        <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[10px] group-hover:bg-white/30 transition">
-                            <i class="fas fa-arrow-right"></i>
-                        </span>
-                    </a>
-                `;
-                lockContent();
+                body.classList.add('is-free');
+                document.getElementById('upgradePrompt').classList.remove('hidden');
+                
+                // Alert if clicking locked item
+                document.querySelectorAll('.premium-only').forEach(el => {
+                    el.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if(confirm("Fitur ini terkunci. Upgrade ke Pro?")) {
+                            window.location.href = "pembayaran.html";
+                        }
+                    });
+                });
             }
-        }
-        
-        function lockContent() {
-            const toolButtons = document.querySelectorAll('.tool-btn');
-            toolButtons.forEach(btn => {
-                // Ubah style tombol jadi abu-abu
-                btn.className = "py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-400 flex items-center justify-center gap-2 cursor-not-allowed border border-slate-200";
-                btn.innerHTML = '<i class="fas fa-lock text-[10px]"></i> <span>Terkunci</span>';
-                btn.removeAttribute('href');
-                btn.removeAttribute('target');
-                btn.onclick = function(e) { 
-                    e.preventDefault();
-                    alert("Fitur ini khusus Pro Member. Silakan Upgrade!"); 
-                };
-            });
-        }
-
-        function initLiveCounter() {
-            const channel = _supabase.channel('online-users');
-            channel.on('presence', { event: 'sync' }, () => {
-                const state = channel.presenceState();
-                const count = Object.keys(state).length;
-                // Fake user count biar terlihat ramai (sesuai script lama)
-                const displayCount = count + Math.floor(Math.random() * 5) + 3; 
-                document.getElementById('toolUserCount').innerText = displayCount + " Online";
-            })
-            .subscribe(async (status) => {
-                if (status === 'SUBSCRIBED') {
-                    await channel.track({ online_at: new Date().toISOString() });
-                }
-            });
         }
 
         async function doLogout() {
-            const loader = document.getElementById('loadingScreen');
-            loader.style.display = 'flex';
-            loader.style.opacity = '1';
-            
-            await _supabase.auth.signOut();
-            setTimeout(() => { window.location.href = "index.html"; }, 1000);
+            if(confirm('Log out?')) {
+                await _supabase.auth.signOut();
+                window.location.href = "index.html";
+            }
         }
 
-        // Jalankan
-        checkAccess();
+        init();
     </script>
 </body>
 </html>
