@@ -12,21 +12,16 @@
         
         .plan-card { transition: all 0.3s ease; }
         .plan-card:hover { transform: translateY(-2px); border-color: #3b82f6; }
+        
+        /* State Active (Dipilih) */
         .plan-card.active { 
             border-color: #3b82f6; 
-            background-color: rgba(59, 130, 246, 0.1);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-        }
-        
-        /* Khusus Active Gold agar warnanya Emas */
-        .plan-card.active-gold {
-            border-color: #eab308;
-            background-color: rgba(234, 179, 8, 0.1);
-            box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+            background-color: rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
         }
 
         .check-icon { display: none; }
-        .plan-card.active .check-icon, .plan-card.active-gold .check-icon { display: block; }
+        .plan-card.active .check-icon { display: block; }
     </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -34,67 +29,49 @@
     <div class="glass-box max-w-md w-full p-6 rounded-2xl shadow-2xl relative">
         
         <!-- Header -->
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold mb-1">Pilih Paket Langganan</h1>
-            <p class="text-gray-400 text-sm">Pilih server prioritas untuk kecepatan maksimal</p>
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-bold mb-1">Konfirmasi Pesanan</h1>
+            <p class="text-gray-400 text-sm">Selesaikan pembayaran untuk mengaktifkan bot.</p>
         </div>
 
-        <!-- Pilihan Paket -->
-        <div class="space-y-4 mb-6">
+        <!-- Pilihan Paket (Sesuai Index.html) -->
+        <div class="space-y-4 mb-8">
             
-            <!-- PAKET TESTER -->
-            <div onclick="pilihPaket('TESTER', 15000, '3 Hari', 'Semua fitur aktif')" id="btn-tester"
-                 class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
+            <!-- 1. PAKET TESTER (15k / 3 Hari) -->
+            <div onclick="pilihPaket('TESTER', 15000, '3 Hari', 'Akses Standard (Coba-coba)')" id="btn-tester"
+                 class="plan-card border border-slate-600 rounded-xl p-5 cursor-pointer relative group bg-slate-800/50">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-blue-400">TESTER <span class="text-xs text-gray-400 font-normal ml-1 bg-slate-700 px-2 py-0.5 rounded-full">3 Hari</span></h3>
-                        <p class="text-xs text-gray-400 mt-1">Trial semua fitur selama 3 hari.</p>
+                        <h3 class="font-bold text-gray-300">TESTER <span class="text-[10px] text-gray-400 font-normal ml-2 bg-slate-700 px-2 py-0.5 rounded-full border border-slate-600">3 HARI</span></h3>
+                        <p class="text-xs text-gray-500 mt-1">Server Standard</p>
                     </div>
                     <div class="text-right">
                         <p class="font-bold text-lg">Rp 15k</p>
-                        <i class="fas fa-check-circle text-blue-500 check-icon absolute top-4 right-4 text-xl"></i>
+                        <i class="fas fa-check-circle text-blue-500 check-icon absolute top-5 right-5 text-xl"></i>
                     </div>
                 </div>
             </div>
 
-            <!-- PAKET PRO (MODIFIKASI: Unlimited tapi Non-Prioritas) -->
-            <div onclick="pilihPaket('PRO', 49000, '15 Hari', 'Fitur Unlimited (Server Standard)')" id="btn-pro"
-                 class="plan-card border border-slate-600 rounded-xl p-4 cursor-pointer relative group bg-slate-800/50">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-purple-400">PRO <span class="text-xs text-white font-normal ml-1 bg-purple-600 px-2 py-0.5 rounded-full">15 Hari</span></h3>
-                        <p class="text-[10px] leading-tight text-gray-300 mt-1">
-                            Akses Unlimited semua fitur.<br>
-                            <span class="text-slate-500 italic">(Server Standard)</span>
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <p class="font-bold text-lg">Rp 49k</p>
-                        <i class="fas fa-check-circle text-purple-500 check-icon absolute top-4 right-4 text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAKET GOLD (MODIFIKASI: Sangat Direkomendasikan & Prioritas) -->
-            <div onclick="pilihPaket('GOLD', 89000, '30 Hari', 'Fitur Unlimited (VIP Server Prioritas)')" id="btn-gold"
-                 class="plan-card border border-yellow-500/50 rounded-xl p-4 cursor-pointer relative group bg-gradient-to-r from-slate-800 to-slate-900/80">
+            <!-- 2. PAKET PRO (49k / 25 Hari / Priority) - Sesuai Index -->
+            <div onclick="pilihPaket('PRO ACCESS', 49000, '25 Hari', 'Full Akses + Priority Server')" id="btn-pro"
+                 class="plan-card border border-blue-600 rounded-xl p-5 cursor-pointer relative group bg-slate-800/80">
                 
                 <!-- Badge Recommended -->
-                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-[10px] font-bold px-3 py-0.5 rounded-full shadow-lg z-10 tracking-wide border border-yellow-300">
-                    SANGAT DIREKOMENDASIKAN
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-0.5 rounded-full shadow-lg z-10 tracking-wide border border-blue-400">
+                    RECOMMENDED
                 </div>
 
                 <div class="flex justify-between items-center mt-1">
                     <div>
-                        <h3 class="font-bold text-yellow-400 text-lg">GOLD <span class="text-xs text-black font-bold ml-1 bg-yellow-400 px-2 py-0.5 rounded-full">VIP 1 Bulan</span></h3>
-                        <p class="text-[10px] leading-tight text-gray-300 mt-1">
-                            Akses Unlimited Semua Fitur.<br>
-                            <span class="text-yellow-500 font-bold">Server Prioritas (Super Cepat).</span>
+                        <h3 class="font-bold text-blue-400 text-lg">PRO ACCESS <span class="text-xs text-white font-bold ml-1 bg-blue-500 px-2 py-0.5 rounded-full">25 HARI</span></h3>
+                        <p class="text-[11px] leading-tight text-gray-300 mt-1">
+                            Akses Tanpa Batas.<br>
+                            <span class="text-yellow-400 font-bold"><i class="fas fa-bolt text-[10px] mr-1"></i>Priority Server</span>
                         </p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-2xl text-white">Rp 89k</p>
-                        <i class="fas fa-check-circle text-yellow-500 check-icon absolute top-4 right-4 text-2xl"></i>
+                        <p class="font-bold text-2xl text-white">Rp 49k</p>
+                        <i class="fas fa-check-circle text-blue-400 check-icon absolute top-6 right-5 text-2xl"></i>
                     </div>
                 </div>
             </div>
@@ -102,38 +79,40 @@
         </div>
 
         <!-- Metode Pembayaran -->
-        <div class="mb-2">
-            <p class="text-xs text-gray-400 uppercase font-bold mb-3 tracking-wider">Metode Pembayaran</p>
+        <div class="mb-3">
+            <p class="text-xs text-gray-500 uppercase font-bold mb-3 tracking-wider text-center">Transfer Ke:</p>
         </div>
         
-        <div class="space-y-3 mb-8">
-            <div class="flex items-center gap-4 border border-slate-600 p-3 rounded-xl hover:border-yellow-500 transition cursor-pointer bg-slate-900/50" onclick="copyText('104212452291')">
-                <div class="w-12 h-8 bg-yellow-500 rounded flex items-center justify-center text-black font-bold text-xs">JAGO</div>
-                <div>
-                    <p class="text-xs text-gray-400">Bank Jago</p>
-                    <p class="font-bold text-md tracking-wide">1005-5384-2165</p>
-                    <p class="text-xs text-gray-500">a.n Sumahir Hidayanto</p>
+        <div class="grid grid-cols-1 gap-3 mb-8">
+            <div class="flex items-center gap-4 border border-slate-700 p-3 rounded-xl hover:border-yellow-500 transition cursor-pointer bg-slate-900/50 group" onclick="copyText('104212452291')">
+                <div class="w-10 h-10 bg-yellow-500 rounded-lg flex items-center justify-center text-black font-bold text-[10px] group-hover:scale-110 transition">JAGO</div>
+                <div class="flex-1">
+                    <p class="text-[10px] text-gray-400">Bank Jago</p>
+                    <p class="font-bold text-sm tracking-wide text-white">1005-5384-2165</p>
+                    <p class="text-[10px] text-gray-500">a.n Sumahir Hidayanto</p>
                 </div>
+                <i class="far fa-copy text-gray-600"></i>
             </div>
 
-            <div class="flex items-center gap-4 border border-slate-600 p-3 rounded-xl hover:border-blue-500 transition cursor-pointer bg-slate-900/50" onclick="copyText('085841244290')">
-                <div class="w-12 h-8 bg-blue-500 rounded flex items-center justify-center text-white font-bold text-xs">DANA</div>
-                <div>
-                    <p class="text-xs text-gray-400">E-Wallet DANA</p>
-                    <p class="font-bold text-md tracking-wide">0858-4124-4290</p>
-                    <p class="text-xs text-gray-500">a.n Sumahir Hidayanto</p>
+            <div class="flex items-center gap-4 border border-slate-700 p-3 rounded-xl hover:border-blue-500 transition cursor-pointer bg-slate-900/50 group" onclick="copyText('085841244290')">
+                <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-[10px] group-hover:scale-110 transition">DANA</div>
+                <div class="flex-1">
+                    <p class="text-[10px] text-gray-400">E-Wallet DANA</p>
+                    <p class="font-bold text-sm tracking-wide text-white">0858-4124-4290</p>
+                    <p class="text-[10px] text-gray-500">a.n Sumahir Hidayanto</p>
                 </div>
+                <i class="far fa-copy text-gray-600"></i>
             </div>
         </div>
 
         <!-- Tombol Konfirmasi WA -->
         <a id="waButton" href="#" target="_blank" 
-           class="block w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl text-center shadow-lg transform transition active:scale-95 flex items-center justify-center gap-2">
+           class="block w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl text-center shadow-lg shadow-blue-900/50 transform transition active:scale-95 flex items-center justify-center gap-2">
             <i class="fab fa-whatsapp text-xl"></i> 
             <span id="btnText">Konfirmasi Bayar</span>
         </a>
 
-        <a href="javascript:history.back()" class="block text-center mt-4 text-gray-500 hover:text-white text-sm transition">Batal / Kembali</a>
+        <a href="index.html" class="block text-center mt-6 text-slate-500 hover:text-white text-xs transition">Kembali ke Home</a>
     </div>
 
     <script>
@@ -149,35 +128,33 @@
             durasiTerpilih = durasi;
             ketTerpilih = keterangan;
 
-            // Reset semua card
+            // Reset tampilan kartu
             document.querySelectorAll('.plan-card').forEach(card => {
                 card.classList.remove('active');
-                card.classList.remove('active-gold');
             });
             
-            // Set active class sesuai pilihan
+            // Highlight kartu yang dipilih
             if(nama === 'TESTER') document.getElementById('btn-tester').classList.add('active');
-            if(nama === 'PRO') document.getElementById('btn-pro').classList.add('active');
-            
-            // Khusus Gold pakai class active-gold agar warnanya emas
-            if(nama === 'GOLD') document.getElementById('btn-gold').classList.add('active-gold');
+            if(nama === 'PRO ACCESS') document.getElementById('btn-pro').classList.add('active');
 
             const formatRupiah = new Intl.NumberFormat('id-ID', { 
                 style: 'currency', currency: 'IDR', minimumFractionDigits: 0 
             }).format(harga);
 
             document.getElementById('btnText').innerText = `Konfirmasi Bayar (${formatRupiah})`;
-            
             updateLinkWA(formatRupiah);
         }
 
         function updateLinkWA(hargaFormatted) {
-            const pesan = `Halo Admin, saya mau beli paket: 
-💌 *${paketTerpilih}* (${durasiTerpilih})
-💲 Harga: *${hargaFormatted}*
-✔ Tipe: ${ketTerpilih}
+            // Format pesan otomatis
+            const pesan = `Halo Admin OrbitBot, saya ingin konfirmasi pembayaran:
+            
+📦 *Paket:* ${paketTerpilih}
+⏳ *Durasi:* ${durasiTerpilih}
+💰 *Nominal:* ${hargaFormatted}
+🚀 *Benefit:* ${ketTerpilih}
 
-Saya sudah transfer ke rekening yang tertera, berikut ini screenshot bukti pembayarannya. Mohon segera diproses. Terima kasih!`;
+Bukti transfer sudah saya lampirkan. Mohon segera diproses. Terima kasih!`;
             
             const link = `https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`;
             document.getElementById('waButton').href = link;
@@ -185,13 +162,15 @@ Saya sudah transfer ke rekening yang tertera, berikut ini screenshot bukti pemba
 
         function copyText(text) {
             navigator.clipboard.writeText(text);
-            alert('Nomor rekening/e-wallet berhasil disalin!');
+            // Visual feedback kecil (opsional)
+            const btn = document.getElementById('btnText');
+            const original = btn.innerText;
+            btn.innerText = "Nomor Disalin!";
+            setTimeout(() => btn.innerText = original, 1000);
         }
 
-        // Default set ke Gold saat pertama buka karena direkomendasikan
-        pilihPaket('GOLD', 89000, '30 Hari', 'Fitur Unlimited (VIP Server Prioritas)');
+        // Set Default ke PRO ACCESS (25 Hari) karena ini paket utama di Index
+        pilihPaket('PRO ACCESS', 49000, '25 Hari', 'Full Akses + Priority Server');
     </script>
 </body>
 </html>
-
-
