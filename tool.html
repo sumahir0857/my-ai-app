@@ -24,79 +24,34 @@
             overflow: hidden; 
             height: 100vh;
             width: 100vw;
-            display: flex;
-            flex-direction: column;
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
+            margin: 0; /* Reset margin */
+            padding: 0; /* Reset padding */
         }
 
+        /* Ubah container agar Full Screen 100% tanpa batas */
         .iframe-container {
-            flex-grow: 1;
-            margin: 10px;
-            border: 1px solid #334155;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(59, 130, 246, 0.1);
-            position: relative;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            margin: 0;
+            padding: 0;
             background: #000;
+            z-index: 1;
         }
 
         iframe {
             width: 100%;
             height: 100%;
             border: none;
+            display: block;
+            /* Filter opsional, bisa dihapus jika ingin warna asli */
             filter: contrast(1.05) brightness(1);
         }
 
-        .float-nav {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #ef4444; 
-            border-radius: 50px;
-            height: 45px;
-            width: 45px; 
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        .float-nav:hover {
-            width: 200px; 
-            background: rgba(239, 68, 68, 0.1);
-            border-color: #ef4444;
-        }
-
-        .float-nav i {
-            font-size: 18px;
-            min-width: 45px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .float-nav span {
-            white-space: nowrap;
-            opacity: 0;
-            transform: translateX(10px);
-            transition: all 0.3s;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .float-nav:hover span {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
+        /* Modal Style (Tetap disimpan untuk struktur, meski tombol trigger dihapus) */
         #warningModal {
             display: none;
             position: fixed;
@@ -129,18 +84,14 @@
 </head>
 <body>
 
-    <!-- Tombol Tutup -->
-    <div onclick="triggerExit()" class="float-nav" title="Kembali ke Dashboard">
-        <i class="fas fa-times"></i>
-        <span>Tutup & Kembali</span>
-    </div>
+    <!-- Tombol Tutup SUDAH DIHAPUS sesuai permintaan -->
 
-    <!-- Container Iframe -->
+    <!-- Container Iframe Full Screen -->
     <div class="iframe-container">
         <iframe id="toolFrame" src="about:blank" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; webcam; microphone" allowfullscreen></iframe>
     </div>
 
-    <!-- Modal Peringatan -->
+    <!-- Modal Peringatan (Disimpan untuk backup logika JS) -->
     <div id="warningModal">
         <div class="modal-content">
             <div class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -163,7 +114,6 @@
 
     <script>
         // --- 1. CONFIGURATION: DAFTAR LINK LAYANAN ---
-        // Anda bisa menambah atau mengubah link di sini tanpa mengubah link di Dashboard
         const toolLinks = {
             "servis1": "https://sumahir-filmmakerpro.hf.space",
             "servis2": "https://www.orbitbot.pro/ugc.html",
@@ -189,7 +139,7 @@
 
         // --- 3. LOAD TOOL BY ID ---
         const urlParams = new URLSearchParams(window.location.search);
-        const toolId = urlParams.get('id'); // Mengambil ?id=...
+        const toolId = urlParams.get('id');
 
         if(toolId && toolLinks[toolId]) {
             document.getElementById('toolFrame').src = toolLinks[toolId];
@@ -200,6 +150,7 @@
 
         // --- 4. ANTI-REFRESH & MODAL LOGIC ---
         
+        // Peringatan Browser (Security: Menolak menutup halaman secara tiba-tiba)
         window.addEventListener('beforeunload', function (e) {
             e.preventDefault(); 
             e.returnValue = 'Data akan hilang jika direfresh.'; 
@@ -207,6 +158,8 @@
 
         const modal = document.getElementById('warningModal');
 
+        // Fungsi ini sekarang tidak dipanggil oleh tombol UI (karena tombol dihapus),
+        // tapi dibiarkan ada agar kode tidak error jika dipanggil secara manual.
         function triggerExit() {
             modal.style.display = 'flex';
         }
@@ -216,7 +169,6 @@
         }
 
         function confirmExit() {
-            // Hapus proteksi agar bisa pindah halaman
             window.onbeforeunload = null;
             window.location.href = "dashboard.html";
         }
