@@ -69,7 +69,7 @@
             border-color: #cbd5e1;
         }
 
-        /* VIDEO WRAPPER */
+        /* VIDEO WRAPPER FIXED */
         .video-wrapper {
             position: relative;
             width: 100%;
@@ -78,14 +78,25 @@
             overflow: hidden;
             cursor: pointer;
             box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1);
+            z-index: 1; /* Base z-index */
         }
+        
+        /* Image Thumbnail */
         .video-wrapper img {
             width: 100%; height: 100%; object-fit: cover;
             transition: transform 0.5s;
-            display: block; /* Default display */
+            display: block;
+            z-index: 2;
         }
         .video-wrapper:hover img { transform: scale(1.05); }
         
+        /* Iframe (Video Player) */
+        .video-wrapper iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border: none; z-index: 5; /* Di atas gambar */
+        }
+
+        /* Play Button */
         .play-btn {
             position: absolute; top: 50%; left: 50%;
             transform: translate(-50%, -50%);
@@ -96,7 +107,7 @@
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: white; transition: all 0.3s;
-            z-index: 10;
+            z-index: 3; /* Di atas gambar, di bawah iframe */
         }
         .video-wrapper:hover .play-btn { background: #2563eb; border-color: #2563eb; transform: translate(-50%, -50%) scale(1.1); }
 
@@ -286,15 +297,12 @@
                     <a href="pembayaran.html" class="block w-full py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition">Pilih Paket</a>
                 </div>
 
-                <!-- PLAN 2: 49k (UPDATED 25 HARI) -->
+                <!-- PLAN 2: 49k (25 HARI) -->
                 <div class="bg-slate-900 p-8 rounded-3xl text-center relative hover:-translate-y-2 transition duration-300 shadow-2xl shadow-blue-900/20">
                     <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full">RECOMMENDED</div>
                     <h3 class="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Pro Access</h3>
                     <div class="text-5xl font-extrabold text-white mb-2">49k</div>
-                    
-                    <!-- PERUBAHAN DI SINI: 25 HARI -->
                     <p class="text-xs text-slate-400 mb-8 font-medium">Aktif 25 Hari</p>
-                    
                     <ul class="text-sm text-slate-300 space-y-3 mb-8 text-left pl-8">
                         <li><i class="fas fa-check text-blue-500 mr-2"></i> <b>Akses Tanpa Batas</b></li>
                         <li><i class="fas fa-check text-blue-500 mr-2"></i> Semua Fitur AI</li>
@@ -365,7 +373,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-    // SUPABASE & AUTH
+    // SUPABASE
     const { createClient } = supabase;
     const _supabase = createClient(
         'https://xhjwmhoxrszzrwsmqhxi.supabase.co', 
@@ -413,20 +421,32 @@
         document.getElementById('loginModal').classList.remove('flex');
     }
 
-    // --- VIDEO LOGIC: AUTO STOP ON SCROLL & SLIDE ---
-    
-    // 1. Fungsi Utama: Load Video
-    function loadVideo(wrapper, videoId) {
-        // Stop semua video lain dulu
-        resetAllVideos();
-        
-        // Simpan thumbnail & btn asli
-        const img = wrapper.querySelector('img');
-        const btn = wrapper.querySelector('.play-btn');
-        if(img) img.style.display = 'none';
-        if(btn) btn.style.display = 'none';
+    // --- SMART VIDEO LOGIC (FIXED) ---
+    var swiper = new Swiper('.swiper-ugc', {
+        slidesPerView: "auto",
+        spaceBetween: 20,
+        centeredSlides: true,
+        loop: true,
+        pagination: { el: ".swiper-pagination", clickable: true },
+        autoplay: { delay: 3500, disableOnInteraction: false },
+        on: {
+            slideChange: function () {
+                stopAllVideos(); // Matikan video saat geser
+            },
+            sliderMove: function () {
+                stopAllVideos(); // Matikan saat di-drag
+            }
+        }
+    });
 
-        // Buat Iframe
+    function loadVideo(wrapper, videoId) {
+        // 1. Matikan autoplay slider agar video gak keganggu
+        if(swiper && swiper.autoplay) swiper.autoplay.stop();
+
+        // 2. Reset video lain
+        stopAllVideos();
+
+        // 3. Buat iframe
         const iframe = document.createElement('iframe');
         iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
         iframe.style.width = "100%";
@@ -436,62 +456,39 @@
         iframe.style.left = "0";
         iframe.style.border = "none";
         iframe.allow = "autoplay; encrypted-media";
-        iframe.classList.add('active-video-frame'); // Marker class
+        iframe.classList.add('active-iframe');
         
+        // 4. Masukkan ke wrapper
         wrapper.appendChild(iframe);
+        
+        // 5. Sembunyikan tombol play bawaan
+        const btn = wrapper.querySelector('.play-btn');
+        if(btn) btn.style.display = 'none';
     }
 
-    // 2. Fungsi Reset: Hapus iframe, munculkan thumbnail
-    function resetAllVideos() {
-        document.querySelectorAll('.active-video-frame').forEach(iframe => {
+    function stopAllVideos() {
+        // Hapus semua iframe aktif
+        document.querySelectorAll('.active-iframe').forEach(iframe => {
             const wrapper = iframe.parentElement;
             iframe.remove();
-            
-            // Restore UI
-            const img = wrapper.querySelector('img');
+            // Munculkan kembali tombol play
             const btn = wrapper.querySelector('.play-btn');
-            if(img) img.style.display = 'block';
             if(btn) btn.style.display = 'flex';
         });
+
+        // Nyalakan lagi autoplay slider jika user sudah selesai nonton (opsional, tapi bagus UX-nya)
+        // if(swiper && swiper.autoplay && !swiper.autoplay.running) swiper.autoplay.start();
     }
 
-    // 3. Setup Swiper (Stop video saat geser)
-    const swiper = new Swiper('.swiper-ugc', {
-        slidesPerView: "auto",
-        spaceBetween: 20,
-        centeredSlides: true,
-        loop: true,
-        pagination: { el: ".swiper-pagination", clickable: true },
-        autoplay: { delay: 3000, disableOnInteraction: true },
-        on: {
-            slideChange: function () {
-                resetAllVideos(); // Matikan video saat geser
-            },
-            sliderMove: function () {
-                resetAllVideos(); // Matikan saat mulai drag
-            }
-        }
-    });
-
-    // 4. Setup IntersectionObserver (Stop video saat scroll jauh)
+    // Stop video saat scroll menjauh
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (!entry.isIntersecting) {
-                // Jika video keluar layar -> Stop
-                const iframe = entry.target.querySelector('.active-video-frame');
-                if (iframe) {
-                    const wrapper = iframe.parentElement;
-                    iframe.remove();
-                    const img = wrapper.querySelector('img');
-                    const btn = wrapper.querySelector('.play-btn');
-                    if(img) img.style.display = 'block';
-                    if(btn) btn.style.display = 'flex';
-                }
+                stopAllVideos();
             }
         });
-    }, { threshold: 0.1 }); // Trigger saat 10% sisa video
+    }, { threshold: 0.1 });
 
-    // Observe semua wrapper
     document.querySelectorAll('.video-wrapper').forEach(el => observer.observe(el));
 
     window.onload = checkSession;
