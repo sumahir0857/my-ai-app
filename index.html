@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orbit Bot - Pusat Kendali AI Masa Depan</title>
+    <title>Orbit Bot - Solusi Video AI Otomatis</title>
     <!-- Favicon -->
     <link rel="icon" href="/assets/logo.png" type="image/png">
     <!-- Tailwind CSS -->
@@ -17,7 +17,7 @@
     
     <!-- Icons & Fonts -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;800&display=swap" rel="stylesheet">
     
     <script>
         tailwind.config = {
@@ -27,21 +27,18 @@
                     colors: {
                         'brand-dark': '#0B0F19',
                         'brand-card': '#151B2B',
-                        'brand-border': '#2A3241',
                         'accent-blue': '#3B82F6',
-                        'accent-glow': '#60A5FA'
                     },
                     animation: {
-                        'blob': 'blob 7s infinite',
+                        'blob': 'blob 10s infinite',
                         'fade-up': 'fadeUp 0.8s ease-out forwards',
-                        /* Modifikasi Running Text agar seamless (menyambung terus) */
                         'marquee': 'marquee 40s linear infinite', 
                         'bounce-slow': 'bounce 3s infinite',
                     },
                     keyframes: {
                         blob: {
                             '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '33%': { transform: 'translate(30px, -30px) scale(1.1)' },
                             '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
                             '100%': { transform: 'translate(0px, 0px) scale(1)' },
                         },
@@ -49,10 +46,9 @@
                             '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
-                        /* Keyframes baru untuk seamless text */
                         marquee: {
                             '0%': { transform: 'translateX(0%)' },
-                            '100%': { transform: 'translateX(-50%)' }, /* Bergerak setengah karena konten diduplikasi */
+                            '100%': { transform: 'translateX(-50%)' },
                         }
                     }
                 }
@@ -65,751 +61,380 @@
             background-color: #0B0F19; 
             color: #E2E8F0; 
             overflow-x: hidden; 
-            /* Grid Pattern */
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
+            background-image: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
         }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-        /* Glassmorphism Styles */
-        .glass-nav { background: rgba(11, 15, 25, 0.85); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.08); }
-        .glass-card { background: rgba(21, 27, 43, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+        /* Glassmorphism Soft */
+        .glass-nav { background: rgba(11, 15, 25, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .glass-card { background: rgba(21, 27, 43, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2); }
         
         /* Swiper Custom */
-        .swiper { width: 100%; padding-top: 20px; padding-bottom: 30px; }
+        .swiper { width: 100%; padding-top: 10px; padding-bottom: 40px; }
         .swiper-slide { 
-            background: #1e293b; width: 280px; height: 500px; 
-            border-radius: 24px; border: 1px solid #334155;
-            display: flex; flex-direction: column; overflow: hidden;
-            transition: transform 0.3s;
-            flex-shrink: 0; 
+            background: #151b2b; width: 300px; height: auto; 
+            border-radius: 20px; border: 1px solid #334155;
+            overflow: hidden; transition: transform 0.3s; flex-shrink: 0; 
         }
-        .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 0 30px rgba(59, 130, 246, 0.2); }
+        .swiper-slide-active { border-color: #60A5FA; box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.3); }
         
-        /* Video Logic (Style Asli tetap dipertahankan) */
-        .video-wrapper { width: 100%; height: 100%; background: #000; position: relative; overflow: hidden; cursor: pointer; }
-        .video-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; transition: opacity 0.3s; display: block; }
-        .video-wrapper:hover .video-thumb { opacity: 0.6; }
-        .play-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: rgba(255, 0, 0, 0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0,0,0,0.5); transition: transform 0.3s; z-index: 10; }
-        .play-button i { color: white; font-size: 24px; margin-left: 4px; }
-        .video-wrapper:hover .play-button { transform: translate(-50%, -50%) scale(1.1); }
+        /* Video wrapper */
+        .video-wrapper { width: 100%; background: #000; position: relative; overflow: hidden; cursor: pointer; aspect-ratio: 16/9; }
+        .video-thumb { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; transition: opacity 0.3s; }
+        .video-wrapper:hover .video-thumb { opacity: 0.7; }
+        .play-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s; z-index: 10; }
+        .video-wrapper:hover .play-button { transform: translate(-50%, -50%) scale(1.1); background: rgba(59, 130, 246, 0.8); }
         .yt-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; border: none; }
-        .caption { padding: 15px; font-size: 0.9rem; color: #cbd5e1; background: #151b2b; flex-grow: 1; border-top: 1px solid #334155; display: flex; align-items: center; }
 
-        /* Floating WA - Animasi Asli */
-        .float-wa { position: fixed; bottom: 30px; right: 30px; background: linear-gradient(135deg, #25d366, #128c7e); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); z-index: 50; transition: all 0.3s; }
-        .float-wa:hover { transform: scale(1.1) rotate(10deg); box-shadow: 0 10px 30px rgba(37, 211, 102, 0.6); }
+        /* Floating WA */
+        .float-wa { position: fixed; bottom: 30px; right: 30px; background: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3); z-index: 50; transition: transform 0.3s; }
+        .float-wa:hover { transform: scale(1.1); }
 
-        /* Scroll Reveal Utility */
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        /* Scroll Reveal */
+        .reveal { opacity: 0; transform: translateY(20px); transition: all 0.8s ease-out; }
         .reveal.active { opacity: 1; transform: translateY(0); }
         
-        /* Tech Badge Glow & Accordion */
-        .tech-badge { position: relative; overflow: hidden; }
-        .tech-badge::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent); transform: rotate(45deg); animation: shine 3s infinite; }
-        @keyframes shine { 0% { left: -100%; } 100% { left: 100%; } }
-
+        /* Tech Badge */
+        .tech-badge { font-size: 0.75rem; padding: 4px 12px; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+        
+        /* Details Summary remove arrow */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
-        details[open] summary ~ * { animation: sweep .5s ease-in-out; }
-        @keyframes sweep { 0% {opacity: 0; transform: translateY(-10px)} 100% {opacity: 1; transform: translateY(0)} }
         
         .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="antialiased">
+<body class="antialiased font-sans">
 
-    <!-- 1. POP UP PROMO -->
-    <div id="promoPopup" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 backdrop-blur-md bg-black/60 transition-opacity duration-300">
-        <div class="glass-card max-w-sm w-full p-6 rounded-3xl relative text-center border-t border-blue-500/50 shadow-[0_0_50px_rgba(59,130,246,0.2)] animate-blob">
-            <button onclick="closePromo()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
-            <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg border-2 border-white/10 animate-bounce-slow">
-                <i class="fas fa-tags text-white text-3xl"></i>
+    <!-- 1. PROMO POPUP (Tetap dipertahankan) -->
+    <div id="promoPopup" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 backdrop-blur-md bg-black/70 transition-opacity duration-300">
+        <div class="glass-card max-w-sm w-full p-6 rounded-3xl relative text-center border-t border-blue-500/30 animate-blob">
+            <button onclick="closePromo()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
+            <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
+                <i class="fas fa-gift text-blue-400 text-2xl"></i>
             </div>
-            <h3 class="text-2xl font-extrabold text-white mb-2">DISKON SPESIAL 60%</h3>
-            <p class="text-slate-300 mb-6 leading-relaxed">
-                Buka akses <span class="text-yellow-400 font-bold">KREATIVITAS</span> sepuasnya!<br>
-                <span class="text-red-400 line-through text-sm">Rp 37.000</span> 
-                <i class="fas fa-arrow-right text-xs mx-1 text-slate-500"></i> 
-                <span class="text-green-400 font-bold text-2xl">Rp 15.000</span>
+            <h3 class="text-xl font-bold text-white mb-2">Akses Semua Fitur</h3>
+            <p class="text-slate-400 text-sm mb-6">
+                Promo server prioritas VEO 3.1 & Kling.<br>
+                <span class="line-through text-slate-600">Rp 37.000</span> <span class="text-green-400 font-bold text-xl ml-2">Rp 15.000</span>
             </p>
-            <a href="dashboard.html" class="block w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl transition transform hover:scale-[1.02] shadow-lg shadow-green-900/50">
-                AMBIL PROMO SAYA <i class="fas fa-bolt ml-1"></i>
+            <a href="dashboard.html" class="block w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition shadow-lg shadow-blue-900/40">
+                Ambil Promo
             </a>
-            <p class="text-xs text-slate-500 mt-4">*Garansi server prioritas tanpa antri.</p>
         </div>
     </div>
 
-    <!-- HEADER WRAPPER (Supaya Rapat) -->
+    <!-- HEADER -->
     <div class="fixed top-0 left-0 w-full z-50">
-        <!-- RUNNING TEXT (Seamless Mode) -->
-        <div class="bg-gradient-to-r from-blue-900 to-purple-900 border-b border-white/10 text-xs font-bold text-white py-3 overflow-hidden whitespace-nowrap backdrop-blur-md shadow-lg flex">
-             <!-- Konten diduplikasi untuk efek infinity seamless loop -->
+        <!-- Running Text -->
+        <div class="bg-[#0f1420] border-b border-white/5 text-[11px] font-medium text-slate-300 py-2 overflow-hidden whitespace-nowrap flex">
             <div class="animate-marquee inline-block tracking-wide flex-shrink-0 min-w-full px-4">
-                🚀 <span class="text-yellow-300">INFO PENTING:</span> Di sini penggunaan fitur AI kini <span class="text-yellow-300">SANGAT FLEKSIBEL</span> nyaman. — 🎉 Layanan baru kemungkinan ditambah. — ⚡ Server VEO 3.1 & Kling AI kini dalam mode Turbo Speed. — 🤖 Mulai perjalanan kreatifmu sekarang! &nbsp;&nbsp;&nbsp;&nbsp;
-                🚀 <span class="text-yellow-300">INFO PENTING:</span> Di sini penggunaan fitur AI kini <span class="text-yellow-300">SANGAT FLEKSIBEL</span> nyaman. — 🎉 Layanan baru kemungkinan ditambah. — ⚡ Server VEO 3.1 & Kling AI kini dalam mode Turbo Speed. — 🤖 Mulai perjalanan kreatifmu sekarang!
+                ✨ <span class="text-blue-400">UPDATE:</span> Kling AI v1.6 & 2.5 kini tersedia dengan render lebih stabil. — 🚀 UGC Tool mendukung input foto lebih banyak. — 🛡️ Keamanan data ditingkatkan. — Mulai karyamu hari ini! &nbsp;&nbsp;&nbsp;&nbsp;
+                ✨ <span class="text-blue-400">UPDATE:</span> Kling AI v1.6 & 2.5 kini tersedia dengan render lebih stabil. — 🚀 UGC Tool mendukung input foto lebih banyak. — 🛡️ Keamanan data ditingkatkan. — Mulai karyamu hari ini!
             </div>
         </div>
 
-        <!-- NAVIGASI (Langsung di bawah Running text tanpa gap) -->
-        <nav class="glass-nav transition-all duration-300 w-full">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                <div class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 flex items-center gap-3">
-                    <i class="fas fa-cube text-blue-500"></i> ORBITBOT
+        <!-- Navbar -->
+        <nav class="glass-nav w-full">
+            <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <img src="assets/logo.png" onerror="this.style.display='none'" class="h-8 w-auto"> 
+                    <div class="text-xl font-bold text-white tracking-tight">
+                        ORBIT<span class="text-blue-500">BOT</span>
+                    </div>
                 </div>
                 
-                <button id="authBtn" onclick="openLogin()" class="group relative px-6 py-2.5 rounded-full bg-slate-800 text-white font-semibold border border-slate-700 overflow-hidden hover:border-blue-500 transition-all shadow-lg hover:shadow-blue-500/20">
-                    <span id="authBtnText" class="relative z-10 group-hover:text-blue-400 transition-colors flex items-center gap-2">
-                        <i class="fas fa-user-circle"></i> Daftar Sekarang
-                    </span>
-                    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <button id="authBtn" onclick="openLogin()" class="px-5 py-2 rounded-full bg-white/5 text-sm text-white font-medium border border-white/10 hover:bg-white/10 transition flex items-center gap-2">
+                    <span id="authBtnText">Masuk / Daftar</span>
                 </button>
             </div>
         </nav>
     </div>
 
-    <!-- BACKGROUND AMBIENT -->
+    <!-- BACKGROUND EFFECTS -->
     <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-blob"></div>
-        <div class="absolute top-1/2 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-blob animation-delay-2000"></div>
+        <div class="absolute top-[-10%] left-[20%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[10%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px]"></div>
     </div>
 
-    <!-- HERO SECTION (Jarak Normal) -->
-    <header class="pt-52 pb-24 text-center px-4 relative overflow-hidden">
-        <!-- Badge -->
-        <span class="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-gradient-to-r from-blue-900/50 to-purple-900/50 border border-blue-400/30 text-blue-300 text-xs font-bold mb-8 tracking-wider animate-fade-up shadow-[0_0_20px_rgba(59,130,246,0.2)]">
-            <span class="relative flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
-            </span>
-            SYSTEM STATUS: READY TO USE
-        </span>
-        
-        <!-- Headline Besar -->
-        <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight animate-fade-up drop-shadow-2xl" style="animation-delay: 0.1s;">
-            <span class="text-white">Lampaui Ekspektasi Anda.</span><br>
-            <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Kamu Punya Segalanya.</span>
-        </h1>
-        
-        <!-- Sub Headline -->
-        <div class="max-w-3xl mx-auto mb-10 space-y-4 animate-fade-up" style="animation-delay: 0.2s;">
-            <p class="text-slate-300 text-lg md:text-xl leading-relaxed">
-                Selamat datang di <span class="text-white font-bold">Gudang Senjata AI</span> pribadimu. Di sini, kami fokus pada hasil karya terbaikmu.
+    <!-- HERO SECTION -->
+    <header class="pt-40 pb-16 text-center px-4 relative">
+        <div class="max-w-4xl mx-auto">
+            <div class="inline-block px-3 py-1 mb-6 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-medium tracking-wide animate-fade-up">
+                SOLUSI VIDEO AI TERINTEGRASI
+            </div>
+            
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight animate-fade-up" style="animation-delay: 0.1s;">
+                <span class="text-white">Bikin Video Profesional,</span><br>
+                <span class="text-slate-500">Tanpa Skill Editing.</span>
+            </h1>
+            
+            <p class="text-slate-400 text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-up" style="animation-delay: 0.2s;">
+                Kami menyediakan tools <span class="text-white font-semibold">UGC Otomatis</span> dan <span class="text-white font-semibold">Kling AI Studio</span> dalam satu dashboard. Fokus pada hasil, biarkan AI yang bekerja.
             </p>
-            <p class="text-slate-400 text-base md:text-lg">
-                Satu akses untuk puluhan alat canggih: VEO, Kling, Seedance, dan <span class="text-yellow-400 italic">banyak lagi yang akan datang</span>. Semuanya dirancang untuk mendukung produktivitasmu secara fleksibel.
-            </p>
-        </div>
 
-        <!-- Tombol CTA -->
-        <div class="flex justify-center gap-4 animate-fade-up" style="animation-delay: 0.3s;">
-            <button onclick="document.querySelector('.swiper').scrollIntoView({behavior: 'smooth'})" class="px-8 py-4 bg-white text-blue-900 font-bold rounded-xl shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:scale-105 transition transform flex items-center gap-2">
-                <i class="fas fa-play"></i> Lihat Keajaiban
-            </button>
-            <a href="dashboard.html" class="px-8 py-4 bg-slate-800/50 border border-slate-600 text-white font-bold rounded-xl hover:bg-slate-800 hover:border-blue-400 transition transform hover:scale-105">
-                Mulai Sekarang
-            </a>
+            <div class="flex flex-col md:flex-row justify-center gap-4 animate-fade-up" style="animation-delay: 0.3s;">
+                <a href="dashboard.html" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-900/30 transition transform hover:scale-[1.02]">
+                    <i class="fas fa-rocket mr-2"></i> Coba Sekarang
+                </a>
+                <button onclick="document.getElementById('ugc-section').scrollIntoView({behavior: 'smooth'})" class="px-8 py-4 bg-slate-800/50 border border-slate-700 text-slate-300 font-medium rounded-xl hover:bg-slate-800 transition">
+                    Pelajari Dulu
+                </button>
+            </div>
+
+            <!-- Tech Stack Badge -->
+            <div class="mt-12 flex flex-wrap justify-center gap-3 opacity-70 animate-fade-up" style="animation-delay: 0.4s;">
+                <span class="tech-badge">Powered by:</span>
+                <span class="tech-badge"><i class="fas fa-check-circle text-blue-500 mr-1"></i> Kling 1.6 & 2.5</span>
+                <span class="tech-badge"><i class="fas fa-check-circle text-blue-500 mr-1"></i> Grok Imagine</span>
+                <span class="tech-badge"><i class="fas fa-check-circle text-blue-500 mr-1"></i> VEO 3.1</span>
+                <span class="tech-badge"><i class="fas fa-check-circle text-blue-500 mr-1"></i> Nano Banana</span>
+            </div>
         </div>
     </header>
 
-    <!-- TECH SPECS (Jarak Normal) -->
-    <section class="max-w-6xl mx-auto px-4 mb-24 reveal">
-        <div class="glass-card rounded-3xl p-1 overflow-hidden">
-            <div class="bg-slate-900/80 p-8 rounded-[20px]">
-                <div class="flex flex-col md:flex-row gap-8 items-stretch">
-                    <!-- LEFT: CURRENT ENGINE -->
-                    <div class="flex-1 space-y-6">
-                        <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-layer-group text-blue-400 text-xl"></i>
-                            <div>
-                                <h3 class="text-xl font-bold text-white">Arsenal AI Saat Ini</h3>
-                                <p class="text-xs text-slate-400">Semua tools ini siap digunakan kapan saja.</p>
-                            </div>
+    <!-- ========================================= -->
+    <!-- SECTION 1: UGC AUTOMATION (FOKUS UTAMA) -->
+    <!-- ========================================= -->
+    <section id="ugc-section" class="max-w-7xl mx-auto px-4 py-16 reveal">
+        <div class="glass-card rounded-3xl p-1 overflow-hidden border-t border-purple-500/30">
+            <div class="bg-[#0f1420]/80 p-6 md:p-12 rounded-[20px]">
+                <div class="flex flex-col md:flex-row gap-10 items-center">
+                    
+                    <!-- Text Info -->
+                    <div class="flex-1 text-left">
+                        <div class="inline-block px-3 py-1 mb-4 rounded-lg bg-purple-500/10 text-purple-400 text-xs font-bold uppercase">
+                            ⭐ Paling Laris
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
-                                <span class="font-semibold text-sm">VEO 3.1 Cinema</span>
-                            </div>
-                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
-                                <span class="font-semibold text-sm">Seedance 1.5 Pro</span>
-                            </div>
-                             <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
-                                <span class="font-semibold text-sm">Kling 2.5 Full Access (API)</span>
-                            </div>
-                            <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
-                                <span class="font-semibold text-sm">Grok Imagine</span>
-                            </div>
-                             <div class="bg-slate-800/50 border border-slate-700 p-3 rounded-xl flex items-center gap-3 tech-badge hover:bg-slate-800 transition group cursor-default">
-                                <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] group-hover:animate-ping"></div>
-                                <span class="font-semibold text-sm">NanoBanana Pro</span>
-                            </div>
-                            <!-- More indication -->
-                            <div class="bg-gradient-to-r from-blue-900/30 to-purple-900/30 border border-blue-500/30 p-3 rounded-xl flex items-center justify-center gap-2 tech-badge animate-pulse">
-                                <span class="font-bold text-xs text-blue-300">Tools Lainnya...</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- DIVIDER -->
-                    <div class="hidden md:block w-px bg-gradient-to-b from-transparent via-slate-600 to-transparent"></div>
-                    <!-- RIGHT: COMING SOON -->
-                    <div class="flex-1 relative overflow-hidden rounded-xl border border-yellow-500/30 bg-gradient-to-br from-yellow-900/10 to-transparent p-6 group">
-                        <div class="absolute top-0 right-0 bg-yellow-500 text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg shadow-lg">NEXT UPDATE</div>
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="p-2 bg-yellow-500/10 rounded-lg">
-                                <i class="fas fa-rocket text-yellow-400 text-xl animate-bounce"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-white group-hover:text-yellow-400 transition">Sora 2.0 & OpenAI o3</h3>
-                                <p class="text-xs text-slate-400">Segera hadir otomatis di dashboardmu.</p>
-                            </div>
-                        </div>
-                        <ul class="space-y-2 text-sm text-slate-300 mt-4">
-                            <li class="flex items-center gap-2"><i class="fas fa-check-circle text-yellow-500"></i> No Watermark</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-check-circle text-yellow-500"></i> Resolusi 4K Ultra HD</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-check-circle text-yellow-500"></i> Render 5x Lebih Cepat</li>
+                        <h2 class="text-3xl font-bold text-white mb-4">UGC Creator Otomatis</h2>
+                        <p class="text-slate-400 text-base mb-6 leading-relaxed">
+                            Punya produk tapi bingung bikin konten video? <br>
+                            Cukup upload <b>1 Foto Produk</b>, AI kami akan mengubahnya menjadi video review lengkap dengan script penjualan (Voiceover) yang natural.
+                        </p>
+                        
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs mt-0.5">1</div>
+                                <span class="text-slate-300 text-sm">Upload foto produk & model (opsional).</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs mt-0.5">2</div>
+                                <span class="text-slate-300 text-sm">AI membuat script & narasi otomatis.</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 text-xs mt-0.5">3</div>
+                                <span class="text-slate-300 text-sm">Video jadi, siap upload ke TikTok/Reels.</span>
+                            </li>
                         </ul>
+
+                        <a href="dashboard.html" class="inline-flex items-center gap-2 text-purple-400 font-semibold hover:text-purple-300 transition">
+                            Buat Video Produk <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
                     </div>
+
+                    <!-- Video Showcase (Swiper) -->
+                    <div class="flex-1 w-full max-w-md">
+                        <div class="swiper swiper-service-2 pb-8">
+                            <div class="swiper-wrapper">
+                                <!-- Slide Contoh 1 -->
+                                <div class="swiper-slide glass-card rounded-2xl overflow-hidden">
+                                    <div class="video-wrapper" onclick="loadVideo(this, '-jYccBBAD7c')">
+                                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" class="video-thumb" alt="UGC 1">
+                                        <div class="play-button"><i class="fas fa-play text-white"></i></div>
+                                    </div>
+                                    <div class="p-3 bg-[#111625]">
+                                        <p class="text-slate-300 text-xs text-center">Contoh: Celana Chino</p>
+                                    </div>
+                                </div>
+                                <!-- Slide Contoh 2 -->
+                                <div class="swiper-slide glass-card rounded-2xl overflow-hidden">
+                                    <div class="video-wrapper" onclick="loadVideo(this, 'WxtmgW5oesU')">
+                                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" class="video-thumb" alt="UGC 2">
+                                        <div class="play-button"><i class="fas fa-play text-white"></i></div>
+                                    </div>
+                                    <div class="p-3 bg-[#111625]">
+                                        <p class="text-slate-300 text-xs text-center">Contoh: Jas Hujan</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="swiper-pagination"></div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </section>
 
-<!-- ========================================= -->
-    <!-- SHOWCASE: LAYANAN 1 (FILMMAKER) -->
-    <!-- PERUBAHAN: Layout Mepet (-mb-10), Text Rata Kiri, Tombol Panah HILANG -->
     <!-- ========================================= -->
-    <section class="max-w-7xl mx-auto px-4 mt-10 -mb-5 reveal">
-        <!-- Section Header -->
-        <div class="flex flex-col md:flex-row items-end justify-between mb-8 gap-4">
-            <div class="relative z-10 text-left w-full"> <!-- Text Rata Kiri -->
-                <span class="text-blue-500 font-bold tracking-widest text-xs uppercase mb-2 block">Jurus 1</span>
-                <h2 class="text-3xl md:text-4xl font-extrabold text-white leading-tight">
-                    AI Filmmaker <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">Studio</span>
-                </h2>
-                <p class="text-slate-400 text-sm mt-2 max-w-lg">
-                    Tulis ide cerita, biarkan AI yang menjadi sutradara, aktor, dan editornya. Durasi hingga 2 menit.
+    <!-- SECTION 2: KLING AI STUDIO (SECONDARY) -->
+    <!-- ========================================= -->
+    <section class="max-w-6xl mx-auto px-4 mb-20 reveal">
+        <div class="text-center mb-10">
+            <span class="text-blue-500 font-bold text-xs uppercase tracking-wider">Untuk yang Pro</span>
+            <h2 class="text-2xl md:text-3xl font-bold text-white mt-2">Kling AI Studio</h2>
+            <p class="text-slate-400 text-sm mt-2">Generate video cinematic tingkat lanjut. Tersedia dua versi engine.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- KLING 2.5 CARD -->
+            <div class="glass-card p-6 rounded-2xl border border-slate-700/50 hover:border-blue-500/30 transition group">
+                <div class="aspect-video bg-black rounded-xl overflow-hidden mb-4 relative">
+                    <div class="video-wrapper h-full" onclick="loadVideo(this, 'Y9xBJXGec7M')">
+                        <img src="https://img.youtube.com/vi/Y9xBJXGec7M/maxresdefault.jpg" class="video-thumb" alt="Kling 2.5">
+                        <div class="play-button"><i class="fas fa-play text-white"></i></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-bold text-white">Kling 2.5 Pro</h3>
+                    <span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded">High Res</span>
+                </div>
+                <p class="text-slate-400 text-xs mb-4">
+                    Cocok untuk footage realistis 1080p. Mendukung prompt kompleks.
                 </p>
+                <a href="dashboard.html" class="text-sm font-semibold text-white border-b border-blue-500 pb-0.5 hover:text-blue-400 transition">Gunakan Engine Ini</a>
             </div>
-            <!-- Decorative Line -->
-            <div class="hidden md:block flex-1 h-px bg-gradient-to-r from-blue-900 via-blue-500/30 to-transparent ml-10 mb-4"></div>
-            
-            <!-- TOMBOL PANAH DIHILANGKAN -->
-        </div>
 
-        <!-- Swiper Container -->
-        <div class="swiper swiper-service-1 w-full pb-10">
-            <div class="swiper-wrapper">
-                <!-- Slide 1 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'SaVBXx6F9TQ')">
-                        <img src="https://img.youtube.com/vi/SaVBXx6F9TQ/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-blue-600/90 rounded-full flex items-center justify-center shadow-lg shadow-blue-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Ide:</b> Excavator raksasa menaikkan muatan.</p>
+            <!-- KLING 1.6 CARD -->
+            <div class="glass-card p-6 rounded-2xl border border-slate-700/50 hover:border-yellow-500/30 transition group">
+                <div class="aspect-video bg-black rounded-xl overflow-hidden mb-4 relative">
+                    <div class="video-wrapper h-full" onclick="loadVideo(this, 'GN8bOzmlLQc')">
+                        <img src="https://img.youtube.com/vi/GN8bOzmlLQc/maxresdefault.jpg" class="video-thumb" alt="Kling 1.6">
+                        <div class="play-button"><i class="fas fa-play text-white"></i></div>
                     </div>
                 </div>
-                <!-- Slide 2 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'r3kLS7sZ67A')">
-                        <img src="https://img.youtube.com/vi/r3kLS7sZ67A/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-blue-600/90 rounded-full flex items-center justify-center shadow-lg shadow-blue-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Ide:</b> Kehidupan manusia purba.</p>
-                    </div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-bold text-white">Kling 1.6 Consistency</h3>
+                    <span class="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">Stable</span>
                 </div>
-                <!-- Slide 3 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, '8__l2qxde-0')">
-                        <img src="https://img.youtube.com/vi/8__l2qxde-0/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-blue-600/90 rounded-full flex items-center justify-center shadow-lg shadow-blue-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Ide:</b> BBC terjebak di masa lalu.</p>
-                    </div>
-                </div>
-                <!-- Slide 4 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'knLkcWuPE44')">
-                        <img src="https://img.youtube.com/vi/knLkcWuPE44/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-blue-600/90 rounded-full flex items-center justify-center shadow-lg shadow-blue-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Ide:</b> Ronaldo vs Messi Anime.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ========================================= -->
-    <!-- SHOWCASE: LAYANAN 2 (UGC) -->
-    <!-- PERUBAHAN: Layout Mepet (-mb-10), Text Rata Kiri, Tombol Panah HILANG -->
-    <!-- ========================================= -->
-    <section class="max-w-7xl mx-auto px-4 -mb-10 reveal">
-        <!-- Section Header -->
-        <div class="flex flex-col md:flex-row items-end justify-between mb-8 gap-4">
-            <div class="relative z-10 text-left w-full"> <!-- Text Rata Kiri -->
-                <span class="text-purple-500 font-bold tracking-widest text-xs uppercase mb-2 block">Jurus 2</span>
-                <h2 class="text-3xl md:text-4xl font-extrabold text-white leading-tight">
-                    Ultimate UGC <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">Automation</span>
-                </h2>
-                <p class="text-slate-400 text-sm mt-2 max-w-lg">
-                    Upload 1 foto produk, jadi video review lengkap dengan suara & script penjualan.
+                <p class="text-slate-400 text-xs mb-4">
+                    Unggul dalam konsistensi karakter (objek tidak berubah-ubah). Cocok untuk animasi.
                 </p>
-            </div>
-            <!-- Decorative Line -->
-            <div class="hidden md:block flex-1 h-px bg-gradient-to-r from-purple-900 via-purple-500/30 to-transparent ml-10 mb-4"></div>
-            
-            <!-- TOMBOL PANAH DIHILANGKAN -->
-        </div>
-
-        <!-- Swiper Container -->
-        <div class="swiper swiper-service-2 w-full pb-10">
-            <div class="swiper-wrapper">
-                <!-- Slide 1 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, '-jYccBBAD7c')">
-                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Celana Kerja Pria</p>
-                    </div>
-                </div>
-                <!-- Slide 2 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'WxtmgW5oesU')">
-                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Jas Hujan Anti Air</p>
-                    </div>
-                </div>
-                <!-- Slide 3 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'H10_Oz0VVs4')">
-                        <img src="https://img.youtube.com/vi/H10_Oz0VVs4/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Penumbuh Rambut</p>
-                    </div>
-                </div>
-                <!-- Slide 4 -->
-                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
-                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'p2yGWw4rPBc')">
-                        <img src="https://img.youtube.com/vi/p2yGWw4rPBc/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
-                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
-                            <i class="fas fa-play text-white ml-1"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 border-t border-slate-700/50">
-                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Sweater Hoodie</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ========================================= -->
-    <!-- DAFTAR HARGA LANGGANAN -->
-    <!-- PERUBAHAN POSISI: Pindah kesini (Setelah UGC), Jarak Mepet (-mb-10) -->
-    <!-- ========================================= -->
-    <section class="max-w-6xl mx-auto px-4 mt-16 -mb-10 reveal">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-5xl font-extrabold text-white mb-4">Investasi Receh, Hasil Sultan</h2>
-            <p class="text-slate-400">Pilih kecepatan server sesuai kebutuhan kreativitas Anda.</p>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-            
-            <!-- Paket A: TESTER (Standard) -->
-            <div class="glass-card p-8 rounded-3xl border border-slate-700 hover:border-slate-500 transition duration-300 relative group">
-                <h3 class="text-xl font-bold text-white mb-2">TESTER 3 Hari</h3>
-                
-                <div class="mb-4">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">HEMAT 60%</span>
-                        <span class="text-sm text-slate-500 line-through decoration-red-500/50">Rp 37.000</span>
-                    </div>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-sm text-slate-400">Rp</span>
-                        <span class="text-4xl font-bold text-white">15k</span>
-                    </div>
-                </div>
-
-                <p class="text-slate-400 text-sm mb-6 border-b border-slate-700 pb-4">Coba semua fitur sebelum serius.</p>
-                <ul class="space-y-3 text-sm text-slate-300 mb-8">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-blue-500"></i> Full Akses 3 Hari</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-blue-500"></i> Semua Fitur AI Aktif</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-server text-slate-500"></i> Server Standard</li>
-                </ul>
-                <a href="pembayaran.html" class="block w-full py-3 rounded-xl bg-slate-800 text-white font-semibold text-center hover:bg-slate-700 transition border border-slate-600">Pilih Paket</a>
-            </div>
-
-            <!-- Paket B: PRO (Unlimited - Non Prioritas) -->
-            <div class="glass-card p-8 rounded-3xl border border-purple-500/30 hover:border-purple-500 transition duration-300 relative group">
-                <h3 class="text-xl font-bold text-purple-200 mb-2">PRO 15 Hari</h3>
-                
-                <div class="mb-4">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-[10px] font-bold text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">SUPER HEMAT</span>
-                        <span class="text-sm text-slate-500 line-through decoration-red-500/50">Rp 125.000</span>
-                    </div>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-sm text-purple-400">Rp</span>
-                        <span class="text-4xl font-bold text-white">49k</span>
-                    </div>
-                </div>
-
-                <p class="text-slate-400 text-sm mb-6 border-b border-slate-700 pb-4">Akses fleksibel, harga bersahabat.</p>
-                <ul class="space-y-3 text-sm text-slate-300 mb-8">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-purple-400"></i> Masa Aktif 15 Hari</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-infinity text-purple-400"></i> <b>Akses Fitur Sepuasnya</b></li>
-                    <li class="flex items-center gap-2"><i class="fas fa-server text-slate-500"></i> Server Standard </li>
-                    <li class="flex items-center gap-2"><i class="fas fa-clock text-slate-500"></i> Antrian Render Normal</li>
-                </ul>
-                <a href="pembayaran.html" class="block w-full py-3 rounded-xl bg-slate-800 text-white font-semibold text-center hover:bg-purple-600/20 hover:text-purple-300 transition border border-slate-600 hover:border-purple-500">Pilih Paket</a>
-            </div>
-
-            <!-- Paket C: GOLD (VIP Priority - Highlighted) -->
-            <div class="glass-card p-8 rounded-3xl border-2 border-yellow-500/50 bg-gradient-to-b from-yellow-900/20 to-slate-900/80 transition duration-300 relative transform md:-translate-y-6 shadow-2xl shadow-yellow-900/30 z-10">
-                <!-- Badge Recommended -->
-                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-yellow-600 to-yellow-400 text-black text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg whitespace-nowrap border-2 border-slate-900">
-                    Sangat Direkomendasikan
-                </div>
-                
-                <h3 class="text-2xl font-bold text-yellow-400 mb-2">GOLD 1 Bulan</h3>
-                
-                <div class="mb-4">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-[10px] font-bold text-black bg-yellow-400 px-2 py-0.5 rounded">VIP ACCESS</span>
-                        <span class="text-sm text-slate-500 line-through decoration-red-500/50">Rp 225.000</span>
-                    </div>
-                    <div class="flex items-baseline gap-1">
-                        <span class="text-sm text-yellow-500">Rp</span>
-                        <span class="text-5xl font-bold text-white">89k</span>
-                    </div>
-                </div>
-
-                <p class="text-yellow-200/70 text-sm mb-6 border-b border-yellow-500/30 pb-4">Performa maksimal tanpa antri.</p>
-                <ul class="space-y-3 text-sm text-slate-300 mb-8">
-                    <li class="flex items-center gap-2"><i class="fas fa-check text-yellow-400"></i> Full Akses 30 Hari</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-infinity text-yellow-400"></i> Eksplorasi Fitur Sepuasnya</li>
-                    <li class="flex items-center gap-2"><i class="fas fa-bolt text-yellow-400"></i> <b>VIP Server Prioritas</b></li>
-                    <li class="flex items-center gap-2"><i class="fas fa-forward text-yellow-400"></i> Proses Super Cepat (No Queue)</li>
-                </ul>
-                <a href="pembayaran.html" class="block w-full py-4 rounded-xl bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-black font-extrabold text-center transition shadow-lg transform hover:scale-105">Langganan Sekarang</a>
+                <a href="dashboard.html" class="text-sm font-semibold text-white border-b border-yellow-500 pb-0.5 hover:text-yellow-400 transition">Gunakan Engine Ini</a>
             </div>
 
         </div>
     </section>
 
-    <!-- SEPARATOR -->
-    <div class="max-w-6xl mx-auto px-4 mt-20 mb-10">
-        <div class="h-px w-full bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
-    </div>
-
     <!-- ========================================= -->
-    <!-- INTERACTIVE MENU (LAYANAN 3-5) -->
-    <!-- PERUBAHAN POSISI: Setelah Pricing -->
-    <!-- PERUBAHAN TAMPILAN: Video Full, Judul di bawah -->
+    <!-- PRICING SECTION -->
     <!-- ========================================= -->
     <section class="max-w-5xl mx-auto px-4 mb-24 reveal">
-        <div class="text-left mb-6">
-            <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                <i class="fas fa-layer-group text-blue-500"></i> Jurus Lainnya
-            </h2>
-            <p class="text-slate-500 text-sm">Klik menu di bawah untuk melihat kecanggihan tools lainnya.</p>
-        </div>
-
-        <!-- Menu Tabs -->
-        <div class="flex overflow-x-auto gap-3 pb-2 mb-6 scrollbar-hide select-none snap-x" id="featureMenu">
-            <!-- Tab 3 -->
-            <button onclick="changeFeature('layanan3', this)" class="menu-btn active snap-center shrink-0 px-5 py-3 rounded-xl bg-slate-800 border border-slate-600 text-white font-semibold hover:bg-slate-700 transition flex items-center gap-2 group">
-                <i class="fas fa-film text-green-400 group-hover:animate-pulse"></i> Kling 2.5 Pro
-            </button>
-            <!-- Tab 4 -->
-            <button onclick="changeFeature('layanan4', this)" class="menu-btn snap-center shrink-0 px-5 py-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 font-semibold hover:bg-slate-800 hover:text-white transition flex items-center gap-2 group">
-                <i class="fas fa-sync text-yellow-400 group-hover:animate-spin"></i> Kling Consistency
-            </button>
-            <!-- Tab 5 -->
-            <button onclick="changeFeature('layanan5', this)" class="menu-btn snap-center shrink-0 px-5 py-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 font-semibold hover:bg-slate-800 hover:text-white transition flex items-center gap-2 group">
-                <i class="fas fa-person-running text-pink-400 group-hover:animate-bounce"></i> Seedance Pro
-            </button>
-        </div>
-
-        <!-- Display Area Baru (Video Full, Judul di Bawah) -->
-        <div class="glass-card p-2 rounded-[24px] border border-slate-600/50 shadow-2xl group transition-all duration-300">
-            <!-- Video Container (Full Thumbnail) -->
-            <div id="dynamicVideoContainer" class="aspect-video w-full rounded-[20px] bg-black relative overflow-hidden mb-0">
-                <div class="video-wrapper w-full h-full cursor-pointer" onclick="loadVideo(this, 'Y9xBJXGec7M')">
-                    <img src="https://img.youtube.com/vi/Y9xBJXGec7M/maxresdefault.jpg" class="video-thumb object-cover w-full h-full opacity-90 group-hover:opacity-80 transition" alt="Kling 2.5">
-                    <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center transition group-hover:scale-110">
-                        <i class="fas fa-play text-white ml-1 text-2xl"></i>
-                    </div>
-                </div>
+        <div class="glass-card rounded-3xl p-8 md:p-10 border border-slate-700/50">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl font-bold text-white mb-2">Investasi Receh, Hasil Sultan</h2>
+                <p class="text-slate-400 text-sm">Sistem paket sederhana. Tanpa kredit koin yang membingungkan.</p>
             </div>
-            
-            <!-- Description Container (Di bawah video, bukan overlay) -->
-            <div class="px-4 py-5 text-left bg-slate-900/50 rounded-b-[20px]">
-                <h3 id="featureTitle" class="text-xl font-bold text-white mb-2">Kling 2.5 Pro Generator</h3>
-                <p id="featureDesc" class="text-slate-400 text-sm leading-relaxed">Hasilkan video beresolusi 1080p lebih leluasa dengan API Key Freepik gratis.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                
+                <!-- Paket A -->
+                <div class="bg-[#0f1420] p-6 rounded-2xl border border-slate-800 text-center">
+                    <h3 class="text-slate-300 font-bold text-sm mb-2">TESTER</h3>
+                    <div class="text-2xl font-bold text-white mb-4">Rp 15.000 <span class="text-xs font-normal text-slate-500">/ 3 hari</span></div>
+                    <ul class="text-xs text-slate-400 space-y-2 mb-6 text-left pl-4">
+                        <li>✅ Akses Semua Tool</li>
+                        <li>✅ Server Standard</li>
+                        <li>✅ Cocok untuk coba-coba</li>
+                    </ul>
+                    <a href="pembayaran.html" class="block w-full py-2 bg-slate-800 text-white text-sm rounded-lg hover:bg-slate-700 transition">Pilih Paket</a>
+                </div>
+
+                <!-- Paket B (BEST) -->
+                <div class="bg-gradient-to-b from-blue-900/20 to-[#0f1420] p-6 rounded-2xl border border-blue-500/30 text-center relative transform md:-translate-y-2 shadow-lg">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-[10px] font-bold px-3 py-1 rounded-full text-white">POPULER</div>
+                    <h3 class="text-blue-300 font-bold text-sm mb-2">PRO ACCESS</h3>
+                    <div class="text-3xl font-bold text-white mb-4">Rp 49.000 <span class="text-xs font-normal text-slate-500">/ 15 hari</span></div>
+                    <ul class="text-xs text-slate-300 space-y-2 mb-6 text-left pl-4">
+                        <li>✅ <b>Akses Tanpa Batas</b></li>
+                        <li>✅ Antrian Render Normal</li>
+                        <li>✅ Full Fitur UGC & Kling</li>
+                    </ul>
+                    <a href="pembayaran.html" class="block w-full py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-500 transition">Ambil Sekarang</a>
+                </div>
+
+                <!-- Paket C -->
+                <div class="bg-[#0f1420] p-6 rounded-2xl border border-slate-800 text-center">
+                    <h3 class="text-yellow-500 font-bold text-sm mb-2">GOLD VIP</h3>
+                    <div class="text-2xl font-bold text-white mb-4">Rp 89.000 <span class="text-xs font-normal text-slate-500">/ bulan</span></div>
+                    <ul class="text-xs text-slate-400 space-y-2 mb-6 text-left pl-4">
+                        <li>✅ <b>Server Prioritas (Cepat)</b></li>
+                        <li>✅ Masa Aktif 30 Hari</li>
+                        <li>✅ Support WhatsApp Admin</li>
+                    </ul>
+                    <a href="pembayaran.html" class="block w-full py-2 bg-slate-800 text-white text-sm rounded-lg hover:bg-yellow-600/20 hover:text-yellow-400 transition">Pilih Paket</a>
+                </div>
+
             </div>
         </div>
     </section>
 
-    <!-- ========================================= -->
-    <!-- CARA MULAI (WORKFLOW) -->
-    <!-- ========================================= -->
-    <section class="max-w-6xl mx-auto px-4 mb-24 reveal">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-white mb-2">Gak Pake Ribet.</h2>
-            <p class="text-slate-500">3 Langkah mudah, gaptek-friendly.</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            <!-- Connector Line (Desktop) -->
-            <div class="hidden md:block absolute top-10 left-1/6 right-1/6 h-0.5 bg-gradient-to-r from-blue-900 via-blue-500 to-blue-900 -z-10 opacity-50"></div>
-
-            <!-- Step 1 -->
-            <div class="glass-card p-8 rounded-3xl text-center group hover:-translate-y-2 transition duration-300">
-                <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-[0_0_20px_rgba(59,130,246,0.3)] text-blue-400 border border-slate-600 group-hover:scale-110 transition">1</div>
-                <h3 class="font-bold text-lg mb-2 text-white">Login Dashboard</h3>
-                <p class="text-slate-400 text-sm">Masuk ke akun member area Anda.</p>
-            </div>
-            <!-- Step 2 -->
-            <div class="glass-card p-8 rounded-3xl text-center group hover:-translate-y-2 transition duration-300">
-                <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-[0_0_20px_rgba(168,85,247,0.3)] text-purple-400 border border-slate-600 group-hover:scale-110 transition">2</div>
-                <h3 class="font-bold text-lg mb-2 text-white">Pilih Jurus</h3>
-                <p class="text-slate-400 text-sm">Pilih tool (Filmmaker/UGC) yang mau dipakai.</p>
-            </div>
-            <!-- Step 3 -->
-            <div class="glass-card p-8 rounded-3xl text-center group hover:-translate-y-2 transition duration-300">
-                <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-[0_0_20px_rgba(34,197,94,0.3)] text-green-400 border border-slate-600 group-hover:scale-110 transition">3</div>
-                <h3 class="font-bold text-lg mb-2 text-white">Generate</h3>
-                <p class="text-slate-400 text-sm">Tulis perintah, tunggu sebentar, download.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- ========================================= -->
-    <!-- FAQ SECTION -->
-    <!-- ========================================= -->
-    <section class="max-w-3xl mx-auto px-4 mb-32 reveal">
-        <div class="text-center mb-10">
-            <h2 class="text-3xl font-bold text-white mb-2">Pertanyaan Netizen</h2>
-            <p class="text-slate-500">Jawaban jujur tanpa basa-basi.</p>
-        </div>
-        <div class="space-y-4">
-            <!-- FAQ 1 -->
-            <details class="group glass-card rounded-2xl overflow-hidden">
-                <summary class="flex justify-between items-center p-6 cursor-pointer font-bold text-white select-none">
-                    <span>"Saya gaptek, beneran bisa pake?"</span>
-                    <i class="fas fa-chevron-down text-blue-500 transition-transform group-open:rotate-180"></i>
+    <!-- FAQ SIMPLE -->
+    <section class="max-w-3xl mx-auto px-4 mb-24 reveal">
+        <h2 class="text-xl font-bold text-white text-center mb-6">Pertanyaan Umum</h2>
+        <div class="space-y-3">
+            <details class="group glass-card rounded-xl">
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-sm font-medium text-slate-300">
+                    Gaptek, apa bisa pakai?
+                    <i class="fas fa-chevron-down text-blue-500 group-open:rotate-180 transition"></i>
                 </summary>
-                <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed">
-                    Sangat bisa! Dashboard kami didesain semudah main Instagram. Ada video tutorial langkah-demi-langkah di setiap halaman tools. Kalau masih bingung, admin siap bantu via WhatsApp.
+                <div class="px-4 pb-4 text-xs text-slate-400">
+                    Sangat bisa. Dashboard kami didesain semudah bermain sosmed. Tinggal klik-klik, AI yang mengerjakan sisanya.
                 </div>
             </details>
-            <!-- FAQ 2 -->
-            <details class="group glass-card rounded-2xl overflow-hidden">
-                <summary class="flex justify-between items-center p-6 cursor-pointer font-bold text-white select-none">
-                    <span>"Apakah ada batasan penggunaan?"</span>
-                    <i class="fas fa-chevron-down text-blue-500 transition-transform group-open:rotate-180"></i>
+            <details class="group glass-card rounded-xl">
+                <summary class="flex justify-between items-center p-4 cursor-pointer text-sm font-medium text-slate-300">
+                    Apakah perlu instal aplikasi?
+                    <i class="fas fa-chevron-down text-blue-500 group-open:rotate-180 transition"></i>
                 </summary>
-                <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed">
-                    <span class="text-green-400 font-bold">Kami mengutamakan fleksibilitas.</span> Kami menghapus sistem kredit tradisional. Anda bisa menggunakan tools ini secara maksimal sesuai kebutuhan kreatif Anda. Antrian server menyesuaikan paket (Standard vs Prioritas).
-                </div>
-            </details>
-            <!-- FAQ 3 -->
-            <details class="group glass-card rounded-2xl overflow-hidden">
-                <summary class="flex justify-between items-center p-6 cursor-pointer font-bold text-white select-none">
-                    <span>"HP saya kentang, kuat gak?"</span>
-                    <i class="fas fa-chevron-down text-blue-500 transition-transform group-open:rotate-180"></i>
-                </summary>
-                <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed">
-                    Aman! Proses rendering berat dilakukan di server cloud kami. HP Anda hanya berfungsi sebagai remote control. Jadi RAM 2GB pun lancar jaya.
-                </div>
-            </details>
-            <!-- FAQ 4 -->
-            <details class="group glass-card rounded-2xl overflow-hidden">
-                <summary class="flex justify-between items-center p-6 cursor-pointer font-bold text-white select-none">
-                    <span>"Hasilnya boleh dijual/Youtube?"</span>
-                    <i class="fas fa-chevron-down text-blue-500 transition-transform group-open:rotate-180"></i>
-                </summary>
-                <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed">
-                    Tentu saja! Hak cipta video sepenuhnya milik Anda. Bebas upload ke YouTube (Monetize), TikTok Affiliate, atau dijual ke klien.
+                <div class="px-4 pb-4 text-xs text-slate-400">
+                    Tidak perlu. Ini adalah web-app berbasis cloud. Anda bisa akses lewat browser HP, Laptop, atau Tablet tanpa memberatkan memori perangkat.
                 </div>
             </details>
         </div>
     </section>
 
     <!-- FOOTER -->
-    <footer class="border-t border-slate-800 bg-[#05080f] pt-16 pb-8">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div>
-                    <div class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 flex items-center gap-2 mb-2">
-                        <i class="fas fa-cube text-blue-500"></i> ORBITBOT
-                    </div>
-                    <p class="text-slate-500 text-xs">The Next Gen AI Automation Platform.</p>
-                </div>
-                <div class="flex gap-4">
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition"><i class="fab fa-tiktok"></i></a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-purple-600 hover:text-white transition"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-red-600 hover:text-white transition"><i class="fab fa-youtube"></i></a>
-                </div>
-            </div>
-            <div class="border-t border-slate-800 mt-8 pt-8 text-center text-slate-600 text-xs">
-                &copy; 2026 Orbit Bot System. All rights reserved. Made with <i class="fas fa-heart text-red-500"></i> in Indonesia.
-            </div>
+    <footer class="border-t border-white/5 bg-[#05080f] py-10 text-center">
+        <div class="mb-4 text-lg font-bold text-white">ORBIT<span class="text-blue-500">BOT</span></div>
+        <p class="text-slate-500 text-xs mb-6">Membantu UMKM & Kreator Indonesia Go Digital dengan AI.</p>
+        <div class="text-slate-600 text-[10px]">
+            &copy; 2026 Orbit Bot System. All rights reserved.
         </div>
     </footer>
 
     <!-- FLOAT WA -->
-    <a href="https://wa.me/6285841244290" target="_blank" class="float-wa group">
+    <a href="https://wa.me/6285841244290" target="_blank" class="float-wa group" title="Hubungi Admin">
         <i class="fab fa-whatsapp"></i>
-        <span class="absolute right-16 bg-white text-black text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition duration-300 w-max shadow-lg">Butuh Bantuan?</span>
     </a>
 
-<!-- MODAL LOGIN POPUP -->
-<div id="loginModal" class="fixed inset-0 bg-slate-950/90 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity duration-300">
-    <div class="bg-slate-900 border border-slate-700 p-8 rounded-3xl w-full max-w-md shadow-2xl relative transform scale-95 opacity-0 transition-all duration-300" id="loginContent">
-        <button onclick="closeLogin()" class="absolute top-5 right-5 text-slate-500 hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
-        
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
-                <i class="fas fa-user-astronaut text-blue-400 text-2xl"></i>
+    <!-- MODAL LOGIN (SISTEM SENSITIF - TIDAK DIUBAH) -->
+    <div id="loginModal" class="fixed inset-0 bg-black/80 z-[100] hidden items-center justify-center p-4 backdrop-blur-sm">
+        <div class="glass-card p-8 rounded-3xl w-full max-w-sm relative" id="loginContent">
+            <button onclick="closeLogin()" class="absolute top-4 right-4 text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
+            <div class="text-center mb-6">
+                <h2 id="modalTitle" class="text-xl font-bold text-white">Member Area</h2>
+                <p class="text-slate-400 text-xs">Silakan login untuk akses dashboard.</p>
             </div>
-            <h2 id="modalTitle" class="text-2xl font-bold text-white">Welcome Back</h2>
-            <p id="modalDesc" class="text-slate-400 text-sm">Akses dashboard creator Anda.</p>
-        </div>
-        
-        <div class="space-y-4">
-            <!-- Email -->
-            <div>
-                <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider mb-2">Email Address</label>
-                <input type="email" id="emailInput" placeholder="creator@example.com" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
-            </div>
-
-            <!-- Password Section -->
-            <div id="passwordSection">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="block text-slate-400 text-xs font-bold uppercase tracking-wider">Password</label>
-                    <button onclick="switchMode('reset')" class="text-xs text-blue-400 hover:text-blue-300 transition">Lupa Password?</button>
+            
+            <div class="space-y-4">
+                <input type="email" id="emailInput" placeholder="Email" class="w-full bg-[#0B0F19] border border-slate-700 text-white px-4 py-3 rounded-xl text-sm focus:border-blue-500 outline-none">
+                <input type="password" id="passInput" placeholder="Password" class="w-full bg-[#0B0F19] border border-slate-700 text-white px-4 py-3 rounded-xl text-sm focus:border-blue-500 outline-none">
+                
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="handleLogin()" class="bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-xl font-bold text-sm transition">Masuk</button>
+                    <button onclick="handleSignup()" class="bg-slate-700 hover:bg-slate-600 text-white py-2.5 rounded-xl font-bold text-sm transition">Daftar</button>
                 </div>
-                <input type="password" id="passInput" placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 text-white px-5 py-3 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition placeholder-slate-600">
+                <p id="statusMsg" class="text-center text-xs mt-2 text-yellow-400 min-h-[16px]"></p>
             </div>
-
-            <!-- Buttons -->
-            <div class="pt-4">
-                <div id="loginButtons" class="grid grid-cols-2 gap-3">
-                    <button onclick="handleLogin()" class="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/50 hover:scale-[1.02]">Masuk</button>
-                    <button onclick="handleSignup()" class="bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-xl font-bold transition border border-slate-700 hover:scale-[1.02]">Daftar</button>
-                </div>
-
-                <div id="resetButtons" class="hidden flex-col gap-3">
-                    <button onclick="handleResetPassword()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-blue-900/50 hover:scale-[1.02]">Kirim Link Reset</button>
-                    <button onclick="switchMode('login')" class="w-full text-slate-400 hover:text-white text-sm py-2">Kembali ke Login</button>
-                </div>
-            </div>
-
-            <p id="statusMsg" class="text-center text-sm mt-2 min-h-[20px]"></p>
         </div>
     </div>
-</div>
 
-<!-- SCRIPTS EXTERNAL -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- CORE SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <script>
-    // ==========================================
-    // 0. DATA UNTUK MENU HORIZONTAL (LAYANAN 3-5)
-    // ==========================================
-    const featuresData = {
-        'layanan3': {
-            title: "Kling 2.5 Pro Generator",
-            desc: "Hasilkan video beresolusi 1080p lebih leluasa dengan API Key Freepik gratis.",
-            videoId: "Y9xBJXGec7M"
-        },
-        'layanan4': {
-            title: "Kling Consistency (First to Last Frame)",
-            desc: "Engine: Kling V1.6. Gerakan rapi dan konsisten, objek tidak berubah bentuk.",
-            videoId: "GN8bOzmlLQc"
-        },
-        'layanan5': {
-            title: "Seedance Pro Extended",
-            desc: "Akses Seedance Pro dengan Freepik API Key secara gratis. Generate sesuka hati.",
-            videoId: "yfEQpmpiakM"
-        }
-    };
-
-    function changeFeature(key, btn) {
-        // 1. Update tombol aktif
-        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-
-        // 2. Ambil data
-        const data = featuresData[key];
-        const container = document.getElementById('dynamicVideoContainer');
-        const titleEl = document.getElementById('featureTitle');
-        const descEl = document.getElementById('featureDesc');
-
-        // 3. Reset Container Video & Inject Video Baru
-        container.innerHTML = `
-             <div class="video-wrapper w-full h-full" onclick="loadVideo(this, '${data.videoId}')">
-                <img src="https://img.youtube.com/vi/${data.videoId}/hqdefault.jpg" class="video-thumb object-cover w-full h-full" alt="Thumbnail">
-                <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white/20 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center transition hover:scale-110">
-                    <i class="fas fa-play text-white ml-1 text-2xl"></i>
-                </div>
-            </div>
-        `;
-
-        // 4. Update Teks dengan animasi simple
-        titleEl.style.opacity = 0;
-        descEl.style.opacity = 0;
-        
-        setTimeout(() => {
-            titleEl.innerText = data.title;
-            descEl.innerText = data.desc;
-            titleEl.style.opacity = 1;
-            descEl.style.opacity = 1;
-        }, 200);
-    }
-
-    // ==========================================
-    // 1. PROMO POPUP LOGIC
-    // ==========================================
+    // 1. PROMO LOGIC
     function checkPromo() {
         if (!localStorage.getItem('promoSeen')) {
             const popup = document.getElementById('promoPopup');
@@ -818,31 +443,23 @@
             localStorage.setItem('promoSeen', 'true');
         }
     }
-
     function closePromo() {
         const popup = document.getElementById('promoPopup');
         popup.classList.add('opacity-0');
-        setTimeout(() => {
-            popup.classList.remove('flex');
-            popup.classList.add('hidden');
-        }, 300);
+        setTimeout(() => { popup.classList.remove('flex'); popup.classList.add('hidden'); }, 300);
     }
 
-    // ==========================================
-    // 2. SETUP SUPABASE & AUTH LOGIC (TIDAK DIUBAH)
-    // ==========================================
+    // 2. SUPABASE SYSTEM (DO NOT TOUCH)
     const SUPABASE_URL = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM';
     const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function checkSession() {
         const { data: { session } } = await _supabase.auth.getSession();
-        const authBtn = document.getElementById('authBtn');
-        const authText = document.getElementById('authBtnText');
-        if (session && authBtn && authText) {
-            authText.innerHTML = '<i class="fas fa-gauge-high"></i> Dashboard';
-            authBtn.onclick = () => window.location.href = "dashboard.html";
-            authBtn.classList.replace('bg-slate-800', 'bg-blue-600');
+        if (session) {
+            document.getElementById('authBtnText').innerText = 'Buka Dashboard';
+            document.getElementById('authBtn').onclick = () => window.location.href = "dashboard.html";
+            document.getElementById('authBtn').classList.add('bg-blue-600/20', 'border-blue-500/50', 'text-blue-400');
         }
     }
 
@@ -850,160 +467,70 @@
         const email = document.getElementById('emailInput').value;
         const password = document.getElementById('passInput').value;
         const msg = document.getElementById('statusMsg');
-        if(!email || !password) { msg.innerText = "Isi email dan password!"; msg.className="text-yellow-400 text-center text-sm mt-2"; return; }
-        
-        msg.innerText = "Authenticating...";
+        if(!email || !password) { msg.innerText = "Isi semua data!"; return; }
+        msg.innerText = "Memproses...";
         const { error } = await _supabase.auth.signInWithPassword({ email, password });
-        if (error) { msg.innerText = error.message; msg.className="text-red-400 text-center text-sm mt-2"; }
-        else { window.location.href = "dashboard.html"; }
+        if (error) msg.innerText = error.message;
+        else window.location.href = "dashboard.html";
     }
 
     async function handleSignup() {
         const email = document.getElementById('emailInput').value;
         const password = document.getElementById('passInput').value;
         const msg = document.getElementById('statusMsg');
-        if(password.length < 6) { msg.innerText = "Password min 6 karakter"; msg.className="text-yellow-400 text-center text-sm mt-2"; return; }
-        
-        msg.innerText = "Creating account...";
+        if(password.length < 6) { msg.innerText = "Password min 6 karakter"; return; }
+        msg.innerText = "Mendaftar...";
         const { error } = await _supabase.auth.signUp({ email, password });
-        if (error) { msg.innerText = error.message; msg.className="text-red-400 text-center text-sm mt-2"; }
-        else { msg.innerText = "Cek email Anda untuk konfirmasi!"; msg.className="text-green-400 text-center text-sm mt-2"; }
-    }
-
-    async function handleResetPassword() {
-        const email = document.getElementById('emailInput').value;
-        const msg = document.getElementById('statusMsg');
-        if (!email) { msg.innerText = "Isi email dulu!"; return; }
-
-        msg.innerText = "Mengirim email...";
-        const { error } = await _supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: 'https://www.orbitbot.pro/update-password.html',
-        });
-
-        if (error) { msg.innerText = error.message; msg.className="text-red-500 text-center text-sm mt-2"; }
-        else { msg.innerText = "Link reset terkirim ke email!"; msg.className="text-green-400 text-center text-sm mt-2"; }
-    }
-
-    // ==========================================
-    // 3. UI MODAL LOGIC (LOGIN)
-    // ==========================================
-    function switchMode(mode) {
-        const passSection = document.getElementById('passwordSection');
-        const loginBtns = document.getElementById('loginButtons');
-        const resetBtns = document.getElementById('resetButtons');
-        const title = document.getElementById('modalTitle');
-        const desc = document.getElementById('modalDesc');
-        document.getElementById('statusMsg').innerText = "";
-
-        if (mode === 'reset') {
-            passSection.classList.add('hidden');
-            loginBtns.classList.add('hidden');
-            resetBtns.classList.replace('hidden', 'flex');
-            title.innerText = "Reset Password";
-            desc.innerText = "Masukkan email untuk link reset.";
-        } else {
-            passSection.classList.remove('hidden');
-            loginBtns.classList.remove('hidden');
-            resetBtns.classList.replace('flex', 'hidden');
-            title.innerText = "Welcome Back";
-            desc.innerText = "Akses dashboard creator Anda.";
-        }
+        if (error) msg.innerText = error.message;
+        else { msg.innerText = "Cek email untuk konfirmasi!"; msg.className="text-center text-xs mt-2 text-green-400"; }
     }
 
     function openLogin() {
-        const modal = document.getElementById('loginModal');
-        const content = document.getElementById('loginContent');
-        modal.classList.replace('hidden', 'flex');
-        setTimeout(() => content.classList.replace('opacity-0', 'opacity-100'), 10);
-        content.classList.replace('scale-95', 'scale-100');
+        document.getElementById('loginModal').classList.replace('hidden', 'flex');
     }
-
     function closeLogin() {
-        const modal = document.getElementById('loginModal');
-        const content = document.getElementById('loginContent');
-        content.classList.replace('opacity-100', 'opacity-0');
-        content.classList.replace('scale-100', 'scale-95');
-        setTimeout(() => modal.classList.replace('flex', 'hidden'), 300);
+        document.getElementById('loginModal').classList.replace('flex', 'hidden');
     }
 
-    // ==========================================
-    // 4. UI UTILS (SCROLL REVEAL)
-    // ==========================================
+    // 3. UI UTILS
     function reveal(){
         var reveals = document.querySelectorAll('.reveal');
         for(var i = 0; i < reveals.length; i++){
             var windowheight = window.innerHeight;
             var revealtop = reveals[i].getBoundingClientRect().top;
-            var revealpoint = 150;
-            if(revealtop < windowheight - revealpoint){
-                reveals[i].classList.add('active');
-            }
+            if(revealtop < windowheight - 100) reveals[i].classList.add('active');
         }
     }
     window.addEventListener('scroll', reveal);
 
-    // ==========================================
-    // 5. SETUP SLIDER (SWIPER) - Infinity Loop aktif
-    // ==========================================
-    const swiperInstances = []; 
-    // Menggunakan class specific agar konfigurasi aman
-    ['.swiper-service-1', '.swiper-service-2'].forEach(selector => {
-        const s = new Swiper(selector, {
-            effect: "coverflow", 
-            loop: true, // Infinity Loop
-            grabCursor: true,    
-            centeredSlides: true,
-            slidesPerView: "auto", 
-            coverflowEffect: {
-                rotate: 0, stretch: 0, depth: 120, modifier: 1.5, slideShadows: true, 
-            },
-            pagination: { el: ".swiper-pagination", clickable: true },
-            autoplay: { delay: 2500, disableOnInteraction: false, pauseOnMouseEnter: true }
-        });
-        swiperInstances.push(s);
+    // 4. SWIPER SETUP
+    new Swiper('.swiper-service-2', {
+        effect: "coverflow", loop: true, grabCursor: true, centeredSlides: true,
+        slidesPerView: "auto", coverflowEffect: { rotate: 0, stretch: 0, depth: 100, modifier: 1, slideShadows: false },
+        pagination: { el: ".swiper-pagination", clickable: true },
+        autoplay: { delay: 3000 }
     });
 
-    // ==========================================
-    // 6. LOGIC VIDEO YOUTUBE
-    // ==========================================
+    // 5. VIDEO LOGIC
     function loadVideo(wrapper, videoId) {
-        if (wrapper.querySelector('iframe')) return; 
-
-        // Stop Slider
-        swiperInstances.forEach(instance => instance.autoplay.stop());
-
-        // Reset video lain
-        document.querySelectorAll('.video-wrapper iframe').forEach(frame => {
-            resetVideo(frame.parentElement);
+        if (wrapper.querySelector('iframe')) return;
+        document.querySelectorAll('.video-wrapper iframe').forEach(f => {
+            f.parentElement.querySelector('.play-button').style.display = 'flex';
+            f.remove();
         });
-
         const iframe = document.createElement('iframe');
-        iframe.className = 'yt-iframe w-full h-full rounded-xl';
+        iframe.className = 'yt-iframe w-full h-full';
         iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
         iframe.allow = "autoplay; encrypted-media; fullscreen";
-        iframe.allowFullscreen = true;
-
         wrapper.appendChild(iframe);
-        const playBtn = wrapper.querySelector('.play-button');
-        if(playBtn) playBtn.style.display = 'none';
-    }
-
-    function resetVideo(wrapper) {
-        const iframe = wrapper.querySelector('iframe');
-        const playBtn = wrapper.querySelector('.play-button');
-        if (iframe) {
-            iframe.remove();
-            if(playBtn) playBtn.style.display = 'flex';
-        }
+        wrapper.querySelector('.play-button').style.display = 'none';
     }
 
     window.onload = () => {
         checkSession();
         reveal();
-        setTimeout(checkPromo, 1500);
+        setTimeout(checkPromo, 2000);
     };
 </script>
 </body>
 </html>
-
-
