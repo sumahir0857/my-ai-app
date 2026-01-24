@@ -170,53 +170,57 @@
         </div>
     </header>
 
-    <!-- UGC SHOWCASE (VERSI SIMPEL & CERDAS) -->
-    <section id="ugc-showcase" class="py-16 bg-slate-50/50">
-        <div class="max-w-6xl mx-auto px-6">
-            <div class="text-center mb-10">
-                <h2 class="text-3xl font-bold text-slate-900">UGC Creator</h2>
-                <p class="text-slate-500 mt-2 font-artistic text-lg">3 Contoh Hasil Review Otomatis</p>
-            </div>
-
-            <!-- GRID SYSTEM: 3 KOLOM SIMPEL (Pengganti Slider) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-                
-                <!-- Video 1 -->
-                <div class="group">
-                    <div class="video-wrapper ugc-ratio" onclick="playVideo(this, '-jYccBBAD7c')">
-                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" alt="Thumbnail">
-                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
+            <!-- Swiper Container -->
+        <div class="swiper swiper-service-2 w-full pb-10">
+            <div class="swiper-wrapper">
+                <!-- Slide 1 -->
+                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
+                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, '-jYccBBAD7c')">
+                        <img src="https://img.youtube.com/vi/-jYccBBAD7c/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
+                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
+                            <i class="fas fa-play text-white ml-1"></i>
+                        </div>
                     </div>
-                    <div class="mt-4 text-center">
-                        <h3 class="font-bold text-slate-800">Fashion Pria</h3>
-                        <p class="text-xs text-slate-500">Gaya Casual</p>
+                    <div class="p-4 border-t border-slate-700/50">
+                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Celana Kerja Pria</p>
                     </div>
                 </div>
-
-                <!-- Video 2 -->
-                <div class="group">
-                    <div class="video-wrapper ugc-ratio" onclick="playVideo(this, 'WxtmgW5oesU')">
-                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" alt="Thumbnail">
-                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
+                <!-- Slide 2 -->
+                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
+                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'WxtmgW5oesU')">
+                        <img src="https://img.youtube.com/vi/WxtmgW5oesU/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
+                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
+                            <i class="fas fa-play text-white ml-1"></i>
+                        </div>
                     </div>
-                    <div class="mt-4 text-center">
-                        <h3 class="font-bold text-slate-800">Review Gadget</h3>
-                        <p class="text-xs text-slate-500">Unboxing</p>
-                    </div>
-                </div>
-
-                <!-- Video 3 -->
-                <div class="group">
-                    <div class="video-wrapper ugc-ratio" onclick="playVideo(this, 'p2yGWw4rPBc')">
-                        <img src="https://img.youtube.com/vi/p2yGWw4rPBc/hqdefault.jpg" alt="Thumbnail">
-                        <div class="play-btn"><i class="fas fa-play ml-1"></i></div>
-                    </div>
-                    <div class="mt-4 text-center">
-                        <h3 class="font-bold text-slate-800">Sweater Hoodie</h3>
-                        <p class="text-xs text-slate-500">Outfit Ideas</p>
+                    <div class="p-4 border-t border-slate-700/50">
+                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Jas Hujan Anti Air</p>
                     </div>
                 </div>
-
+                <!-- Slide 3 -->
+                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
+                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'H10_Oz0VVs4')">
+                        <img src="https://img.youtube.com/vi/H10_Oz0VVs4/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
+                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
+                            <i class="fas fa-play text-white ml-1"></i>
+                        </div>
+                    </div>
+                    <div class="p-4 border-t border-slate-700/50">
+                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Penumbuh Rambut</p>
+                    </div>
+                </div>
+                <!-- Slide 4 -->
+                <div class="swiper-slide glass-card rounded-2xl overflow-hidden group">
+                    <div class="video-wrapper aspect-video relative cursor-pointer overflow-hidden" onclick="loadVideo(this, 'p2yGWw4rPBc')">
+                        <img src="https://img.youtube.com/vi/p2yGWw4rPBc/hqdefault.jpg" class="video-thumb w-full h-full object-cover transition duration-500 group-hover:scale-110 group-hover:opacity-50" alt="Thumbnail">
+                        <div class="play-button absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-purple-600/90 rounded-full flex items-center justify-center shadow-lg shadow-purple-600/50 group-hover:scale-110 transition">
+                            <i class="fas fa-play text-white ml-1"></i>
+                        </div>
+                    </div>
+                    <div class="p-4 border-t border-slate-700/50">
+                        <p class="text-slate-300 text-xs line-clamp-2"><b>Produk:</b> Sweater Hoodie</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -369,3 +373,4 @@
         const password = document.getElementById('passInput').value;
         const msg = document.getElementById('statusMsg');
         if(password.length < 6) { msg.innerText = "Password min 6 karakte
+
