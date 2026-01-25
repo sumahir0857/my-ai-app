@@ -176,435 +176,474 @@
             </div>
         </section>
 
-        <!-- ========== MAIN SECTION ========== -->
-        <section id="mainSection" class="hidden space-y-6">
-            
-            <!-- UPLOAD CARDS -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <!-- Foto Produk -->
-                <div class="glass rounded-2xl shadow p-5">
-                    <label class="block text-sm font-semibold text-slate-700 mb-3">
-                        📦 Foto Produk <span class="text-red-500">*</span>
-                    </label>
-                    <div 
-                        id="zoneProduk" 
-                        class="file-zone border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer"
-                        onclick="document.getElementById('fileProduk').click()"
-                    >
-                        <input type="file" id="fileProduk" accept="image/*" class="hidden" onchange="handleFile(this, 'produk')">
-                        <img id="previewProduk" class="hidden w-full h-40 object-contain rounded-lg mb-2">
-                        <div id="placeholderProduk" class="text-muted">
-                            <span class="text-3xl block mb-2">📷</span>
-                            <span class="text-sm">Tap untuk upload</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Foto Model -->
-                <div class="glass rounded-2xl shadow p-5">
-                    <label class="block text-sm font-semibold text-slate-700 mb-3">
-                        👤 Foto Model <span class="text-muted font-normal">(opsional)</span>
-                    </label>
-                    <div 
-                        id="zoneModel" 
-                        class="file-zone border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer"
-                        onclick="document.getElementById('fileModel').click()"
-                    >
-                        <input type="file" id="fileModel" accept="image/*" class="hidden" onchange="handleFile(this, 'model')">
-                        <img id="previewModel" class="hidden w-full h-40 object-contain rounded-lg mb-2">
-                        <div id="placeholderModel" class="text-muted">
-                            <span class="text-3xl block mb-2">👤</span>
-                            <span class="text-sm">Tap untuk upload</span>
-                        </div>
-                    </div>
+       <!-- ========== MAIN SECTION ========== -->
+<section id="mainSection" class="hidden space-y-6">
+    
+    <!-- UPLOAD CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <!-- Foto Produk -->
+        <div class="glass rounded-2xl shadow p-5">
+            <label class="block text-sm font-semibold text-slate-700 mb-3">
+                📦 Foto Produk <span class="text-red-500">*</span>
+            </label>
+            <div 
+                id="zoneProduk" 
+                class="file-zone border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer"
+                onclick="document.getElementById('fileProduk').click()"
+            >
+                <input type="file" id="fileProduk" accept="image/*" class="hidden" onchange="handleFile(this, 'produk')">
+                <img id="previewProduk" class="hidden w-full h-40 object-contain rounded-lg mb-2">
+                <div id="placeholderProduk" class="text-muted">
+                    <span class="text-3xl block mb-2">📷</span>
+                    <span class="text-sm">Tap untuk upload</span>
                 </div>
             </div>
-            
-            <!-- DETAIL FORM -->
-            <div class="glass rounded-2xl shadow p-5 space-y-4">
-                <h3 class="font-semibold text-slate-800">📝 Detail Produk</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm text-slate-600 mb-1">Nama Produk</label>
-                        <input type="text" id="inputNama" placeholder="cth: Serum Vitamin C" 
-                            class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-slate-600 mb-1">Harga</label>
-                        <input type="text" id="inputHarga" placeholder="cth: Rp 150.000" 
-                            class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm">
-                    </div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm text-slate-600 mb-1">Kelebihan</label>
-                    <textarea id="inputKelebihan" rows="3" placeholder="cth: Mencerahkan kulit, melembabkan..." 
-                        class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm resize-none"></textarea>
+        </div>
+        
+        <!-- Foto Model -->
+        <div class="glass rounded-2xl shadow p-5">
+            <label class="block text-sm font-semibold text-slate-700 mb-3">
+                👤 Foto Model <span class="text-muted font-normal">(opsional)</span>
+            </label>
+            <div 
+                id="zoneModel" 
+                class="file-zone border-2 border-dashed border-slate-300 rounded-xl p-6 text-center cursor-pointer"
+                onclick="document.getElementById('fileModel').click()"
+            >
+                <input type="file" id="fileModel" accept="image/*" class="hidden" onchange="handleFile(this, 'model')">
+                <img id="previewModel" class="hidden w-full h-40 object-contain rounded-lg mb-2">
+                <div id="placeholderModel" class="text-muted">
+                    <span class="text-3xl block mb-2">👤</span>
+                    <span class="text-sm">Tap untuk upload</span>
                 </div>
             </div>
-            
-            <!-- OPTIONS -->
-            <div class="glass rounded-2xl shadow p-5">
-                <h3 class="font-semibold text-slate-800 mb-3">🎬 Urutan Animasi</h3>
-                <div class="grid grid-cols-2 gap-3">
-                    <label class="relative cursor-pointer">
-                        <input type="radio" name="animOrder" value="veo_first" checked class="peer hidden">
-                        <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 transition text-center">
-                            <span class="text-sm font-medium">VEO → Grok</span>
-                        </div>
-                    </label>
-                    <label class="relative cursor-pointer">
-                        <input type="radio" name="animOrder" value="grok_first" class="peer hidden">
-                        <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 transition text-center">
-                            <span class="text-sm font-medium">Grok → VEO</span>
-                        </div>
-                    </label>
-                </div>
+        </div>
+    </div>
+    
+    <!-- DETAIL FORM -->
+    <div class="glass rounded-2xl shadow p-5 space-y-4">
+        <h3 class="font-semibold text-slate-800">📝 Detail Produk</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm text-slate-600 mb-1">Nama Produk</label>
+                <input type="text" id="inputNama" placeholder="cth: Serum Vitamin C" 
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm">
             </div>
-            
-            <!-- ACTION BUTTONS -->
-            <div class="grid grid-cols-2 gap-3">
-                <button 
-                    id="btnImages"
-                    onclick="doImagesOnly()"
-                    class="py-3.5 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
-                >
-                    🖼️ Gambar Saja
-                </button>
-                <button 
-                    id="btnFull"
-                    onclick="doFullPipeline()"
-                    class="py-3.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
-                >
-                    🚀 Full Pipeline
-                </button>
+            <div>
+                <label class="block text-sm text-slate-600 mb-1">Harga</label>
+                <input type="text" id="inputHarga" placeholder="cth: Rp 150.000" 
+                    class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm">
             </div>
-            
-            <!-- ========== RESULTS ========== -->
-            <div id="resultsSection" class="space-y-4">
-                
-                <!-- LOG -->
-                <div class="glass rounded-2xl shadow p-5">
-                    <h3 class="font-semibold text-slate-800 mb-3">📊 Log Proses</h3>
-                    <div id="logBox" class="log-box bg-slate-900 text-green-400 text-xs font-mono p-4 rounded-xl h-48 overflow-y-auto whitespace-pre-wrap">
-Siap memproses...</div>
-                </div>
-                
-                <!-- GALLERY -->
-                <div class="glass rounded-2xl shadow p-5">
-                    <h3 class="font-semibold text-slate-800 mb-3">🖼️ Hasil Gambar</h3>
-                    <div id="gallery" class="grid grid-cols-3 gap-2 min-h-[100px]">
-                        <div class="col-span-3 text-center text-muted text-sm py-8">
-                            Gambar akan muncul di sini
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- VIDEO -->
-                <div class="glass rounded-2xl shadow p-5">
-                    <h3 class="font-semibold text-slate-800 mb-3">🎬 Video Final</h3>
-                    <div id="videoContainer">
-                        <div id="videoPlaceholder" class="bg-slate-100 rounded-xl h-48 flex items-center justify-center text-muted text-sm">
-                            Video akan muncul di sini
-                        </div>
-                        <video id="videoPlayer" controls class="hidden w-full rounded-xl"></video>
-                    </div>
-                </div>
-                
-                <!-- AUDIO -->
-                <div class="glass rounded-2xl shadow p-5">
-                    <h3 class="font-semibold text-slate-800 mb-3">🔊 Audio</h3>
-                    <div id="audioContainer">
-                        <div id="audioPlaceholder" class="bg-slate-100 rounded-xl py-6 flex items-center justify-center text-muted text-sm">
-                            Audio akan muncul di sini
-                        </div>
-                        <audio id="audioPlayer" controls class="hidden w-full"></audio>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
+        
+        <div>
+            <label class="block text-sm text-slate-600 mb-1">Kelebihan</label>
+            <textarea id="inputKelebihan" rows="3" placeholder="cth: Mencerahkan kulit, melembabkan..." 
+                class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm resize-none"></textarea>
+        </div>
     </div>
 
-    <!-- ========== SCRIPTS ========== -->
+    <!-- ✨ GAYA FOTO - SECTION BARU -->
+    <div class="glass rounded-2xl shadow p-5 space-y-4">
+        <h3 class="font-semibold text-slate-800">🎨 Gaya Foto</h3>
+        
+        <div>
+            <label class="block text-sm text-slate-600 mb-1">Preset Gaya</label>
+            <select id="stylePreset" 
+                class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm bg-white">
+                <option value="Default (Auto)">Default (Auto)</option>
+                <option value="Produk Dipakai/Digunakan">Produk Dipakai/Digunakan</option>
+                <option value="Produk Dipegang Tangan">Produk Dipegang Tangan</option>
+                <option value="Flat Lay / Aesthetic">Flat Lay / Aesthetic</option>
+                <option value="Lifestyle / Aktivitas">Lifestyle / Aktivitas</option>
+                <option value="Close-up Detail Produk">Close-up Detail Produk</option>
+                <option value="Before-After Style">Before-After Style</option>
+                <option value="Selfie / POV Style">Selfie / POV Style</option>
+                <option value="Custom (Tulis Sendiri)">Custom (Tulis Sendiri)</option>
+            </select>
+            <p class="text-xs text-slate-400 mt-1">Pilih gaya foto yang diinginkan</p>
+        </div>
+        
+        <div>
+            <label class="block text-sm text-slate-600 mb-1">Instruksi Tambahan <span class="text-muted font-normal">(opsional)</span></label>
+            <textarea id="customStyle" rows="2" 
+                placeholder="cth: Sendal dipakai di kaki sambil jalan di pantai, bukan dipegang" 
+                class="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:border-primary outline-none text-sm resize-none"></textarea>
+            <p class="text-xs text-slate-400 mt-1">Tulis instruksi spesifik untuk hasil yang lebih sesuai keinginan</p>
+        </div>
+    </div>
+  
+    <!-- OPTIONS -->
+    <div class="glass rounded-2xl shadow p-5">
+        <h3 class="font-semibold text-slate-800 mb-3">🎬 Urutan Animasi</h3>
+        <div class="grid grid-cols-2 gap-3">
+            <label class="relative cursor-pointer">
+                <input type="radio" name="animOrder" value="veo_first" checked class="peer hidden">
+                <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 transition text-center">
+                    <span class="text-sm font-medium">VEO → Grok</span>
+                </div>
+            </label>
+            <label class="relative cursor-pointer">
+                <input type="radio" name="animOrder" value="grok_first" class="peer hidden">
+                <div class="p-3 rounded-xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-primary/5 transition text-center">
+                    <span class="text-sm font-medium">Grok → VEO</span>
+                </div>
+            </label>
+        </div>
+    </div>
+    
+    <!-- ACTION BUTTONS -->
+    <div class="grid grid-cols-2 gap-3">
+        <button 
+            id="btnImages"
+            onclick="doImagesOnly()"
+            class="py-3.5 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
+        >
+            🖼️ Gambar Saja
+        </button>
+        <button 
+            id="btnFull"
+            onclick="doFullPipeline()"
+            class="py-3.5 bg-primary hover:bg-primary/90 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 text-sm"
+        >
+            🚀 Full Pipeline
+        </button>
+    </div>
+    
+    <!-- ========== RESULTS ========== -->
+    <div id="resultsSection" class="space-y-4">
+        
+        <!-- LOG -->
+        <div class="glass rounded-2xl shadow p-5">
+            <h3 class="font-semibold text-slate-800 mb-3">📊 Log Proses</h3>
+            <div id="logBox" class="log-box bg-slate-900 text-green-400 text-xs font-mono p-4 rounded-xl h-48 overflow-y-auto whitespace-pre-wrap">Siap memproses...</div>
+        </div>
+        
+        <!-- GALLERY -->
+        <div class="glass rounded-2xl shadow p-5">
+            <h3 class="font-semibold text-slate-800 mb-3">🖼️ Hasil Gambar</h3>
+            <div id="gallery" class="grid grid-cols-3 gap-2 min-h-[100px]">
+                <div class="col-span-3 text-center text-muted text-sm py-8">
+                    Gambar akan muncul di sini
+                </div>
+            </div>
+        </div>
+        
+        <!-- VIDEO -->
+        <div class="glass rounded-2xl shadow p-5">
+            <h3 class="font-semibold text-slate-800 mb-3">🎬 Video Final</h3>
+            <div id="videoContainer">
+                <div id="videoPlaceholder" class="bg-slate-100 rounded-xl h-48 flex items-center justify-center text-muted text-sm">
+                    Video akan muncul di sini
+                </div>
+                <video id="videoPlayer" controls class="hidden w-full rounded-xl"></video>
+            </div>
+        </div>
+        
+        <!-- AUDIO -->
+        <div class="glass rounded-2xl shadow p-5">
+            <h3 class="font-semibold text-slate-800 mb-3">🔊 Audio</h3>
+            <div id="audioContainer">
+                <div id="audioPlaceholder" class="bg-slate-100 rounded-xl py-6 flex items-center justify-center text-muted text-sm">
+                    Audio akan muncul di sini
+                </div>
+                <audio id="audioPlayer" controls class="hidden w-full"></audio>
+            </div>
+        </div>
+    </div>
+</section>
+</div>
+
+<!-- ========== SCRIPTS ========== -->
 <script type="module">
-    import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
+
+// ===== STATE =====
+let client = null;
+let isConnected = false;
+let currentUser = null;
+let fileProduk = null;
+let fileModel = null;
+let retryCount = 0;
+const MAX_RETRIES = 3;
+
+const _0x = ['SU','MA','HIR','_SE','CRE','T_','V9','9'];
+const _k = () => _0x.reduce((a,b)=>a+b,'');
+const _t = () => _k() + Math.floor(Date.now() / 60000);
+
+// ===== CONNECTION =====
+async function connect() {
+    updateStatus('connecting');
+    showConnectionBar(true);
     
-    // ===== STATE =====
-    let client = null;
-    let isConnected = false;
-    let currentUser = null;
-    let fileProduk = null;
-    let fileModel = null;
-    let retryCount = 0;
-    const MAX_RETRIES = 3;
-    
-    const _0x = ['SU','MA','HIR','_SE','CRE','T_','V9','9'];
-    const _k = () => _0x.reduce((a,b)=>a+b,'');
-    const _t = () => _k() + Math.floor(Date.now() / 60000);
-    
-    // ===== CONNECTION =====
-    async function connect() {
-        updateStatus('connecting');
-        showConnectionBar(true);
+    try {
+        client = await Client.connect("sumahir/UGCpromax");
+        isConnected = true;
+        retryCount = 0;
+        updateStatus('connected');
+        showConnectionBar(false);
+        console.log("✅ Connected");
+    } catch (e) {
+        console.error("Connection failed:", e);
+        isConnected = false;
+        updateStatus('disconnected');
         
-        try {
-            client = await Client.connect("sumahir/UGCpromax");
-            isConnected = true;
-            retryCount = 0;
-            updateStatus('connected');
+        if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            setTimeout(() => connect(), 3000);
+        } else {
             showConnectionBar(false);
-            console.log("✅ Connected");
-        } catch (e) {
-            console.error("Connection failed:", e);
-            isConnected = false;
-            updateStatus('disconnected');
-            
-            if (retryCount < MAX_RETRIES) {
-                retryCount++;
-                setTimeout(() => connect(), 3000);
-            } else {
-                showConnectionBar(false);
-                showError("loginError", "Gagal terhubung. Refresh halaman.");
-            }
+            showError("loginError", "Gagal terhubung. Refresh halaman.");
         }
     }
+}
+
+function updateStatus(status) {
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    dot.className = 'status-dot ' + status;
+    text.textContent = {connected:'Terhubung', connecting:'Menghubungkan...', disconnected:'Terputus'}[status];
+}
+
+function showConnectionBar(show) {
+    document.getElementById('connectionBar').classList.toggle('hidden', !show);
+}
+
+async function ensureConnected() {
+    if (!isConnected || !client) await connect();
+    if (!isConnected) throw new Error("Tidak terhubung ke server");
+}
+
+// ===== UI HELPERS =====
+function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.remove('hidden');
+}
+
+function hideError(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+
+function setButtonLoading(btnId, loading, originalText) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.innerHTML = loading ? `<span class="spinner"></span> Memproses...` : originalText;
+}
+
+function log(msg) {
+    const box = document.getElementById('logBox');
+    box.textContent = msg;
+    box.scrollTop = box.scrollHeight;
+}
+
+// ===== FILE HANDLING =====
+window.handleFile = function(input, type) {
+    const file = input.files[0];
+    if (!file) return;
     
-    function updateStatus(status) {
-        const dot = document.getElementById('statusDot');
-        const text = document.getElementById('statusText');
-        dot.className = 'status-dot ' + status;
-        text.textContent = {connected:'Terhubung', connecting:'Menghubungkan...', disconnected:'Terputus'}[status];
-    }
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const zone = document.getElementById('zone' + cap(type));
+    const preview = document.getElementById('preview' + cap(type));
+    const placeholder = document.getElementById('placeholder' + cap(type));
     
-    function showConnectionBar(show) {
-        document.getElementById('connectionBar').classList.toggle('hidden', !show);
-    }
+    if (type === 'produk') fileProduk = file;
+    else fileModel = file;
     
-    async function ensureConnected() {
-        if (!isConnected || !client) await connect();
-        if (!isConnected) throw new Error("Tidak terhubung ke server");
-    }
-    
-    // ===== UI HELPERS =====
-    function showError(id, msg) {
-        const el = document.getElementById(id);
-        el.textContent = msg;
-        el.classList.remove('hidden');
-    }
-    
-    function hideError(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
-    
-    function setButtonLoading(btnId, loading, originalText) {
-        const btn = document.getElementById(btnId);
-        btn.disabled = loading;
-        btn.innerHTML = loading ? `<span class="spinner"></span> Memproses...` : originalText;
-    }
-    
-    function log(msg) {
-        const box = document.getElementById('logBox');
-        box.textContent = msg;
-        box.scrollTop = box.scrollHeight;
-    }
-    
-    // ===== FILE HANDLING =====
-    window.handleFile = function(input, type) {
-        const file = input.files[0];
-        if (!file) return;
-        
-        const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-        const zone = document.getElementById('zone' + cap(type));
-        const preview = document.getElementById('preview' + cap(type));
-        const placeholder = document.getElementById('placeholder' + cap(type));
-        
-        if (type === 'produk') fileProduk = file;
-        else fileModel = file;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            preview.src = e.target.result;
-            preview.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            zone.classList.add('has-file');
-        };
-        reader.readAsDataURL(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        zone.classList.add('has-file');
     };
+    reader.readAsDataURL(file);
+};
+
+// ===== EXTRACT URL =====
+function extractUrl(item) {
+    if (!item) return null;
     
-    // ===== EXTRACT URL - DIPERBAIKI =====
-    function extractUrl(item) {
-        if (!item) return null;
+    console.log("📦 Raw item:", item);
+    
+    if (typeof item === 'string') return item;
+    
+    if (typeof item === 'object') {
+        if (item.url) return item.url;
+        if (item.path) return item.path;
+        if (item.data) return item.data;
+        if (item.image) return extractUrl(item.image);
+        if (Array.isArray(item) && item[0]) return extractUrl(item[0]);
+    }
+    
+    return null;
+}
+
+// ===== RENDER GALLERY =====
+function renderGallery(images) {
+    const gallery = document.getElementById('gallery');
+    
+    console.log("🖼️ Raw images data:", images);
+    
+    if (!images || (Array.isArray(images) && images.length === 0)) {
+        console.log("⚠️ No images to render");
+        return;
+    }
+    
+    const imgArray = Array.isArray(images) ? images : [images];
+    
+    gallery.innerHTML = '';
+    let rendered = 0;
+    
+    imgArray.forEach((img, i) => {
+        const url = extractUrl(img);
+        console.log(`  Image ${i}:`, url);
         
-        // Debug
-        console.log("📦 Raw item:", item);
-        
-        // String langsung
-        if (typeof item === 'string') return item;
-        
-        // Object dengan berbagai kemungkinan key
-        if (typeof item === 'object') {
-            // Gradio format baru
-            if (item.url) return item.url;
-            if (item.path) return item.path;
-            if (item.data) return item.data;
-            
-            // Nested image object
-            if (item.image) return extractUrl(item.image);
-            
-            // Tuple format [url, caption]
-            if (Array.isArray(item) && item[0]) return extractUrl(item[0]);
+        if (url) {
+            const imgEl = document.createElement('img');
+            imgEl.src = url;
+            imgEl.className = 'gallery-img w-full aspect-square object-cover rounded-lg cursor-pointer';
+            imgEl.onclick = () => window.open(url, '_blank');
+            imgEl.onerror = () => console.error("❌ Failed to load:", url);
+            gallery.appendChild(imgEl);
+            rendered++;
         }
-        
-        return null;
-    }
-    
-    // ===== RENDER GALLERY - DIPERBAIKI =====
-    function renderGallery(images) {
-        const gallery = document.getElementById('gallery');
-        
-        console.log("🖼️ Raw images data:", images);
-        
-        if (!images || (Array.isArray(images) && images.length === 0)) {
-            console.log("⚠️ No images to render");
-            return;
-        }
-        
-        // Pastikan images adalah array
-        const imgArray = Array.isArray(images) ? images : [images];
-        
-        gallery.innerHTML = '';
-        let rendered = 0;
-        
-        imgArray.forEach((img, i) => {
-            const url = extractUrl(img);
-            console.log(`  Image ${i}:`, url);
-            
-            if (url) {
-                const imgEl = document.createElement('img');
-                imgEl.src = url;
-                imgEl.className = 'gallery-img w-full aspect-square object-cover rounded-lg cursor-pointer';
-                imgEl.onclick = () => window.open(url, '_blank');
-                imgEl.onerror = () => console.error("❌ Failed to load:", url);
-                gallery.appendChild(imgEl);
-                rendered++;
-            }
-        });
-        
-        if (rendered === 0) {
-            gallery.innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Tidak ada gambar</div>';
-        }
-    }
-    
-    function showVideo(url) {
-        if (!url) return;
-        console.log("🎬 Video URL:", url);
-        document.getElementById('videoPlaceholder').classList.add('hidden');
-        const player = document.getElementById('videoPlayer');
-        player.src = url;
-        player.classList.remove('hidden');
-    }
-    
-    function showAudio(url) {
-        if (!url) return;
-        console.log("🔊 Audio URL:", url);
-        document.getElementById('audioPlaceholder').classList.add('hidden');
-        const player = document.getElementById('audioPlayer');
-        player.src = url;
-        player.classList.remove('hidden');
-    }
-    
-    function resetOutputs() {
-        document.getElementById('gallery').innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Memproses...</div>';
-        document.getElementById('videoPlaceholder').classList.remove('hidden');
-        document.getElementById('videoPlayer').classList.add('hidden');
-        document.getElementById('audioPlaceholder').classList.remove('hidden');
-        document.getElementById('audioPlayer').classList.add('hidden');
-    }
-    
-    // ===== LOGIN =====
-    window.doLogin = async function() {
-        const password = document.getElementById('inputPassword').value.trim();
-        if (!password) return showError('loginError', '⚠️ Password harus diisi');
-        
-        hideError('loginError');
-        setButtonLoading('btnLogin', true, 'Masuk');
-        
-        try {
-            await ensureConnected();
-            const result = await client.predict("/handle_login", [password]);
-            console.log("🔐 Login result:", result.data);
-            
-            const [userData, , , statusMsg] = result.data;
-            
-            if (userData) {
-                currentUser = userData;
-                document.getElementById('loginSection').classList.add('hidden');
-                document.getElementById('mainSection').classList.remove('hidden');
-            } else {
-                showError('loginError', statusMsg || '❌ Password salah');
-            }
-        } catch (e) {
-            console.error("Login error:", e);
-            showError('loginError', '❌ ' + e.message);
-        } finally {
-            setButtonLoading('btnLogin', false, 'Masuk');
-        }
-    };
-    
-    document.getElementById('inputPassword').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') doLogin();
     });
     
-    // ===== IMAGES ONLY - DIPERBAIKI =====
-    window.doImagesOnly = async function() {
-        if (!currentUser) return alert('Login dulu!');
-        if (!fileProduk) return alert('Upload foto produk dulu!');
-        
-        setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
-        log('🖼️ Memproses gambar...');
-        
-        try {
-            await ensureConnected();
-            
-            const result = await client.predict("/handle_images_only", [
-                currentUser,
-                fileProduk,
-                fileModel,
-                document.getElementById('inputNama').value,
-                document.getElementById('inputHarga').value,
-                document.getElementById('inputKelebihan').value,
-                _t()
-            ]);
-            
-            console.log("📸 Images result:", result.data);
-            
-            const [logMsg, images] = result.data;
-            log(logMsg || 'Selesai');
-            renderGallery(images);
-            
-        } catch (e) {
-            console.error("Images error:", e);
-            log('❌ Error: ' + e.message);
-        } finally {
-            // SELALU reset tombol
-            setButtonLoading('btnImages', false, '🖼️ Gambar Saja');
-        }
-    };
+    if (rendered === 0) {
+        gallery.innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Tidak ada gambar</div>';
+    }
+}
+
+function showVideo(url) {
+    if (!url) return;
+    console.log("🎬 Video URL:", url);
+    document.getElementById('videoPlaceholder').classList.add('hidden');
+    const player = document.getElementById('videoPlayer');
+    player.src = url;
+    player.classList.remove('hidden');
+}
+
+function showAudio(url) {
+    if (!url) return;
+    console.log("🔊 Audio URL:", url);
+    document.getElementById('audioPlaceholder').classList.add('hidden');
+    const player = document.getElementById('audioPlayer');
+    player.src = url;
+    player.classList.remove('hidden');
+}
+
+function resetOutputs() {
+    document.getElementById('gallery').innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Memproses...</div>';
+    document.getElementById('videoPlaceholder').classList.remove('hidden');
+    document.getElementById('videoPlayer').classList.add('hidden');
+    document.getElementById('audioPlaceholder').classList.remove('hidden');
+    document.getElementById('audioPlayer').classList.add('hidden');
+}
+
+// ===== LOGIN =====
+window.doLogin = async function() {
+    const password = document.getElementById('inputPassword').value.trim();
+    if (!password) return showError('loginError', '⚠️ Password harus diisi');
     
-    // ===== FULL PIPELINE - DIPERBAIKI =====
-    window.doFullPipeline = async function() {
+    hideError('loginError');
+    setButtonLoading('btnLogin', true, 'Masuk');
+    
+    try {
+        await ensureConnected();
+        const result = await client.predict("/handle_login", [password]);
+        console.log("🔐 Login result:", result.data);
+        
+        const [userData, , , statusMsg] = result.data;
+        
+        if (userData) {
+            currentUser = userData;
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainSection').classList.remove('hidden');
+        } else {
+            showError('loginError', statusMsg || '❌ Password salah');
+        }
+    } catch (e) {
+        console.error("Login error:", e);
+        showError('loginError', '❌ ' + e.message);
+    } finally {
+        setButtonLoading('btnLogin', false, 'Masuk');
+    }
+};
+
+document.getElementById('inputPassword').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') doLogin();
+});
+
+// ===== IMAGES ONLY - UPDATED DENGAN STYLE =====
+window.doImagesOnly = async function() {
+    if (!currentUser) return alert('Login dulu!');
+    if (!fileProduk) return alert('Upload foto produk dulu!');
+    
+    setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
+    log('🖼️ Memproses gambar...');
+    
+    // ✨ Ambil nilai style
+    const stylePreset = document.getElementById('stylePreset').value;
+    const customStyle = document.getElementById('customStyle').value;
+    
+    // Log style jika ada
+    if (stylePreset !== 'Default (Auto)' || customStyle) {
+        log('🖼️ Memproses gambar...\n🎨 Style: ' + stylePreset + (customStyle ? '\n✏️ ' + customStyle : ''));
+    }
+    
+    try {
+        await ensureConnected();
+        
+        const result = await client.predict("/handle_images_only", [
+            currentUser,
+            fileProduk,
+            fileModel,
+            document.getElementById('inputNama').value,
+            document.getElementById('inputHarga').value,
+            document.getElementById('inputKelebihan').value,
+            stylePreset,    // ✨ PARAMETER BARU
+            customStyle,    // ✨ PARAMETER BARU
+            _t()
+        ]);
+        
+        console.log("📸 Images result:", result.data);
+        
+        const [logMsg, images] = result.data;
+        log(logMsg || 'Selesai');
+        renderGallery(images);
+        
+    } catch (e) {
+        console.error("Images error:", e);
+        log('❌ Error: ' + e.message);
+    } finally {
+        setButtonLoading('btnImages', false, '🖼️ Gambar Saja');
+    }
+};
+
+// ===== FULL PIPELINE - UPDATED DENGAN STYLE =====
+window.doFullPipeline = async function() {
     if (!currentUser) return alert('Login dulu!');
     if (!fileProduk) return alert('Upload foto produk dulu!');
     
     const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
     const btnFull = document.getElementById('btnFull');
     
+    // ✨ Ambil nilai style
+    const stylePreset = document.getElementById('stylePreset').value;
+    const customStyle = document.getElementById('customStyle').value;
+    
     btnFull.disabled = true;
     btnFull.innerHTML = '<span class="spinner"></span> Memproses...';
     
-    log('🚀 Memulai Full Pipeline...\n');
+    // Log awal dengan info style
+    let initLog = '🚀 Memulai Full Pipeline...\n';
+    if (stylePreset !== 'Default (Auto)' || customStyle) {
+        initLog += '🎨 Style: ' + stylePreset + (customStyle ? '\n✏️ ' + customStyle : '') + '\n';
+    }
+    log(initLog);
     resetOutputs();
     
     try {
@@ -617,6 +656,8 @@ Siap memproses...</div>
             document.getElementById('inputNama').value,
             document.getElementById('inputHarga').value,
             document.getElementById('inputKelebihan').value,
+            stylePreset,    // ✨ PARAMETER BARU
+            customStyle,    // ✨ PARAMETER BARU
             animOrder,
             _t()
         ]);
@@ -630,7 +671,6 @@ Siap memproses...</div>
                 if (data[2]) showAudio(extractUrl(data[2]));
                 if (data[3] && data[3].length > 0) renderGallery(data[3]);
                 
-                // DETEKSI SELESAI
                 if (data[0] && data[0].includes('PIPELINE SELESAI')) {
                     break;
                 }
@@ -641,21 +681,20 @@ Siap memproses...</div>
         log('❌ Error: ' + e.message);
     }
     
-    // Reset tombol
     btnFull.disabled = false;
     btnFull.innerHTML = '🚀 Full Pipeline';
 };
-    
-    // ===== EVENT LISTENERS =====
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && !isConnected) connect();
-    });
-    
-    window.addEventListener('online', () => { if (!isConnected) connect(); });
-    window.addEventListener('offline', () => { isConnected = false; updateStatus('disconnected'); });
-    
-    // ===== INIT =====
-    connect();
+
+// ===== EVENT LISTENERS =====
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && !isConnected) connect();
+});
+
+window.addEventListener('online', () => { if (!isConnected) connect(); });
+window.addEventListener('offline', () => { isConnected = false; updateStatus('disconnected'); });
+
+// ===== INIT =====
+connect();
 </script>
 </body>
 </html>
