@@ -1,18 +1,3 @@
-// Tambahkan di awal file untuk test
-console.log('Supabase URL:', SUPABASE_URL);
-console.log('Supabase client:', supabase);
-
-// Test connection
-async function testConnection() {
-    try {
-        const { data, error } = await supabase.from('plans').select('*');
-        console.log('Plans:', data);
-        console.log('Error:', error);
-    } catch (e) {
-        console.error('Connection error:', e);
-    }
-}
-testConnection();
 // UGC Generator Logic
 
 let pollingInterval = null;
