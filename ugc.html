@@ -447,7 +447,6 @@ function log(msg) {
     }
 }
 
-// ✨ HELPER: Ambil nilai input dengan aman
 function getInputValue(id) {
     const el = document.getElementById(id);
     return el ? (el.value || '').trim() : '';
@@ -499,30 +498,23 @@ function renderGallery(images) {
     const gallery = document.getElementById('gallery');
     if (!gallery) return;
     
-    if (!images || (Array.isArray(images) && images.length === 0)) {
-        return;
-    }
+    if (!images || (Array.isArray(images) && images.length === 0)) return;
     
     const imgArray = Array.isArray(images) ? images : [images];
-    
     gallery.innerHTML = '';
-    let rendered = 0;
     
-    imgArray.forEach((img, i) => {
+    imgArray.forEach((img) => {
         const url = extractUrl(img);
-        
         if (url) {
             const imgEl = document.createElement('img');
             imgEl.src = url;
             imgEl.className = 'gallery-img w-full aspect-square object-cover rounded-lg cursor-pointer';
             imgEl.onclick = () => window.open(url, '_blank');
-            imgEl.onerror = () => console.error("❌ Failed to load:", url);
             gallery.appendChild(imgEl);
-            rendered++;
         }
     });
     
-    if (rendered === 0) {
+    if (gallery.children.length === 0) {
         gallery.innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Tidak ada gambar</div>';
     }
 }
@@ -563,6 +555,17 @@ function resetOutputs() {
     if (audioPlayer) audioPlayer.classList.add('hidden');
 }
 
+// ✨ HELPER: Validasi userData yang benar
+function isValidUserData(data) {
+    if (!data) return false;
+    if (typeof data !== 'object') return false;
+    if (Array.isArray(data)) return false;
+    // Harus punya gemini_refresh_cookie (bukan gr.update object)
+    if (data.__type__ === 'update') return false;
+    if (!data.gemini_refresh_cookie) return false;
+    return true;
+}
+
 // ===== LOGIN - DIPERBAIKI =====
 window.doLogin = async function() {
     const password = getInputValue('inputPassword');
@@ -578,36 +581,65 @@ window.doLogin = async function() {
         await ensureConnected();
         const result = await client.predict("/handle_login", [password]);
         
-        // ✨ DEBUG
         console.log("🔐 Login result.data:", result.data);
         
-        const [userData, , , statusMsg] = result.data;
+        // ✨ PERBAIKAN: Ambil userData dari index ke-4 (output ke-5)
+        // result.data = [loginSection, mainSection, statusMsg, userData]
+        // atau jika backend sudah diupdate:
+        // result.data = [state, loginSection, mainSection, statusMsg, userData]
         
-        // ✨ DEBUG
-        console.log("🔐 userData:", userData);
-        console.log("🔐 statusMsg:", statusMsg);
+        let userData = null;
+        let statusMsg = '';
         
-        // ✨ VALIDASI SEDERHANA
-        const hasUserData = userData && 
-                           typeof userData === 'object' && 
-                           !Array.isArray(userData) && 
-                           Object.keys(userData).length > 0;
+        // Cari userData dan statusMsg dari result.data
+        for (let i = 0; i < result.data.length; i++) {
+            const item = result.data[i];
+            
+            // Cek apakah ini statusMsg (string)
+            if (typeof item === 'string' && item !== '') {
+                statusMsg = item;
+            }
+            
+            // Cek apakah ini userData (object dengan gemini_refresh_cookie)
+            if (isValidUserData(item)) {
+                userData = item;
+            }
+        }
         
-        const noErrorMsg = !statusMsg || statusMsg === "" || statusMsg.trim() === "";
+        console.log("🔐 Parsed userData:", userData);
+        console.log("🔐 Parsed statusMsg:", statusMsg);
         
-        console.log("🔐 hasUserData:", hasUserData);
-        console.log("🔐 noErrorMsg:", noErrorMsg);
-        
-        if (hasUserData && noErrorMsg) {
+        // ✨ Validasi login
+        if (userData && isValidUserData(userData)) {
             currentUser = userData;
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainSection').classList.remove('hidden');
-            console.log("✅ Login berhasil!");
-        } else {
+            console.log("✅ Login berhasil dengan userData valid!");
+        } else if (statusMsg && statusMsg.includes('salah')) {
             currentUser = null;
-            showError('loginError', statusMsg || '❌ Password salah');
+            showError('loginError', statusMsg);
             console.log("❌ Login gagal:", statusMsg);
+        } else {
+            // Fallback: cek visibility dari gr.update objects
+            const hasVisibleFalse = result.data.some(item => 
+                item && typeof item === 'object' && item.visible === false && item.__type__ === 'update'
+            );
+            const hasVisibleTrue = result.data.some(item => 
+                item && typeof item === 'object' && item.visible === true && item.__type__ === 'update'
+            );
+            
+            // Jika ada mainSection visible=true DAN tidak ada error message
+            if (hasVisibleTrue && !statusMsg) {
+                // Ini berarti login sukses tapi userData tidak dikirim
+                // PERLU update backend!
+                console.log("⚠️ Login sukses tapi userData tidak diterima. Perlu update backend.");
+                showError('loginError', '⚠️ Perlu update backend. Hubungi admin.');
+            } else {
+                currentUser = null;
+                showError('loginError', statusMsg || '❌ Password salah');
+            }
         }
+        
     } catch (e) {
         console.error("Login error:", e);
         showError('loginError', '❌ ' + e.message);
@@ -622,7 +654,10 @@ document.getElementById('inputPassword')?.addEventListener('keypress', (e) => {
 
 // ===== IMAGES ONLY =====
 window.doImagesOnly = async function() {
-    if (!currentUser) return alert('Login dulu!');
+    // ✨ Validasi currentUser dengan benar
+    if (!currentUser || !isValidUserData(currentUser)) {
+        return alert('Login dulu dengan benar!');
+    }
     if (!fileProduk) return alert('Upload foto produk dulu!');
     
     setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
@@ -633,8 +668,8 @@ window.doImagesOnly = async function() {
     const stylePreset = getInputValue('stylePreset') || 'Default (Auto)';
     const customStyle = getInputValue('customStyle');
     
-    // ✨ DEBUG
     console.log("📤 [IMAGES] Sending:", { nama, harga, kelebihan, stylePreset, customStyle });
+    console.log("📤 [IMAGES] currentUser keys:", Object.keys(currentUser));
     
     if (!nama) {
         setButtonLoading('btnImages', false, '🖼️ Gambar Saja');
@@ -674,7 +709,10 @@ window.doImagesOnly = async function() {
 
 // ===== FULL PIPELINE =====
 window.doFullPipeline = async function() {
-    if (!currentUser) return alert('Login dulu!');
+    // ✨ Validasi currentUser dengan benar
+    if (!currentUser || !isValidUserData(currentUser)) {
+        return alert('Login dulu dengan benar!');
+    }
     if (!fileProduk) return alert('Upload foto produk dulu!');
     
     const btnFull = document.getElementById('btnFull');
@@ -686,8 +724,8 @@ window.doFullPipeline = async function() {
     const customStyle = getInputValue('customStyle');
     const animOrder = document.querySelector('input[name="animOrder"]:checked')?.value || 'veo_first';
     
-    // ✨ DEBUG
     console.log("📤 [PIPELINE] Sending:", { nama, harga, kelebihan, stylePreset, customStyle, animOrder });
+    console.log("📤 [PIPELINE] currentUser keys:", Object.keys(currentUser));
     
     if (!nama) {
         return alert('Nama produk harus diisi!');
