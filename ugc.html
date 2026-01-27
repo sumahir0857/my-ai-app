@@ -357,7 +357,6 @@
 </div>
 
 <!-- ========== SCRIPTS ========== -->
-<!-- ========== SCRIPTS ========== -->
 <script type="module">
 import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
@@ -448,6 +447,12 @@ function log(msg) {
     }
 }
 
+// ✨ HELPER: Ambil nilai input dengan aman
+function getInputValue(id) {
+    const el = document.getElementById(id);
+    return el ? (el.value || '').trim() : '';
+}
+
 // ===== FILE HANDLING =====
 window.handleFile = function(input, type) {
     const file = input.files[0];
@@ -495,7 +500,6 @@ function renderGallery(images) {
     if (!gallery) return;
     
     if (!images || (Array.isArray(images) && images.length === 0)) {
-        console.log("⚠️ No images to render");
         return;
     }
     
@@ -558,41 +562,6 @@ function resetOutputs() {
     if (audioPlaceholder) audioPlaceholder.classList.remove('hidden');
     if (audioPlayer) audioPlayer.classList.add('hidden');
 }
-// ✨ HELPER: Validasi user data dari backend - DIPERBAIKI
-function isValidUserData(userData) {
-    // Debug log
-    console.log("🔍 Validating userData:", userData);
-    console.log("  - type:", typeof userData);
-    console.log("  - is null:", userData === null);
-    console.log("  - is array:", Array.isArray(userData));
-    
-    if (!userData) {
-        console.log("  ❌ userData is falsy");
-        return false;
-    }
-    
-    if (typeof userData !== 'object') {
-        console.log("  ❌ userData is not object");
-        return false;
-    }
-    
-    if (Array.isArray(userData)) {
-        console.log("  ❌ userData is array");
-        return false;
-    }
-    
-    const keys = Object.keys(userData);
-    console.log("  - keys:", keys);
-    console.log("  - keys count:", keys.length);
-    
-    if (keys.length === 0) {
-        console.log("  ❌ userData is empty object");
-        return false;
-    }
-    
-    console.log("  ✅ userData is valid");
-    return true;
-}
 
 // ===== LOGIN - DIPERBAIKI =====
 window.doLogin = async function() {
@@ -609,19 +578,16 @@ window.doLogin = async function() {
         await ensureConnected();
         const result = await client.predict("/handle_login", [password]);
         
-        // ✨ DEBUG: Lihat semua data yang dikembalikan
+        // ✨ DEBUG
         console.log("🔐 Login result.data:", result.data);
-        console.log("🔐 result.data[0] (userData):", result.data[0]);
-        console.log("🔐 result.data[3] (statusMsg):", result.data[3]);
         
         const [userData, , , statusMsg] = result.data;
         
-        // ✨ VALIDASI LEBIH SEDERHANA
-        // Login berhasil jika:
-        // 1. userData bukan null/undefined
-        // 2. userData adalah object dengan isi
-        // 3. statusMsg kosong (tidak ada pesan error)
+        // ✨ DEBUG
+        console.log("🔐 userData:", userData);
+        console.log("🔐 statusMsg:", statusMsg);
         
+        // ✨ VALIDASI SEDERHANA
         const hasUserData = userData && 
                            typeof userData === 'object' && 
                            !Array.isArray(userData) && 
@@ -650,41 +616,32 @@ window.doLogin = async function() {
     }
 };
 
-// ===== IMAGES ONLY - DIPERBAIKI =====
+document.getElementById('inputPassword')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') doLogin();
+});
+
+// ===== IMAGES ONLY =====
 window.doImagesOnly = async function() {
     if (!currentUser) return alert('Login dulu!');
     if (!fileProduk) return alert('Upload foto produk dulu!');
     
     setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
     
-    // ✨ Ambil semua nilai dengan helper function
     const nama = getInputValue('inputNama');
     const harga = getInputValue('inputHarga');
     const kelebihan = getInputValue('inputKelebihan');
     const stylePreset = getInputValue('stylePreset') || 'Default (Auto)';
     const customStyle = getInputValue('customStyle');
     
-    // ✨ DEBUG LOG - Lihat di Console Browser (F12)
-    console.log("📤 [IMAGES] Sending data:");
-    console.log("  - nama:", nama);
-    console.log("  - harga:", harga);
-    console.log("  - kelebihan:", kelebihan);
-    console.log("  - stylePreset:", stylePreset);
-    console.log("  - customStyle:", customStyle);
+    // ✨ DEBUG
+    console.log("📤 [IMAGES] Sending:", { nama, harga, kelebihan, stylePreset, customStyle });
     
-    // Validasi nama produk
     if (!nama) {
         setButtonLoading('btnImages', false, '🖼️ Gambar Saja');
         return alert('Nama produk harus diisi!');
     }
     
-    // Log awal
-    let initLog = '🖼️ Memproses gambar...\n';
-    initLog += '📦 Produk: ' + nama + '\n';
-    if (stylePreset !== 'Default (Auto)' || customStyle) {
-        initLog += '🎨 Style: ' + stylePreset + (customStyle ? '\n✏️ ' + customStyle : '');
-    }
-    log(initLog);
+    log('🖼️ Memproses gambar...\n📦 Produk: ' + nama);
     
     try {
         await ensureConnected();
@@ -693,12 +650,12 @@ window.doImagesOnly = async function() {
             currentUser,
             fileProduk,
             fileModel,
-            nama,           // index 3 - Nama Produk
-            harga,          // index 4 - Harga
-            kelebihan,      // index 5 - Kelebihan
-            stylePreset,    // index 6 - Style Preset
-            customStyle,    // index 7 - Custom Style
-            _t()            // index 8 - Token
+            nama,
+            harga,
+            kelebihan,
+            stylePreset,
+            customStyle,
+            _t()
         ]);
         
         console.log("📸 Images result:", result.data);
@@ -715,14 +672,13 @@ window.doImagesOnly = async function() {
     }
 };
 
-// ===== FULL PIPELINE - DIPERBAIKI =====
+// ===== FULL PIPELINE =====
 window.doFullPipeline = async function() {
     if (!currentUser) return alert('Login dulu!');
     if (!fileProduk) return alert('Upload foto produk dulu!');
     
     const btnFull = document.getElementById('btnFull');
     
-    // ✨ Ambil semua nilai dengan helper function
     const nama = getInputValue('inputNama');
     const harga = getInputValue('inputHarga');
     const kelebihan = getInputValue('inputKelebihan');
@@ -730,16 +686,9 @@ window.doFullPipeline = async function() {
     const customStyle = getInputValue('customStyle');
     const animOrder = document.querySelector('input[name="animOrder"]:checked')?.value || 'veo_first';
     
-    // ✨ DEBUG LOG - Lihat di Console Browser (F12)
-    console.log("📤 [PIPELINE] Sending data:");
-    console.log("  - nama:", nama);
-    console.log("  - harga:", harga);
-    console.log("  - kelebihan:", kelebihan);
-    console.log("  - stylePreset:", stylePreset);
-    console.log("  - customStyle:", customStyle);
-    console.log("  - animOrder:", animOrder);
+    // ✨ DEBUG
+    console.log("📤 [PIPELINE] Sending:", { nama, harga, kelebihan, stylePreset, customStyle, animOrder });
     
-    // Validasi nama produk
     if (!nama) {
         return alert('Nama produk harus diisi!');
     }
@@ -747,13 +696,7 @@ window.doFullPipeline = async function() {
     btnFull.disabled = true;
     btnFull.innerHTML = '<span class="spinner"></span> Memproses...';
     
-    // Log awal
-    let initLog = '🚀 Memulai Full Pipeline...\n';
-    initLog += '📦 Produk: ' + nama + '\n';
-    if (stylePreset !== 'Default (Auto)' || customStyle) {
-        initLog += '🎨 Style: ' + stylePreset + (customStyle ? '\n✏️ ' + customStyle : '') + '\n';
-    }
-    log(initLog);
+    log('🚀 Memulai Full Pipeline...\n📦 Produk: ' + nama);
     resetOutputs();
     
     try {
@@ -763,13 +706,13 @@ window.doFullPipeline = async function() {
             currentUser,
             fileProduk,
             fileModel,
-            nama,           // index 3 - Nama Produk
-            harga,          // index 4 - Harga
-            kelebihan,      // index 5 - Kelebihan
-            stylePreset,    // index 6 - Style Preset
-            customStyle,    // index 7 - Custom Style
-            animOrder,      // index 8 - Animation Order
-            _t()            // index 9 - Token
+            nama,
+            harga,
+            kelebihan,
+            stylePreset,
+            customStyle,
+            animOrder,
+            _t()
         ]);
         
         for await (const event of job) {
