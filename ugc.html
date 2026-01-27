@@ -357,6 +357,7 @@
 </div>
 
 <!-- ========== SCRIPTS ========== -->
+<!-- ========== SCRIPTS ========== -->
 <script type="module">
 import { Client } from "https://cdn.jsdelivr.net/npm/@gradio/client/dist/index.min.js";
 
@@ -403,12 +404,13 @@ async function connect() {
 function updateStatus(status) {
     const dot = document.getElementById('statusDot');
     const text = document.getElementById('statusText');
-    dot.className = 'status-dot ' + status;
-    text.textContent = {connected:'Terhubung', connecting:'Menghubungkan...', disconnected:'Terputus'}[status];
+    if (dot) dot.className = 'status-dot ' + status;
+    if (text) text.textContent = {connected:'Terhubung', connecting:'Menghubungkan...', disconnected:'Terputus'}[status];
 }
 
 function showConnectionBar(show) {
-    document.getElementById('connectionBar').classList.toggle('hidden', !show);
+    const bar = document.getElementById('connectionBar');
+    if (bar) bar.classList.toggle('hidden', !show);
 }
 
 async function ensureConnected() {
@@ -419,24 +421,31 @@ async function ensureConnected() {
 // ===== UI HELPERS =====
 function showError(id, msg) {
     const el = document.getElementById(id);
-    el.textContent = msg;
-    el.classList.remove('hidden');
+    if (el) {
+        el.textContent = msg;
+        el.classList.remove('hidden');
+    }
 }
 
 function hideError(id) {
-    document.getElementById(id).classList.add('hidden');
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
 }
 
 function setButtonLoading(btnId, loading, originalText) {
     const btn = document.getElementById(btnId);
-    btn.disabled = loading;
-    btn.innerHTML = loading ? `<span class="spinner"></span> Memproses...` : originalText;
+    if (btn) {
+        btn.disabled = loading;
+        btn.innerHTML = loading ? `<span class="spinner"></span> Memproses...` : originalText;
+    }
 }
 
 function log(msg) {
     const box = document.getElementById('logBox');
-    box.textContent = msg;
-    box.scrollTop = box.scrollHeight;
+    if (box) {
+        box.textContent = msg;
+        box.scrollTop = box.scrollHeight;
+    }
 }
 
 // ===== FILE HANDLING =====
@@ -454,10 +463,12 @@ window.handleFile = function(input, type) {
     
     const reader = new FileReader();
     reader.onload = (e) => {
-        preview.src = e.target.result;
-        preview.classList.remove('hidden');
-        placeholder.classList.add('hidden');
-        zone.classList.add('has-file');
+        if (preview) {
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+        }
+        if (placeholder) placeholder.classList.add('hidden');
+        if (zone) zone.classList.add('has-file');
     };
     reader.readAsDataURL(file);
 };
@@ -465,9 +476,6 @@ window.handleFile = function(input, type) {
 // ===== EXTRACT URL =====
 function extractUrl(item) {
     if (!item) return null;
-    
-    console.log("📦 Raw item:", item);
-    
     if (typeof item === 'string') return item;
     
     if (typeof item === 'object') {
@@ -484,8 +492,7 @@ function extractUrl(item) {
 // ===== RENDER GALLERY =====
 function renderGallery(images) {
     const gallery = document.getElementById('gallery');
-    
-    console.log("🖼️ Raw images data:", images);
+    if (!gallery) return;
     
     if (!images || (Array.isArray(images) && images.length === 0)) {
         console.log("⚠️ No images to render");
@@ -499,7 +506,6 @@ function renderGallery(images) {
     
     imgArray.forEach((img, i) => {
         const url = extractUrl(img);
-        console.log(`  Image ${i}:`, url);
         
         if (url) {
             const imgEl = document.createElement('img');
@@ -519,34 +525,69 @@ function renderGallery(images) {
 
 function showVideo(url) {
     if (!url) return;
-    console.log("🎬 Video URL:", url);
-    document.getElementById('videoPlaceholder').classList.add('hidden');
+    const placeholder = document.getElementById('videoPlaceholder');
     const player = document.getElementById('videoPlayer');
-    player.src = url;
-    player.classList.remove('hidden');
+    if (placeholder) placeholder.classList.add('hidden');
+    if (player) {
+        player.src = url;
+        player.classList.remove('hidden');
+    }
 }
 
 function showAudio(url) {
     if (!url) return;
-    console.log("🔊 Audio URL:", url);
-    document.getElementById('audioPlaceholder').classList.add('hidden');
+    const placeholder = document.getElementById('audioPlaceholder');
     const player = document.getElementById('audioPlayer');
-    player.src = url;
-    player.classList.remove('hidden');
+    if (placeholder) placeholder.classList.add('hidden');
+    if (player) {
+        player.src = url;
+        player.classList.remove('hidden');
+    }
 }
 
 function resetOutputs() {
-    document.getElementById('gallery').innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Memproses...</div>';
-    document.getElementById('videoPlaceholder').classList.remove('hidden');
-    document.getElementById('videoPlayer').classList.add('hidden');
-    document.getElementById('audioPlaceholder').classList.remove('hidden');
-    document.getElementById('audioPlayer').classList.add('hidden');
+    const gallery = document.getElementById('gallery');
+    const videoPlaceholder = document.getElementById('videoPlaceholder');
+    const videoPlayer = document.getElementById('videoPlayer');
+    const audioPlaceholder = document.getElementById('audioPlaceholder');
+    const audioPlayer = document.getElementById('audioPlayer');
+    
+    if (gallery) gallery.innerHTML = '<div class="col-span-3 text-center text-muted text-sm py-8">Memproses...</div>';
+    if (videoPlaceholder) videoPlaceholder.classList.remove('hidden');
+    if (videoPlayer) videoPlayer.classList.add('hidden');
+    if (audioPlaceholder) audioPlaceholder.classList.remove('hidden');
+    if (audioPlayer) audioPlayer.classList.add('hidden');
 }
 
-// ===== LOGIN =====
+// ✨ HELPER: Validasi user data dari backend
+function isValidUserData(userData) {
+    // Cek apakah userData adalah object yang valid dengan data yang diperlukan
+    if (!userData) return false;
+    if (typeof userData !== 'object') return false;
+    if (Array.isArray(userData)) return false;
+    
+    // Cek apakah object kosong
+    if (Object.keys(userData).length === 0) return false;
+    
+    // Cek apakah ada field wajib (gemini_refresh_cookie)
+    if (!userData.gemini_refresh_cookie) return false;
+    
+    return true;
+}
+
+// ✨ HELPER: Ambil nilai input dengan aman
+function getInputValue(id) {
+    const el = document.getElementById(id);
+    return el ? (el.value || '').trim() : '';
+}
+
+// ===== LOGIN - DIPERBAIKI =====
 window.doLogin = async function() {
-    const password = document.getElementById('inputPassword').value.trim();
-    if (!password) return showError('loginError', '⚠️ Password harus diisi');
+    const password = getInputValue('inputPassword');
+    
+    if (!password) {
+        return showError('loginError', '⚠️ Password harus diisi');
+    }
     
     hideError('loginError');
     setButtonLoading('btnLogin', true, 'Masuk');
@@ -554,16 +595,22 @@ window.doLogin = async function() {
     try {
         await ensureConnected();
         const result = await client.predict("/handle_login", [password]);
+        
         console.log("🔐 Login result:", result.data);
         
         const [userData, , , statusMsg] = result.data;
         
-        if (userData) {
+        // ✨ VALIDASI YANG LEBIH KETAT
+        if (isValidUserData(userData)) {
             currentUser = userData;
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainSection').classList.remove('hidden');
+            console.log("✅ Login berhasil");
         } else {
+            // Login gagal
+            currentUser = null;
             showError('loginError', statusMsg || '❌ Password salah');
+            console.log("❌ Login gagal:", statusMsg);
         }
     } catch (e) {
         console.error("Login error:", e);
@@ -573,26 +620,45 @@ window.doLogin = async function() {
     }
 };
 
-document.getElementById('inputPassword').addEventListener('keypress', (e) => {
+document.getElementById('inputPassword')?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') doLogin();
 });
 
-// ===== IMAGES ONLY - UPDATED DENGAN STYLE =====
+// ===== IMAGES ONLY - DIPERBAIKI =====
 window.doImagesOnly = async function() {
     if (!currentUser) return alert('Login dulu!');
     if (!fileProduk) return alert('Upload foto produk dulu!');
     
     setButtonLoading('btnImages', true, '🖼️ Gambar Saja');
-    log('🖼️ Memproses gambar...');
     
-    // ✨ Ambil nilai style
-    const stylePreset = document.getElementById('stylePreset').value;
-    const customStyle = document.getElementById('customStyle').value;
+    // ✨ Ambil semua nilai dengan helper function
+    const nama = getInputValue('inputNama');
+    const harga = getInputValue('inputHarga');
+    const kelebihan = getInputValue('inputKelebihan');
+    const stylePreset = getInputValue('stylePreset') || 'Default (Auto)';
+    const customStyle = getInputValue('customStyle');
     
-    // Log style jika ada
-    if (stylePreset !== 'Default (Auto)' || customStyle) {
-        log('🖼️ Memproses gambar...\n🎨 Style: ' + stylePreset + (customStyle ? '\n✏️ ' + customStyle : ''));
+    // ✨ DEBUG LOG - Lihat di Console Browser (F12)
+    console.log("📤 [IMAGES] Sending data:");
+    console.log("  - nama:", nama);
+    console.log("  - harga:", harga);
+    console.log("  - kelebihan:", kelebihan);
+    console.log("  - stylePreset:", stylePreset);
+    console.log("  - customStyle:", customStyle);
+    
+    // Validasi nama produk
+    if (!nama) {
+        setButtonLoading('btnImages', false, '🖼️ Gambar Saja');
+        return alert('Nama produk harus diisi!');
     }
+    
+    // Log awal
+    let initLog = '🖼️ Memproses gambar...\n';
+    initLog += '📦 Produk: ' + nama + '\n';
+    if (stylePreset !== 'Default (Auto)' || customStyle) {
+        initLog += '🎨 Style: ' + stylePreset + (customStyle ? '\n✏️ ' + customStyle : '');
+    }
+    log(initLog);
     
     try {
         await ensureConnected();
@@ -601,12 +667,12 @@ window.doImagesOnly = async function() {
             currentUser,
             fileProduk,
             fileModel,
-            document.getElementById('inputNama').value,
-            document.getElementById('inputHarga').value,
-            document.getElementById('inputKelebihan').value,
-            stylePreset,    // ✨ PARAMETER BARU
-            customStyle,    // ✨ PARAMETER BARU
-            _t()
+            nama,           // index 3 - Nama Produk
+            harga,          // index 4 - Harga
+            kelebihan,      // index 5 - Kelebihan
+            stylePreset,    // index 6 - Style Preset
+            customStyle,    // index 7 - Custom Style
+            _t()            // index 8 - Token
         ]);
         
         console.log("📸 Images result:", result.data);
@@ -623,23 +689,41 @@ window.doImagesOnly = async function() {
     }
 };
 
-// ===== FULL PIPELINE - UPDATED DENGAN STYLE =====
+// ===== FULL PIPELINE - DIPERBAIKI =====
 window.doFullPipeline = async function() {
     if (!currentUser) return alert('Login dulu!');
     if (!fileProduk) return alert('Upload foto produk dulu!');
     
-    const animOrder = document.querySelector('input[name="animOrder"]:checked').value;
     const btnFull = document.getElementById('btnFull');
     
-    // ✨ Ambil nilai style
-    const stylePreset = document.getElementById('stylePreset').value;
-    const customStyle = document.getElementById('customStyle').value;
+    // ✨ Ambil semua nilai dengan helper function
+    const nama = getInputValue('inputNama');
+    const harga = getInputValue('inputHarga');
+    const kelebihan = getInputValue('inputKelebihan');
+    const stylePreset = getInputValue('stylePreset') || 'Default (Auto)';
+    const customStyle = getInputValue('customStyle');
+    const animOrder = document.querySelector('input[name="animOrder"]:checked')?.value || 'veo_first';
+    
+    // ✨ DEBUG LOG - Lihat di Console Browser (F12)
+    console.log("📤 [PIPELINE] Sending data:");
+    console.log("  - nama:", nama);
+    console.log("  - harga:", harga);
+    console.log("  - kelebihan:", kelebihan);
+    console.log("  - stylePreset:", stylePreset);
+    console.log("  - customStyle:", customStyle);
+    console.log("  - animOrder:", animOrder);
+    
+    // Validasi nama produk
+    if (!nama) {
+        return alert('Nama produk harus diisi!');
+    }
     
     btnFull.disabled = true;
     btnFull.innerHTML = '<span class="spinner"></span> Memproses...';
     
-    // Log awal dengan info style
+    // Log awal
     let initLog = '🚀 Memulai Full Pipeline...\n';
+    initLog += '📦 Produk: ' + nama + '\n';
     if (stylePreset !== 'Default (Auto)' || customStyle) {
         initLog += '🎨 Style: ' + stylePreset + (customStyle ? '\n✏️ ' + customStyle : '') + '\n';
     }
@@ -653,13 +737,13 @@ window.doFullPipeline = async function() {
             currentUser,
             fileProduk,
             fileModel,
-            document.getElementById('inputNama').value,
-            document.getElementById('inputHarga').value,
-            document.getElementById('inputKelebihan').value,
-            stylePreset,    // ✨ PARAMETER BARU
-            customStyle,    // ✨ PARAMETER BARU
-            animOrder,
-            _t()
+            nama,           // index 3 - Nama Produk
+            harga,          // index 4 - Harga
+            kelebihan,      // index 5 - Kelebihan
+            stylePreset,    // index 6 - Style Preset
+            customStyle,    // index 7 - Custom Style
+            animOrder,      // index 8 - Animation Order
+            _t()            // index 9 - Token
         ]);
         
         for await (const event of job) {
@@ -678,6 +762,7 @@ window.doFullPipeline = async function() {
         }
         
     } catch (e) {
+        console.error("Pipeline error:", e);
         log('❌ Error: ' + e.message);
     }
     
