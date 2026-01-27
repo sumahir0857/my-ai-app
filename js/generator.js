@@ -56,10 +56,30 @@ async function loadUserStats() {
             const stats = data[0];
             const planEl = document.getElementById('user-plan');
             const remainingEl = document.getElementById('user-remaining');
+            const animationHint = document.getElementById('animation-order-hint');
             
             if (planEl) planEl.textContent = stats.plan_name || 'Free';
             if (remainingEl) {
                 remainingEl.textContent = stats.daily_limit === -1 ? '∞' : stats.remaining;
+            }
+            
+            // Update hint berdasarkan plan
+            if (animationHint) {
+                if (stats.daily_limit === 1 || (stats.plan_name || '').toLowerCase() === 'free') {
+                    animationHint.textContent = '⚠️ Free plan hanya bisa menggunakan Grok (lebih cepat)';
+                    // Disable dropdown untuk free user
+                    const animationSelect = document.getElementById('input-animation-order');
+                    if (animationSelect) {
+                        animationSelect.value = 'grok_first';
+                        animationSelect.disabled = true;
+                    }
+                } else {
+                    animationHint.textContent = 'VEO 3.1 menghasilkan kualitas lebih bagus tapi lebih lambat';
+                    const animationSelect = document.getElementById('input-animation-order');
+                    if (animationSelect) {
+                        animationSelect.disabled = false;
+                    }
+                }
             }
         }
     } catch (error) {
@@ -138,7 +158,17 @@ function renderJobs() {
 
 function createJobCard(job) {
     const input = job.input_data || {};
-    const results = job.results || {};
+    
+    // ========== FIX: Parse results jika berupa string ==========
+    let results = job.results || {};
+    if (typeof results === 'string') {
+        try {
+            results = JSON.parse(results);
+        } catch (e) {
+            results = {};
+        }
+    }
+    
     const date = new Date(job.created_at).toLocaleDateString('id-ID', {
         day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
     });
@@ -274,10 +304,12 @@ async function submitJob(event) {
             pros: document.getElementById('input-pros').value.trim(),
             style_preset: document.getElementById('input-style').value,
             custom_style: document.getElementById('input-custom-style')?.value?.trim() || '',
-            animation_order: document.getElementById('input-animation-order').value,
+            animation_order: document.getElementById('input-animation-order')?.value || 'grok_first',
             product_image_url: productUrl,
             model_image_url: modelUrl
         };
+        
+        console.log('Submitting job with data:', inputData);
         
         // Insert job
         const { error: insertError } = await supabaseClient
@@ -342,14 +374,27 @@ function switchTab(tabName) {
     });
 }
 
-// Job modal
+// Job modal - FIXED VERSION
 function openJobModal(jobId) {
     const job = userJobs.find(j => j.id === jobId);
     if (!job) return;
     
     const modal = document.getElementById('job-modal');
     const input = job.input_data || {};
-    const results = job.results || {};
+    
+    // ========== FIX: Parse results jika berupa string ==========
+    let results = job.results || {};
+    if (typeof results === 'string') {
+        try {
+            results = JSON.parse(results);
+        } catch (e) {
+            console.error('Failed to parse results:', e);
+            results = {};
+        }
+    }
+    
+    console.log('Opening modal for job:', jobId);
+    console.log('Results:', results);
     
     document.getElementById('modal-title').textContent = input.product_name || 'Detail Job';
     document.getElementById('modal-status').textContent = job.status;
@@ -360,74 +405,129 @@ function openJobModal(jobId) {
     const errorSection = document.getElementById('modal-error');
     
     if (['pending', 'processing'].includes(job.status)) {
-        progressSection.style.display = 'block';
-        resultsSection.style.display = 'none';
-        errorSection.style.display = 'none';
+        if (progressSection) progressSection.style.display = 'block';
+        if (resultsSection) resultsSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'none';
         
-        document.getElementById('modal-progress-fill').style.width = `${job.progress_percent || 0}%`;
-        document.getElementById('modal-progress-percent').textContent = `${job.progress_percent || 0}%`;
-        document.getElementById('modal-step').textContent = job.step_name || 'Menunggu...';
-        document.getElementById('modal-steps').textContent = `Step ${job.current_step || 0} / ${job.total_steps || 8}`;
+        const progressFill = document.getElementById('modal-progress-fill');
+        const progressPercent = document.getElementById('modal-progress-percent');
+        const stepEl = document.getElementById('modal-step');
+        const stepsEl = document.getElementById('modal-steps');
+        
+        if (progressFill) progressFill.style.width = `${job.progress_percent || 0}%`;
+        if (progressPercent) progressPercent.textContent = `${job.progress_percent || 0}%`;
+        if (stepEl) stepEl.textContent = job.step_name || 'Menunggu...';
+        if (stepsEl) stepsEl.textContent = `Step ${job.current_step || 0} / ${job.total_steps || 8}`;
         
     } else if (job.status === 'completed') {
-        progressSection.style.display = 'none';
-        resultsSection.style.display = 'block';
-        errorSection.style.display = 'none';
+        if (progressSection) progressSection.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'block';
+        if (errorSection) errorSection.style.display = 'none';
         
-        // Images
+        // ========== IMAGES ==========
         const imagesContainer = document.getElementById('modal-images');
-        if (results.images && results.images.length > 0) {
-            imagesContainer.innerHTML = results.images.map(url => 
-                `<a href="${url}" target="_blank" class="result-image"><img src="${url}" alt="Result"></a>`
-            ).join('');
-            imagesContainer.parentElement.style.display = 'block';
-        } else {
-            imagesContainer.parentElement.style.display = 'none';
+        if (imagesContainer) {
+            const imagesSection = imagesContainer.closest('.result-section') || imagesContainer.parentElement;
+            if (results.images && results.images.length > 0) {
+                imagesContainer.innerHTML = results.images.map((url, i) => 
+                    `<div class="result-item">
+                        <a href="${url}" target="_blank">
+                            <img src="${url}" alt="Result ${i+1}" loading="lazy">
+                        </a>
+                        <a href="${url}" download="image_${i+1}.jpg" class="download-link">⬇️ Download</a>
+                    </div>`
+                ).join('');
+                if (imagesSection) imagesSection.style.display = 'block';
+            } else {
+                if (imagesSection) imagesSection.style.display = 'none';
+            }
         }
         
-        // Videos
+        // ========== VIDEOS ==========
         const videosContainer = document.getElementById('modal-videos');
-        if (results.videos && results.videos.length > 0) {
-            videosContainer.innerHTML = results.videos.map(url => 
-                `<video src="${url}" controls class="result-video"></video>`
-            ).join('');
-            videosContainer.parentElement.style.display = 'block';
-        } else {
-            videosContainer.parentElement.style.display = 'none';
+        if (videosContainer) {
+            const videosSection = videosContainer.closest('.result-section') || videosContainer.parentElement;
+            if (results.videos && results.videos.length > 0) {
+                videosContainer.innerHTML = results.videos.map((url, i) => 
+                    `<div class="result-item">
+                        <video src="${url}" controls preload="metadata"></video>
+                        <a href="${url}" download="video_${i+1}.mp4" class="download-link" target="_blank">⬇️ Download</a>
+                    </div>`
+                ).join('');
+                if (videosSection) videosSection.style.display = 'block';
+            } else {
+                if (videosSection) videosSection.style.display = 'none';
+            }
         }
         
-        // Final video
+        // ========== FINAL VIDEO ==========
         const finalVideoEl = document.getElementById('modal-final-video');
-        if (results.final_video) {
-            finalVideoEl.src = results.final_video;
-            finalVideoEl.parentElement.style.display = 'block';
-        } else {
-            finalVideoEl.parentElement.style.display = 'none';
+        if (finalVideoEl) {
+            const finalVideoSection = finalVideoEl.closest('.result-section') || finalVideoEl.parentElement;
+            if (results.final_video) {
+                finalVideoEl.src = results.final_video;
+                if (finalVideoSection) {
+                    finalVideoSection.style.display = 'block';
+                    // Add/update download link
+                    let downloadLink = finalVideoSection.querySelector('.download-link');
+                    if (!downloadLink) {
+                        downloadLink = document.createElement('a');
+                        downloadLink.className = 'download-link';
+                        finalVideoSection.appendChild(downloadLink);
+                    }
+                    downloadLink.href = results.final_video;
+                    downloadLink.download = 'final_video.mp4';
+                    downloadLink.target = '_blank';
+                    downloadLink.textContent = '⬇️ Download Video Final';
+                }
+            } else {
+                if (finalVideoSection) finalVideoSection.style.display = 'none';
+            }
         }
         
-        // Audio
+        // ========== AUDIO ==========
         const audioEl = document.getElementById('modal-audio');
-        if (results.audio) {
-            audioEl.src = results.audio;
-            audioEl.parentElement.style.display = 'block';
-        } else {
-            audioEl.parentElement.style.display = 'none';
+        if (audioEl) {
+            const audioSection = audioEl.closest('.result-section') || audioEl.parentElement;
+            if (results.audio) {
+                audioEl.src = results.audio;
+                if (audioSection) {
+                    audioSection.style.display = 'block';
+                    let downloadLink = audioSection.querySelector('.download-link');
+                    if (!downloadLink) {
+                        downloadLink = document.createElement('a');
+                        downloadLink.className = 'download-link';
+                        audioSection.appendChild(downloadLink);
+                    }
+                    downloadLink.href = results.audio;
+                    downloadLink.download = 'audio.mp3';
+                    downloadLink.target = '_blank';
+                    downloadLink.textContent = '⬇️ Download Audio';
+                }
+            } else {
+                if (audioSection) audioSection.style.display = 'none';
+            }
         }
         
-        // Script
+        // ========== SCRIPT ==========
         const scriptEl = document.getElementById('modal-script');
-        if (results.script) {
-            scriptEl.textContent = results.script;
-            scriptEl.parentElement.style.display = 'block';
-        } else {
-            scriptEl.parentElement.style.display = 'none';
+        if (scriptEl) {
+            const scriptSection = scriptEl.closest('.result-section') || scriptEl.parentElement;
+            if (results.script) {
+                scriptEl.textContent = results.script;
+                if (scriptSection) scriptSection.style.display = 'block';
+            } else {
+                if (scriptSection) scriptSection.style.display = 'none';
+            }
         }
         
     } else if (job.status === 'failed') {
-        progressSection.style.display = 'none';
-        resultsSection.style.display = 'none';
-        errorSection.style.display = 'block';
-        document.getElementById('modal-error-msg').textContent = job.error_message || 'Terjadi kesalahan tidak diketahui';
+        if (progressSection) progressSection.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'block';
+        
+        const errorMsg = document.getElementById('modal-error-msg');
+        if (errorMsg) errorMsg.textContent = job.error_message || 'Terjadi kesalahan tidak diketahui';
     }
     
     modal.classList.add('active');
@@ -435,7 +535,8 @@ function openJobModal(jobId) {
 }
 
 function closeJobModal() {
-    document.getElementById('job-modal').classList.remove('active');
+    const modal = document.getElementById('job-modal');
+    if (modal) modal.classList.remove('active');
     document.body.style.overflow = '';
 }
 
@@ -459,17 +560,6 @@ function setupImageUpload(inputId, previewId) {
             preview.style.display = 'none';
         }
     });
-}
-
-// Download result
-function downloadResult(url, filename) {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename || 'result';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
 }
 
 // Initialize on page load
@@ -501,6 +591,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.id === 'job-modal') closeJobModal();
         });
     }
+    
+    // ESC key to close modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeJobModal();
+    });
     
     // Style dropdown
     const styleSelect = document.getElementById('input-style');
