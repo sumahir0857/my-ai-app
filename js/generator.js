@@ -43,7 +43,7 @@ async function loadUserStats() {
         const user = getCurrentUser();
         if (!user) return;
         
-        const { data, error } = await supabaseClient.rpc('check_limit', {
+        const { data, error } = await supabase.rpc('check_limit', {
             p_user_id: user.id
         });
         
@@ -73,7 +73,7 @@ async function loadJobs() {
         const user = getCurrentUser();
         if (!user) return;
         
-        const { data: jobs, error } = await supabaseClient
+        const { data: jobs, error } = await supabase
             .from('jobs')
             .select('*')
             .eq('user_id', user.id)
@@ -213,7 +213,7 @@ async function submitJob(event) {
     
     // Check limit
     try {
-        const { data: limitData, error: limitError } = await supabaseClient.rpc('check_limit', {
+        const { data: limitData, error: limitError } = await supabase.rpc('check_limit', {
             p_user_id: user.id
         });
         
@@ -237,13 +237,13 @@ async function submitJob(event) {
         const productFile = productInput.files[0];
         const productPath = `uploads/${user.id}/${Date.now()}_product.${productFile.name.split('.').pop()}`;
         
-        const { error: uploadError } = await supabaseClient.storage
+        const { error: uploadError } = await supabase.storage
             .from('results')
             .upload(productPath, productFile);
         
         if (uploadError) throw uploadError;
         
-        const { data: { publicUrl: productUrl } } = supabaseClient.storage
+        const { data: { publicUrl: productUrl } } = supabase.storage
             .from('results')
             .getPublicUrl(productPath);
         
@@ -254,12 +254,12 @@ async function submitJob(event) {
             const modelFile = modelInput.files[0];
             const modelPath = `uploads/${user.id}/${Date.now()}_model.${modelFile.name.split('.').pop()}`;
             
-            const { error: modelUploadError } = await supabaseClient.storage
+            const { error: modelUploadError } = await supabase.storage
                 .from('results')
                 .upload(modelPath, modelFile);
             
             if (!modelUploadError) {
-                const { data: { publicUrl } } = supabaseClient.storage
+                const { data: { publicUrl } } = supabase.storage
                     .from('results')
                     .getPublicUrl(modelPath);
                 modelUrl = publicUrl;
@@ -280,7 +280,7 @@ async function submitJob(event) {
         };
         
         // Insert job
-        const { error: insertError } = await supabaseClient
+        const { error: insertError } = await supabase
             .from('jobs')
             .insert({
                 user_id: user.id,
@@ -530,5 +530,3 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addEventListener('beforeunload', () => {
     stopPolling();
 });
-
-console.log('✅ Generator.js loaded successfully');
