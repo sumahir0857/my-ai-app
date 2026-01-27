@@ -192,15 +192,14 @@
                                 </select>
                             </div>
                             
-                            <div class="form-group">
-                                <label for="input-animation-order">Urutan Video</label>
-                                <select id="input-animation-order">
-                                    <option value="Gambar > Animasi > Video">Gambar → Animasi → Video</option>
-                                    <option value="Gambar > Video > Audio">Gambar → Video → Audio</option>
-                                    <option value="Hook > Demo > CTA">Hook → Demo → CTA</option>
-                                </select>
-                            </div>
-                        </div>
+                          <div class="form-group">
+                              <label for="input-animation-order">Urutan Video Generator</label>
+                              <select id="input-animation-order" class="form-select">
+                                  <option value="veo_first">VEO 3.1 dulu → Grok (Kualitas Tinggi)</option>
+                                  <option value="grok_first">Grok dulu → VEO 3.1 (Lebih Cepat)</option>
+                               </select>
+                             <small class="form-hint">VEO 3.1 menghasilkan kualitas lebih bagus tapi lebih lambat</small>
+                         </div>
 
                         <div class="form-group" id="custom-style-group" style="display: none;">
                             <label for="input-custom-style">Custom Style</label>
