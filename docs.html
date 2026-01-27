@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Docs - OrbitBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Space Grotesk', sans-serif; }
+        body { background: #050510; }
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .page-transition { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .sidebar-link.active { background: rgba(139, 92, 246, 0.2); border-left: 3px solid #8b5cf6; }
+        .prose h2 { font-size: 1.5rem; font-weight: 600; margin-top: 2rem; margin-bottom: 1rem; }
+        .prose h3 { font-size: 1.25rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        .prose p { margin-bottom: 1rem; color: #94a3b8; line-height: 1.75; }
+        .prose ul, .prose ol { margin-bottom: 1rem; padding-left: 1.5rem; color: #94a3b8; }
+        .prose li { margin-bottom: 0.5rem; }
+        .prose ol { list-style-type: decimal; }
+        .prose ul { list-style-type: disc; }
+    </style>
+</head>
+<body class="text-white page-transition">
+    <div class="stars" id="stars"></div>
+    
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <a href="index.html" class="flex items-center space-x-2 text-xl font-bold">
+                    <span class="text-2xl">🛰️</span>
+                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="tools.html" class="text-slate-300 hover:text-white transition">Tools</a>
+                    <a href="showcase.html" class="text-slate-300 hover:text-white transition">Showcase</a>
+                    <a href="pricing.html" class="text-slate-300 hover:text-white transition">Pricing</a>
+                    <a href="docs.html" class="text-white font-medium">Docs</a>
+                    <a href="generator.html" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-medium hover:opacity-90 transition transform hover:scale-105">🚀 Generate UGC</a>
+                </div>
+                <button id="menuBtn" class="md:hidden text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-3 glass rounded-xl p-4 mt-2">
+                    <a href="tools.html" class="text-slate-300 hover:text-white transition py-2">Tools</a>
+                    <a href="showcase.html" class="text-slate-300 hover:text-white transition py-2">Showcase</a>
+                    <a href="pricing.html" class="text-slate-300 hover:text-white transition py-2">Pricing</a>
+                    <a href="docs.html" class="text-white font-medium py-2">Docs</a>
+                    <a href="#" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-medium text-center">Launch App →</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-20 relative z-10 min-h-screen flex">
+        <!-- Mobile Sidebar Toggle -->
+        <button id="sidebarToggle" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-purple-600 rounded-full flex items-center justify-center shadow-lg z-50">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="hidden lg:block w-72 fixed left-0 top-20 bottom-0 overflow-y-auto border-r border-white/10 bg-[#050510]/95 backdrop-blur-xl">
+            <div class="p-6">
+                <!-- Search -->
+                <div class="relative mb-6">
+                    <input type="text" placeholder="Search docs..." class="w-full px-4 py-2 pl-10 glass rounded-lg text-sm bg-transparent outline-none focus:ring-1 focus:ring-purple-500">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+
+                <!-- Nav -->
+                <nav class="space-y-6">
+                    <!-- Getting Started -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">🚀 Getting Started</h4>
+                        <ul class="space-y-1">
+                            <li><a href="#apa-itu" class="sidebar-link active block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Apa itu OrbitBot</a></li>
+                            <li><a href="#cara-daftar" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Cara Daftar</a></li>
+                            <li><a href="#dashboard" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Dashboard Overview</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Video Affiliate -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">🎬 Video Affiliate Tool</h4>
+                        <ul class="space-y-1">
+                            <li><a href="#video-cara" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Cara Pakai</a></li>
+                            <li><a href="#video-tips" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Tips Hasil Bagus</a></li>
+                            <li><a href="#video-trouble" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Troubleshooting</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Image Generator -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">🖼️ Image Generator</h4>
+                        <ul class="space-y-1">
+                            <li><a href="#image-cara" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Cara Pakai</a></li>
+                            <li><a href="#prompt-tips" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Prompt Tips</a></li>
+                            <li><a href="#style-guide" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Style Guide</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Billing -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">💰 Billing</h4>
+                        <ul class="space-y-1">
+                            <li><a href="#cara-bayar" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Cara Bayar</a></li>
+                            <li><a href="#upgrade" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Upgrade/Downgrade</a></li>
+                            <li><a href="#invoice" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">Invoice</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- Other -->
+                    <div>
+                        <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Lainnya</h4>
+                        <ul class="space-y-1">
+                            <li><a href="pricing.html#faq" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">❓ FAQ</a></li>
+                            <li><a href="#contact" class="sidebar-link block px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition text-sm">📞 Contact Support</a></li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-72 min-h-screen">
+            <div class="max-w-4xl mx-auto px-6 py-12">
+                <!-- Breadcrumb -->
+                <nav class="flex items-center space-x-2 text-sm text-slate-500 mb-8 reveal">
+                    <a href="docs.html" class="hover:text-white transition">Docs</a>
+                    <span>/</span>
+                    <span class="text-slate-300">Getting Started</span>
+                    <span>/</span>
+                    <span class="text-purple-400">Apa itu OrbitBot</span>
+                </nav>
+
+                <!-- Content -->
+                <article class="prose reveal">
+                    <h1 id="apa-itu" class="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                        Apa itu OrbitBot?
+                    </h1>
+                    
+                    <p>
+                        OrbitBot adalah platform AI tools all-in-one yang membantu kamu membuat konten kreatif dengan mudah dan cepat. Dari video affiliate hingga image generation, semua tersedia dalam satu ecosystem.
+                    </p>
+
+                    <!-- Info Box -->
+                    <div class="glass rounded-xl p-4 mb-6 border-l-4 border-purple-500">
+                        <div class="flex items-start gap-3">
+                            <span class="text-purple-400 text-xl">💡</span>
+                            <div>
+                                <p class="text-white font-medium mb-1">Tip</p>
+                                <p class="text-sm mb-0">OrbitBot perfect untuk content creator, affiliate marketer, dan siapa saja yang ingin membuat konten AI berkualitas.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Fitur Utama</h2>
+                    <ul>
+                        <li><strong>Video Affiliate Generator</strong> - Buat video promosi dari link produk secara otomatis</li>
+                        <li><strong>Image Generator</strong> - Generate gambar dari text dengan berbagai style</li>
+                        <li><strong>Background Remover</strong> - Hapus background gambar dengan AI</li>
+                        <li><strong>Coming Soon</strong> - Voice Generator, AI Avatar, Music Generator</li>
+                    </ul>
+
+                    <h2 id="cara-daftar">Cara Daftar</h2>
+                    <p>Mendaftar di OrbitBot sangat mudah:</p>
+                    <ol>
+                        <li>Kunjungi <a href="#" class="text-purple-400 hover:underline">orbitbot.com</a></li>
+                        <li>Klik tombol <strong>"Launch App"</strong> di navbar</li>
+                        <li>Pilih metode login: Google, Email, atau Discord</li>
+                        <li>Lengkapi profil sederhana</li>
+                        <li>Selesai! Kamu langsung mendapat akses Starter plan gratis</li>
+                    </ol>
+
+                    <!-- Screenshot placeholder -->
+                    <div class="glass rounded-xl p-8 mb-6 text-center">
+                        <div class="text-6xl mb-4">📸</div>
+                        <p class="text-slate-500 mb-0 text-sm">Screenshot: Halaman Login OrbitBot</p>
+                    </div>
+
+                    <h2 id="dashboard">Dashboard Overview</h2>
+                    <p>Setelah login, kamu akan melihat dashboard dengan beberapa bagian:</p>
+
+                    <h3>1. Navigation Bar</h3>
+                    <p>Di bagian atas, kamu bisa mengakses semua tools, melihat kuota tersisa, dan mengatur akun.</p>
+
+                    <h3>2. Tools Grid</h3>
+                    <p>Bagian utama yang menampilkan semua tools yang tersedia. Klik tool yang ingin kamu gunakan.</p>
+
+                    <h3>3. Recent Creations</h3>
+                    <p>Menampilkan hasil kreasi terbarumu. Kamu bisa download ulang atau share dari sini.</p>
+
+                    <h3>4. Usage Stats</h3>
+                    <p>Lihat berapa kuota yang sudah dipakai dan sisa kuota bulan ini.</p>
+
+                    <!-- Warning Box -->
+                    <div class="glass rounded-xl p-4 mb-6 border-l-4 border-yellow-500">
+                        <div class="flex items-start gap-3">
+                            <span class="text-yellow-400 text-xl">⚠️</span>
+                            <div>
+                                <p class="text-white font-medium mb-1">Perhatian</p>
+                                <p class="text-sm mb-0">Kuota tidak bisa diakumulasi ke bulan berikutnya. Pastikan memanfaatkan kuota sebelum reset di awal bulan.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2 id="video-cara">Cara Pakai Video Affiliate Tool</h2>
+                    <p>Video Affiliate Tool adalah fitur andalan OrbitBot untuk membuat video promosi produk:</p>
+                    <ol>
+                        <li>Buka tool <strong>Video Affiliate Generator</strong></li>
+                        <li>Paste link produk dari Shopee, Tokopedia, atau TikTok Shop</li>
+                        <li>Pilih template video yang diinginkan</li>
+                        <li>Customize text, musik, dan voice over (opsional)</li>
+                        <li>Klik <strong>"Generate Video"</strong></li>
+                        <li>Tunggu proses render (biasanya 1-3 menit)</li>
+                        <li>Download hasil video</li>
+                    </ol>
+
+                    <!-- Video placeholder -->
+                    <div class="glass rounded-xl p-8 mb-6 text-center aspect-video flex items-center justify-center">
+                        <div>
+                            <div class="text-6xl mb-4">🎬</div>
+                            <p class="text-slate-500 mb-0 text-sm">Video Tutorial: Cara Pakai Video Affiliate Tool</p>
+                        </div>
+                    </div>
+
+                    <h2 id="video-tips">Tips Hasil Bagus</h2>
+                    <ul>
+                        <li>Pilih produk dengan gambar berkualitas tinggi</li>
+                        <li>Gunakan template yang sesuai dengan jenis produk</li>
+                        <li>Tambahkan voice over untuk engagement lebih baik</li>
+                        <li>Export dalam resolusi tertinggi sesuai plan kamu</li>
+                    </ul>
+
+                    <h2 id="image-cara">Cara Pakai Image Generator</h2>
+                    <p>Generate gambar berkualitas dari text prompt:</p>
+                    <ol>
+                        <li>Buka tool <strong>Image Generator</strong></li>
+                        <li>Tulis prompt deskripsi gambar yang diinginkan</li>
+                        <li>Pilih style (Realistic, Anime, 3D, dll)</li>
+                        <li>Atur aspect ratio dan jumlah gambar</li>
+                        <li>Klik <strong>"Generate"</strong></li>
+                        <li>Pilih hasil terbaik dan download</li>
+                    </ol>
+
+                    <h2 id="prompt-tips">Prompt Tips</h2>
+                    <p>Untuk hasil terbaik, ikuti tips ini:</p>
+                    <ul>
+                        <li><strong>Be specific</strong> - Semakin detail, semakin bagus hasilnya</li>
+                        <li><strong>Use quality tags</strong> - Tambahkan "high quality", "detailed", "4k"</li>
+                        <li><strong>Describe lighting</strong> - "soft lighting", "golden hour", "studio lighting"</li>
+                        <li><strong>Mention style</strong> - "cinematic", "minimalist", "vibrant colors"</li>
+                    </ul>
+
+                    <!-- Code block example -->
+                    <div class="glass rounded-xl p-4 mb-6 font-mono text-sm overflow-x-auto">
+                        <p class="text-slate-400 mb-2">// Contoh prompt bagus:</p>
+                        <p class="text-green-400 mb-0">"A futuristic city at night, neon lights, cyberpunk style, rain reflections on street, cinematic lighting, 4k, highly detailed"</p>
+                    </div>
+
+                    <h2 id="cara-bayar">Cara Bayar</h2>
+                    <p>OrbitBot mendukung berbagai metode pembayaran:</p>
+                    <ul>
+                        <li>Transfer Bank (BCA, Mandiri, BNI, BRI)</li>
+                        <li>E-Wallet (GoPay, OVO, Dana, ShopeePay)</li>
+                        <li>QRIS (Scan dari aplikasi apapun)</li>
+                        <li>Kartu Kredit/Debit (Visa, Mastercard)</li>
+                    </ul>
+
+                    <h2 id="contact">Contact Support</h2>
+                    <p>Butuh bantuan? Hubungi kami:</p>
+                    <ul>
+                        <li>📧 Email: support@orbitbot.com</li>
+                        <li>💬 Discord: discord.gg/orbitbot</li>
+                        <li>🐦 Twitter: @orbitbot_id</li>
+                    </ul>
+                </article>
+
+                <!-- Navigation -->
+                <div class="flex items-center justify-between mt-12 pt-8 border-t border-white/10 reveal">
+                    <div></div>
+                    <a href="#video-cara" class="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition">
+                        Next: Video Affiliate Tool <span>→</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <footer class="py-12 border-t border-white/10">
+                <div class="max-w-4xl mx-auto px-6 text-center">
+                    <a href="index.html" class="flex items-center justify-center space-x-2 text-xl font-bold mb-4">
+                        <span class="text-2xl">🛰️</span>
+                        <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                    </a>
+                    <p class="text-slate-500 text-sm">© 2025 OrbitBot. All rights reserved.</p>
+                </div>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Generate stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.width = Math.random() * 2 + 1 + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        // Mobile menu
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+
+        // Mobile sidebar toggle
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('inset-0');
+            sidebar.classList.toggle('z-40');
+            sidebar.classList.toggle('w-full');
+        });
+
+        // Active sidebar link
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Close mobile sidebar
+                if (window.innerWidth < 1024) {
+                    sidebar.classList.add('hidden');
+                }
+            });
+        });
+
+        // Scroll spy
+        const sections = document.querySelectorAll('h1[id], h2[id]');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 200) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal');
+        const revealOnScroll = () => {
+            reveals.forEach(el => {
+                const windowHeight = window.innerHeight;
+                const elementTop = el.getBoundingClientRect().top;
+                if (elementTop < windowHeight - 100) el.classList.add('active');
+            });
+        };
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+    </script>
+</body>
+</html>

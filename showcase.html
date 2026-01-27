@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Showcase - OrbitBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Space Grotesk', sans-serif; }
+        body { background: #050510; }
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .page-transition { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .masonry { column-count: 1; column-gap: 1rem; }
+        @media (min-width: 640px) { .masonry { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry { column-count: 3; } }
+        .masonry-item { break-inside: avoid; margin-bottom: 1rem; }
+    </style>
+</head>
+<body class="text-white page-transition">
+    <div class="stars" id="stars"></div>
+    
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <a href="index.html" class="flex items-center space-x-2 text-xl font-bold">
+                    <span class="text-2xl">🛰️</span>
+                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="tools.html" class="text-slate-300 hover:text-white transition">Tools</a>
+                    <a href="showcase.html" class="text-white font-medium">Showcase</a>
+                    <a href="pricing.html" class="text-slate-300 hover:text-white transition">Pricing</a>
+                    <a href="docs.html" class="text-slate-300 hover:text-white transition">Docs</a>
+                    <a href="generator.html" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-medium hover:opacity-90 transition transform hover:scale-105">🚀 Generate UGC</a>
+                </div>
+                <button id="menuBtn" class="md:hidden text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-3 glass rounded-xl p-4 mt-2">
+                    <a href="tools.html" class="text-slate-300 hover:text-white transition py-2">Tools</a>
+                    <a href="showcase.html" class="text-white font-medium py-2">Showcase</a>
+                    <a href="pricing.html" class="text-slate-300 hover:text-white transition py-2">Pricing</a>
+                    <a href="docs.html" class="text-slate-300 hover:text-white transition py-2">Docs</a>
+                    <a href="#" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-medium text-center">Launch App →</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="pt-32 pb-16 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                <span class="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">Showcase</span>
+            </h1>
+            <p class="text-lg text-slate-400">Karya terbaik dari komunitas OrbitBot</p>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section class="pb-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex flex-wrap gap-3">
+                    <button class="filter-btn active px-5 py-2 rounded-full text-sm font-medium bg-purple-600 text-white transition" data-filter="all">Semua</button>
+                    <button class="filter-btn px-5 py-2 rounded-full text-sm font-medium glass text-slate-300 hover:text-white transition" data-filter="video">Video</button>
+                    <button class="filter-btn px-5 py-2 rounded-full text-sm font-medium glass text-slate-300 hover:text-white transition" data-filter="image">Image</button>
+                </div>
+                <select class="glass rounded-full px-4 py-2 text-sm bg-transparent border-0 outline-none cursor-pointer">
+                    <option value="newest" class="bg-slate-800">Terbaru</option>
+                    <option value="popular" class="bg-slate-800">Populer</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- Masonry Gallery -->
+    <section class="py-8 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="masonry" id="gallery">
+                
+                <!-- Item 1 -->
+                <div class="masonry-item showcase-item reveal group" data-category="video">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show1/400/300" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Video Promo Shopee</p>
+                                    <p class="text-sm text-slate-400">by @ridwan_creator</p>
+                                </div>
+                                <span class="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs rounded-full">🎬 Video</span>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 2 -->
+                <div class="masonry-item showcase-item reveal group" data-category="image">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show2/400/500" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Cyberpunk Portrait</p>
+                                    <p class="text-sm text-slate-400">by @ai_artist</p>
+                                </div>
+                                <span class="px-2 py-1 bg-cyan-500/30 text-cyan-300 text-xs rounded-full">🖼️ Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 3 -->
+                <div class="masonry-item showcase-item reveal group" data-category="video">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show3/400/250" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">TikTok Affiliate</p>
+                                    <p class="text-sm text-slate-400">by @maya_shop</p>
+                                </div>
+                                <span class="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs rounded-full">🎬 Video</span>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 4 -->
+                <div class="masonry-item showcase-item reveal group" data-category="image">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show4/400/400" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Fantasy Landscape</p>
+                                    <p class="text-sm text-slate-400">by @dreamscape</p>
+                                </div>
+                                <span class="px-2 py-1 bg-cyan-500/30 text-cyan-300 text-xs rounded-full">🖼️ Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 5 -->
+                <div class="masonry-item showcase-item reveal group" data-category="image">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show5/400/350" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Product Mockup</p>
+                                    <p class="text-sm text-slate-400">by @brandstudio</p>
+                                </div>
+                                <span class="px-2 py-1 bg-cyan-500/30 text-cyan-300 text-xs rounded-full">🖼️ Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 6 -->
+                <div class="masonry-item showcase-item reveal group" data-category="video">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show6/400/280" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Review Skincare</p>
+                                    <p class="text-sm text-slate-400">by @beauty_id</p>
+                                </div>
+                                <span class="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs rounded-full">🎬 Video</span>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 7 -->
+                <div class="masonry-item showcase-item reveal group" data-category="image">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show7/400/600" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Anime Character</p>
+                                    <p class="text-sm text-slate-400">by @otaku_art</p>
+                                </div>
+                                <span class="px-2 py-1 bg-cyan-500/30 text-cyan-300 text-xs rounded-full">🖼️ Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 8 -->
+                <div class="masonry-item showcase-item reveal group" data-category="video">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show8/400/320" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Tokopedia Unboxing</p>
+                                    <p class="text-sm text-slate-400">by @unbox_id</p>
+                                </div>
+                                <span class="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs rounded-full">🎬 Video</span>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 9 -->
+                <div class="masonry-item showcase-item reveal group" data-category="image">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show9/400/380" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Logo Design</p>
+                                    <p class="text-sm text-slate-400">by @logo_craft</p>
+                                </div>
+                                <span class="px-2 py-1 bg-cyan-500/30 text-cyan-300 text-xs rounded-full">🖼️ Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 10 -->
+                <div class="masonry-item showcase-item reveal group" data-category="image">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show10/400/450" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Sci-Fi Scene</p>
+                                    <p class="text-sm text-slate-400">by @future_vision</p>
+                                </div>
+                                <span class="px-2 py-1 bg-cyan-500/30 text-cyan-300 text-xs rounded-full">🖼️ Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 11 -->
+                <div class="masonry-item showcase-item reveal group" data-category="video">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show11/400/260" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Food Review</p>
+                                    <p class="text-sm text-slate-400">by @foodie_id</p>
+                                </div>
+                                <span class="px-2 py-1 bg-purple-500/30 text-purple-300 text-xs rounded-full">🎬 Video</span>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Item 12 -->
+                <div class="masonry-item showcase-item reveal group" data-category="image">
+                    <div class="relative rounded-xl overflow-hidden cursor-pointer">
+                        <img src="https://picsum.photos/seed/show12/400/340" alt="Showcase" class="w-full transition-transform duration-300 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-semibold">Abstract Art</p>
+                                    <p class="text-sm text-slate-400">by @abstract_mind</p>
+                                </div>
+                                <span class="px-2 py-1 bg-cyan-500/30 text-cyan-300 text-xs rounded-full">🖼️ Image</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Load More -->
+            <div class="text-center mt-12 reveal">
+                <button class="px-8 py-3 glass rounded-full font-medium hover:bg-white/10 transition">
+                    Muat Lebih Banyak
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Submit CTA -->
+    <section class="py-20 relative z-10">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="glass rounded-2xl p-8 md:p-12 reveal">
+                <h2 class="text-2xl md:text-3xl font-bold mb-4">Punya Karya Keren? ✨</h2>
+                <p class="text-slate-400 mb-8">Submit karyamu untuk ditampilkan di showcase kami</p>
+                <a href="#" class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-full font-medium hover:opacity-90 transition transform hover:scale-105">
+                    Submit Karya <span class="ml-2">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-16 relative z-10" style="background: #030308;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-12 mb-12">
+                <div class="md:col-span-1">
+                    <a href="index.html" class="flex items-center space-x-2 text-xl font-bold mb-4">
+                        <span class="text-2xl">🛰️</span>
+                        <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                    </a>
+                    <p class="text-slate-400 text-sm">Your AI Tools Universe</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="tools.html" class="hover:text-white transition">Tools</a></li>
+                        <li><a href="showcase.html" class="hover:text-white transition">Showcase</a></li>
+                        <li><a href="pricing.html" class="hover:text-white transition">Pricing</a></li>
+                        <li><a href="docs.html" class="hover:text-white transition">Docs</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="docs.html" class="hover:text-white transition">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-purple-600/20 transition">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-purple-600/20 transition">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-purple-600/20 transition">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 text-center text-slate-500 text-sm">
+                <p>© 2025 OrbitBot. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Generate stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.width = Math.random() * 2 + 1 + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        // Navbar scroll
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) navbar.classList.add('glass');
+            else navbar.classList.remove('glass');
+        });
+
+        // Mobile menu
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+
+        // Filter
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const showcaseItems = document.querySelectorAll('.showcase-item');
+        
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => {
+                    b.classList.remove('bg-purple-600', 'text-white', 'active');
+                    b.classList.add('glass', 'text-slate-300');
+                });
+                btn.classList.add('bg-purple-600', 'text-white', 'active');
+                btn.classList.remove('glass', 'text-slate-300');
+                
+                const filter = btn.dataset.filter;
+                showcaseItems.forEach(item => {
+                    if (filter === 'all' || item.dataset.category === filter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Scroll reveal
+        const reveals = document.querySelectorAll('.reveal');
+        const revealOnScroll = () => {
+            reveals.forEach(el => {
+                const windowHeight = window.innerHeight;
+                const elementTop = el.getBoundingClientRect().top;
+                if (elementTop < windowHeight - 100) el.classList.add('active');
+            });
+        };
+        window.addEventListener('scroll', revealOnScroll);
+        revealOnScroll();
+    </script>
+</body>
+</html>

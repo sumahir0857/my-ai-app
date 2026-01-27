@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UGC Generator - OrbitBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/generator.css">
+    <style>
+        * { font-family: 'Space Grotesk', sans-serif; }
+        body { background: #050510; }
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        .page-transition { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="text-white page-transition min-h-screen">
+    <div class="stars" id="stars"></div>
+    
+    <!-- Navbar -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 glass">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <a href="index.html" class="flex items-center space-x-2 text-xl font-bold">
+                    <span class="text-2xl">🛰️</span>
+                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                </a>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="tools.html" class="text-slate-300 hover:text-white transition">Tools</a>
+                    <a href="showcase.html" class="text-slate-300 hover:text-white transition">Showcase</a>
+                    <a href="pricing.html" class="text-slate-300 hover:text-white transition">Pricing</a>
+                    <a href="docs.html" class="text-slate-300 hover:text-white transition">Docs</a>
+                    <a href="generator.html" class="text-white font-medium">Generator</a>
+                </div>
+                <button id="menuBtn" class="md:hidden text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-3 glass rounded-xl p-4 mt-2">
+                    <a href="tools.html" class="text-slate-300 hover:text-white transition py-2">Tools</a>
+                    <a href="showcase.html" class="text-slate-300 hover:text-white transition py-2">Showcase</a>
+                    <a href="pricing.html" class="text-slate-300 hover:text-white transition py-2">Pricing</a>
+                    <a href="docs.html" class="text-slate-300 hover:text-white transition py-2">Docs</a>
+                    <a href="generator.html" class="text-white font-medium py-2">Generator</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="pt-24 pb-16 relative z-10">
+        <!-- Login Section -->
+        <section id="login-section" style="display: none;">
+            <div class="login-card glass rounded-2xl p-8 md:p-12">
+                <span class="login-icon">🛰️</span>
+                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    UGC AI Generator
+                </h1>
+                <p class="text-slate-400">Login untuk mulai membuat konten UGC dengan AI</p>
+                
+                <button id="btn-login-google" class="btn-google">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Login dengan Google
+                </button>
+                
+                <p class="login-note">
+                    🔒 Aman & gratis untuk memulai
+                </p>
+            </div>
+        </section>
+
+        <!-- Generator Section -->
+        <section id="generator-section" style="display: none;" class="max-w-6xl mx-auto px-4 sm:px-6">
+            <!-- User Stats Bar -->
+            <div class="user-stats-bar">
+                <div class="user-info">
+                    <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
+                    <span id="user-name" class="user-name">Loading...</span>
+                </div>
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <div class="stat-label">Plan</div>
+                        <div class="stat-value plan" id="user-plan">-</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Sisa Hari Ini</div>
+                        <div class="stat-value" id="user-remaining">-</div>
+                    </div>
+                </div>
+                <button id="btn-logout" class="btn-logout">Logout</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs-container">
+                <div class="tabs-nav">
+                    <button class="tab-btn active" data-tab="create">
+                        ✨ Buat Baru
+                    </button>
+                    <button class="tab-btn" data-tab="active">
+                        ⚡ Sedang Proses
+                        <span class="tab-count" id="active-count">0</span>
+                    </button>
+                    <button class="tab-btn" data-tab="history">
+                        📁 Riwayat
+                        <span class="tab-count" id="history-count">0</span>
+                    </button>
+                </div>
+
+                <!-- Tab: Create -->
+                <div class="tab-panel active" id="tab-create">
+                    <div class="info-box">
+                        💡 <strong>Tips:</strong> Upload foto produk berkualitas tinggi untuk hasil terbaik. Foto model opsional tapi bisa meningkatkan kualitas video UGC.
+                    </div>
+
+                    <form id="generator-form" class="generator-form">
+                        <!-- Upload Section -->
+                        <div class="form-section-title">📸 Upload Gambar</div>
+                        
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label>Foto Produk <span class="text-red-400">*</span></label>
+                                <div class="upload-area">
+                                    <input type="file" id="input-product-image" accept="image/*" required>
+                                    <span class="upload-icon">📦</span>
+                                    <p class="upload-text">
+                                        <strong>Klik atau drag</strong> foto produk
+                                    </p>
+                                </div>
+                                <img id="preview-product" class="upload-preview" alt="Preview">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Foto Model <span>(Opsional)</span></label>
+                                <div class="upload-area">
+                                    <input type="file" id="input-model-image" accept="image/*">
+                                    <span class="upload-icon">👤</span>
+                                    <p class="upload-text">
+                                        <strong>Klik atau drag</strong> foto model
+                                    </p>
+                                </div>
+                                <img id="preview-model" class="upload-preview" alt="Preview">
+                            </div>
+                        </div>
+
+                        <!-- Product Info -->
+                        <div class="form-section-title">📝 Informasi Produk</div>
+                        
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="input-name">Nama Produk <span class="text-red-400">*</span></label>
+                                <input type="text" id="input-name" placeholder="Contoh: Serum Vitamin C Glow" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="input-price">Harga <span>(Opsional)</span></label>
+                                <input type="text" id="input-price" placeholder="Contoh: Rp 150.000">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="input-pros">Kelebihan Produk <span>(Opsional, pisahkan dengan koma)</span></label>
+                            <textarea id="input-pros" placeholder="Contoh: Mencerahkan wajah, Melembabkan kulit, Aman untuk kulit sensitif"></textarea>
+                        </div>
+
+                        <!-- Style Settings -->
+                        <div class="form-section-title">🎨 Pengaturan Style</div>
+                        
+                        <div class="form-row two-col">
+                            <div class="form-group">
+                                <label for="input-style">Gaya Foto</label>
+                                <select id="input-style">
+                                    <option value="Natural & Soft">Natural & Soft</option>
+                                    <option value="Aesthetic Minimalis">Aesthetic Minimalis</option>
+                                    <option value="Bold & Colorful">Bold & Colorful</option>
+                                    <option value="Elegant & Luxurious">Elegant & Luxurious</option>
+                                    <option value="Fresh & Clean">Fresh & Clean</option>
+                                    <option value="Warm & Cozy">Warm & Cozy</option>
+                                    <option value="Custom (Tulis Sendiri)">Custom (Tulis Sendiri)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="input-animation-order">Urutan Video</label>
+                                <select id="input-animation-order">
+                                    <option value="Gambar > Animasi > Video">Gambar → Animasi → Video</option>
+                                    <option value="Gambar > Video > Audio">Gambar → Video → Audio</option>
+                                    <option value="Hook > Demo > CTA">Hook → Demo → CTA</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="custom-style-group" style="display: none;">
+                            <label for="input-custom-style">Custom Style</label>
+                            <textarea id="input-custom-style" placeholder="Deskripsikan gaya yang kamu inginkan..."></textarea>
+                        </div>
+
+                        <button type="submit" id="btn-submit" class="btn-submit">
+                            🚀 Generate UGC Content
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Tab: Active Jobs -->
+                <div class="tab-panel" id="tab-active">
+                    <div class="jobs-grid" id="active-jobs">
+                        <div class="empty-state">
+                            <span class="empty-icon">🚀</span>
+                            <p>Tidak ada proses berjalan</p>
+                            <p class="empty-sub">Submit job baru untuk memulai</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: History -->
+                <div class="tab-panel" id="tab-history">
+                    <div class="jobs-grid" id="history-jobs">
+                        <div class="empty-state">
+                            <span class="empty-icon">📁</span>
+                            <p>Belum ada riwayat</p>
+                            <p class="empty-sub">Hasil generate akan muncul di sini</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Job Detail Modal -->
+    <div class="modal-overlay" id="job-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 id="modal-title">Detail Job</h2>
+                    <span id="modal-status" class="status-badge status-pending">pending</span>
+                </div>
+                <button id="btn-close-modal" class="btn-close-modal">✕</button>
+            </div>
+            <div class="modal-body">
+                <!-- Progress Section -->
+                <div id="modal-progress" class="modal-progress-section">
+                    <div class="modal-progress-bar">
+                        <div class="progress-fill" id="modal-progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="modal-progress-info">
+                        <span id="modal-step">Menunggu...</span>
+                        <span id="modal-progress-percent">0%</span>
+                    </div>
+                    <p id="modal-steps" class="text-slate-500 text-sm mt-2">Step 0 / 8</p>
+                </div>
+
+                <!-- Results Section -->
+                <div id="modal-results" style="display: none;">
+                    <!-- Images -->
+                    <div class="result-section">
+                        <h3>🖼️ Gambar</h3>
+                        <div class="result-images" id="modal-images"></div>
+                    </div>
+
+                    <!-- Videos -->
+                    <div class="result-section">
+                        <h3>🎬 Video Animasi</h3>
+                        <div class="result-videos" id="modal-videos"></div>
+                    </div>
+
+                    <!-- Final Video -->
+                    <div class="result-section">
+                        <h3>🎥 Video Final</h3>
+                        <video id="modal-final-video" controls class="result-video"></video>
+                    </div>
+
+                    <!-- Audio -->
+                    <div class="result-section">
+                        <h3>🎙️ Audio</h3>
+                        <audio id="modal-audio" controls class="result-audio"></audio>
+                    </div>
+
+                    <!-- Script -->
+                    <div class="result-section">
+                        <h3>📝 Script</h3>
+                        <pre class="result-script" id="modal-script"></pre>
+                    </div>
+                </div>
+
+                <!-- Error Section -->
+                <div id="modal-error" class="modal-error-section" style="display: none;">
+                    <span class="error-icon">❌</span>
+                    <p class="error-message" id="modal-error-msg">Terjadi kesalahan</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-12 relative z-10 border-t border-white/10" style="background: #030308;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <a href="index.html" class="flex items-center space-x-2 text-lg font-bold">
+                    <span class="text-xl">🛰️</span>
+                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                </a>
+                <p class="text-slate-500 text-sm">© 2025 OrbitBot. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/generator.js"></script>
+    
+    <script>
+        // Generate stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.width = Math.random() * 2 + 1 + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        // Mobile menu
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>

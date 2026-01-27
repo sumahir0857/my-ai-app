@@ -1,0 +1,532 @@
+// UGC Generator Logic
+
+let pollingInterval = null;
+let userJobs = [];
+
+// Initialize generator page
+async function initGenerator() {
+    const isLoggedIn = await checkAuth();
+    
+    if (isLoggedIn) {
+        showGeneratorUI();
+        await loadUserStats();
+        await loadJobs();
+        startPolling();
+    } else {
+        showLoginUI();
+    }
+}
+
+function showLoginUI() {
+    document.getElementById('login-section').style.display = 'flex';
+    document.getElementById('generator-section').style.display = 'none';
+}
+
+function showGeneratorUI() {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('generator-section').style.display = 'block';
+    
+    // Update user info
+    const user = getCurrentUser();
+    if (user) {
+        const avatar = document.getElementById('user-avatar');
+        const name = document.getElementById('user-name');
+        
+        if (avatar) avatar.src = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
+        if (name) name.textContent = user.user_metadata?.full_name || user.email;
+    }
+}
+
+// Load user stats (limit, usage)
+async function loadUserStats() {
+    try {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        const { data, error } = await supabase.rpc('check_limit', {
+            p_user_id: user.id
+        });
+        
+        if (error) {
+            console.error('Load stats error:', error);
+            return;
+        }
+        
+        if (data && data.length > 0) {
+            const stats = data[0];
+            const planEl = document.getElementById('user-plan');
+            const remainingEl = document.getElementById('user-remaining');
+            
+            if (planEl) planEl.textContent = stats.plan_name || 'Free';
+            if (remainingEl) {
+                remainingEl.textContent = stats.daily_limit === -1 ? '∞' : stats.remaining;
+            }
+        }
+    } catch (error) {
+        console.error('Load stats error:', error);
+    }
+}
+
+// Load user jobs
+async function loadJobs() {
+    try {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        const { data: jobs, error } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        
+        if (error) {
+            console.error('Load jobs error:', error);
+            return;
+        }
+        
+        userJobs = jobs || [];
+        renderJobs();
+    } catch (error) {
+        console.error('Load jobs error:', error);
+    }
+}
+
+// Render jobs to UI
+function renderJobs() {
+    const activeJobs = userJobs.filter(j => ['pending', 'processing'].includes(j.status));
+    const historyJobs = userJobs.filter(j => ['completed', 'failed'].includes(j.status));
+    
+    // Update tab counts
+    const activeCount = document.getElementById('active-count');
+    const historyCount = document.getElementById('history-count');
+    if (activeCount) activeCount.textContent = activeJobs.length;
+    if (historyCount) historyCount.textContent = historyJobs.length;
+    
+    // Render active jobs
+    const activeContainer = document.getElementById('active-jobs');
+    if (activeContainer) {
+        if (activeJobs.length === 0) {
+            activeContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">🚀</span>
+                    <p>Tidak ada proses berjalan</p>
+                    <p class="empty-sub">Submit job baru untuk memulai</p>
+                </div>
+            `;
+        } else {
+            activeContainer.innerHTML = activeJobs.map(job => createJobCard(job)).join('');
+        }
+    }
+    
+    // Render history
+    const historyContainer = document.getElementById('history-jobs');
+    if (historyContainer) {
+        if (historyJobs.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">📁</span>
+                    <p>Belum ada riwayat</p>
+                    <p class="empty-sub">Hasil generate akan muncul di sini</p>
+                </div>
+            `;
+        } else {
+            historyContainer.innerHTML = historyJobs.map(job => createJobCard(job)).join('');
+        }
+    }
+}
+
+function createJobCard(job) {
+    const input = job.input_data || {};
+    const results = job.results || {};
+    const date = new Date(job.created_at).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+    });
+    
+    let progressHtml = '';
+    if (['pending', 'processing'].includes(job.status)) {
+        const percent = job.progress_percent || 0;
+        progressHtml = `
+            <div class="job-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percent}%"></div>
+                </div>
+                <p class="progress-step">${job.step_name || 'Menunggu...'} (${percent}%)</p>
+            </div>
+        `;
+    }
+    
+    let previewHtml = '';
+    if (results.images && results.images.length > 0) {
+        previewHtml = `
+            <div class="job-preview">
+                ${results.images.slice(0, 3).map(url => `<img src="${url}" alt="Preview" loading="lazy">`).join('')}
+                ${results.images.length > 3 ? `<span class="more-count">+${results.images.length - 3}</span>` : ''}
+            </div>
+        `;
+    }
+    
+    const statusLabels = {
+        pending: 'Menunggu',
+        processing: 'Diproses',
+        completed: 'Selesai',
+        failed: 'Gagal'
+    };
+    
+    return `
+        <div class="job-card" onclick="openJobModal('${job.id}')">
+            <div class="job-header">
+                <div class="job-info">
+                    <div class="job-title">${input.product_name || 'Untitled'}</div>
+                    <div class="job-date">${date}</div>
+                </div>
+                <span class="status-badge status-${job.status}">${statusLabels[job.status] || job.status}</span>
+            </div>
+            ${progressHtml}
+            ${previewHtml}
+        </div>
+    `;
+}
+
+// Submit new job
+async function submitJob(event) {
+    event.preventDefault();
+    
+    const user = getCurrentUser();
+    if (!user) {
+        alert('Silakan login terlebih dahulu');
+        return;
+    }
+    
+    const productInput = document.getElementById('input-product-image');
+    const productName = document.getElementById('input-name').value.trim();
+    
+    if (!productInput.files || !productInput.files[0]) {
+        alert('Upload foto produk terlebih dahulu');
+        return;
+    }
+    
+    if (!productName) {
+        alert('Isi nama produk');
+        return;
+    }
+    
+    // Check limit
+    try {
+        const { data: limitData, error: limitError } = await supabase.rpc('check_limit', {
+            p_user_id: user.id
+        });
+        
+        if (limitError) {
+            console.error('Limit check error:', limitError);
+        } else if (limitData && limitData.length > 0 && !limitData[0].allowed) {
+            alert('Limit harian habis! Upgrade plan untuk lebih banyak.');
+            return;
+        }
+    } catch (error) {
+        console.error('Limit check error:', error);
+    }
+    
+    const submitBtn = document.getElementById('btn-submit');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Mengupload...';
+    
+    try {
+        // Upload product image
+        const productFile = productInput.files[0];
+        const productPath = `uploads/${user.id}/${Date.now()}_product.${productFile.name.split('.').pop()}`;
+        
+        const { error: uploadError } = await supabase.storage
+            .from('results')
+            .upload(productPath, productFile);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl: productUrl } } = supabase.storage
+            .from('results')
+            .getPublicUrl(productPath);
+        
+        // Upload model image if exists
+        let modelUrl = null;
+        const modelInput = document.getElementById('input-model-image');
+        if (modelInput.files && modelInput.files[0]) {
+            const modelFile = modelInput.files[0];
+            const modelPath = `uploads/${user.id}/${Date.now()}_model.${modelFile.name.split('.').pop()}`;
+            
+            const { error: modelUploadError } = await supabase.storage
+                .from('results')
+                .upload(modelPath, modelFile);
+            
+            if (!modelUploadError) {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('results')
+                    .getPublicUrl(modelPath);
+                modelUrl = publicUrl;
+            }
+        }
+        
+        // Prepare job data
+        const inputData = {
+            user_id: user.id,
+            product_name: productName,
+            price: document.getElementById('input-price').value.trim(),
+            pros: document.getElementById('input-pros').value.trim(),
+            style_preset: document.getElementById('input-style').value,
+            custom_style: document.getElementById('input-custom-style')?.value?.trim() || '',
+            animation_order: document.getElementById('input-animation-order').value,
+            product_image_url: productUrl,
+            model_image_url: modelUrl
+        };
+        
+        // Insert job
+        const { error: insertError } = await supabase
+            .from('jobs')
+            .insert({
+                user_id: user.id,
+                service: 'ugc',
+                status: 'pending',
+                input_data: inputData
+            });
+        
+        if (insertError) throw insertError;
+        
+        alert('Job berhasil dibuat! Proses akan berjalan otomatis.');
+        
+        // Reset form
+        document.getElementById('generator-form').reset();
+        document.querySelectorAll('.upload-preview').forEach(p => p.style.display = 'none');
+        
+        // Switch to active tab
+        switchTab('active');
+        
+        // Reload jobs
+        await loadJobs();
+        
+    } catch (error) {
+        console.error('Submit error:', error);
+        alert('Gagal submit: ' + (error.message || 'Terjadi kesalahan'));
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+// Polling for updates
+function startPolling() {
+    if (pollingInterval) return;
+    
+    pollingInterval = setInterval(async () => {
+        const hasActiveJobs = userJobs.some(j => ['pending', 'processing'].includes(j.status));
+        if (hasActiveJobs) {
+            await loadJobs();
+            await loadUserStats();
+        }
+    }, 5000);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+// Tab switching
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `tab-${tabName}`);
+    });
+}
+
+// Job modal
+function openJobModal(jobId) {
+    const job = userJobs.find(j => j.id === jobId);
+    if (!job) return;
+    
+    const modal = document.getElementById('job-modal');
+    const input = job.input_data || {};
+    const results = job.results || {};
+    
+    document.getElementById('modal-title').textContent = input.product_name || 'Detail Job';
+    document.getElementById('modal-status').textContent = job.status;
+    document.getElementById('modal-status').className = `status-badge status-${job.status}`;
+    
+    const progressSection = document.getElementById('modal-progress');
+    const resultsSection = document.getElementById('modal-results');
+    const errorSection = document.getElementById('modal-error');
+    
+    if (['pending', 'processing'].includes(job.status)) {
+        progressSection.style.display = 'block';
+        resultsSection.style.display = 'none';
+        errorSection.style.display = 'none';
+        
+        document.getElementById('modal-progress-fill').style.width = `${job.progress_percent || 0}%`;
+        document.getElementById('modal-progress-percent').textContent = `${job.progress_percent || 0}%`;
+        document.getElementById('modal-step').textContent = job.step_name || 'Menunggu...';
+        document.getElementById('modal-steps').textContent = `Step ${job.current_step || 0} / ${job.total_steps || 8}`;
+        
+    } else if (job.status === 'completed') {
+        progressSection.style.display = 'none';
+        resultsSection.style.display = 'block';
+        errorSection.style.display = 'none';
+        
+        // Images
+        const imagesContainer = document.getElementById('modal-images');
+        if (results.images && results.images.length > 0) {
+            imagesContainer.innerHTML = results.images.map(url => 
+                `<a href="${url}" target="_blank" class="result-image"><img src="${url}" alt="Result"></a>`
+            ).join('');
+            imagesContainer.parentElement.style.display = 'block';
+        } else {
+            imagesContainer.parentElement.style.display = 'none';
+        }
+        
+        // Videos
+        const videosContainer = document.getElementById('modal-videos');
+        if (results.videos && results.videos.length > 0) {
+            videosContainer.innerHTML = results.videos.map(url => 
+                `<video src="${url}" controls class="result-video"></video>`
+            ).join('');
+            videosContainer.parentElement.style.display = 'block';
+        } else {
+            videosContainer.parentElement.style.display = 'none';
+        }
+        
+        // Final video
+        const finalVideoEl = document.getElementById('modal-final-video');
+        if (results.final_video) {
+            finalVideoEl.src = results.final_video;
+            finalVideoEl.parentElement.style.display = 'block';
+        } else {
+            finalVideoEl.parentElement.style.display = 'none';
+        }
+        
+        // Audio
+        const audioEl = document.getElementById('modal-audio');
+        if (results.audio) {
+            audioEl.src = results.audio;
+            audioEl.parentElement.style.display = 'block';
+        } else {
+            audioEl.parentElement.style.display = 'none';
+        }
+        
+        // Script
+        const scriptEl = document.getElementById('modal-script');
+        if (results.script) {
+            scriptEl.textContent = results.script;
+            scriptEl.parentElement.style.display = 'block';
+        } else {
+            scriptEl.parentElement.style.display = 'none';
+        }
+        
+    } else if (job.status === 'failed') {
+        progressSection.style.display = 'none';
+        resultsSection.style.display = 'none';
+        errorSection.style.display = 'block';
+        document.getElementById('modal-error-msg').textContent = job.error_message || 'Terjadi kesalahan tidak diketahui';
+    }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeJobModal() {
+    document.getElementById('job-modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Image upload preview
+function setupImageUpload(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    
+    if (!input || !preview) return;
+    
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
+}
+
+// Download result
+function downloadResult(url, filename) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || 'result';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initGenerator();
+    setupImageUpload('input-product-image', 'preview-product');
+    setupImageUpload('input-model-image', 'preview-model');
+    
+    // Form submit
+    const form = document.getElementById('generator-form');
+    if (form) {
+        form.addEventListener('submit', submitJob);
+    }
+    
+    // Tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+    
+    // Modal close
+    const closeBtn = document.getElementById('btn-close-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeJobModal);
+    }
+    
+    const modal = document.getElementById('job-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'job-modal') closeJobModal();
+        });
+    }
+    
+    // Style dropdown
+    const styleSelect = document.getElementById('input-style');
+    if (styleSelect) {
+        styleSelect.addEventListener('change', (e) => {
+            const customGroup = document.getElementById('custom-style-group');
+            if (customGroup) {
+                customGroup.style.display = e.target.value === 'Custom (Tulis Sendiri)' ? 'block' : 'none';
+            }
+        });
+    }
+    
+    // Logout button
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    // Login button
+    const loginBtn = document.getElementById('btn-login-google');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', loginWithGoogle);
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopPolling();
+});
