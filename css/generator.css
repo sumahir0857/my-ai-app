@@ -1,829 +1,551 @@
-/* ========================================
-   GENERATOR PAGE STYLES
-   ======================================== */
+// UGC Generator Logic
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+let pollingInterval = null;
+let userJobs = [];
 
-:root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
-    --radius: 12px;
-    --radius-sm: 8px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--gray-100);
-    color: var(--gray-800);
-    min-height: 100vh;
-}
-
-/* ========================================
-   LOGIN SECTION
-   ======================================== */
-
-.login-section {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
-}
-
-.login-container {
-    background: white;
-    padding: 48px;
-    border-radius: 24px;
-    box-shadow: var(--shadow-lg);
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
-}
-
-.login-header h1 {
-    font-size: 1.8rem;
-    margin-bottom: 8px;
-}
-
-.login-header p {
-    color: var(--gray-500);
-    margin-bottom: 24px;
-}
-
-.login-features {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 24px;
-    text-align: left;
-}
-
-.feature-item {
-    padding: 12px 16px;
-    background: var(--gray-50);
-    border-radius: var(--radius-sm);
-    font-size: 0.95rem;
-}
-
-.btn-google {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px 24px;
-    background: white;
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-google:hover {
-    background: var(--gray-50);
-    border-color: var(--gray-300);
-}
-
-/* ========================================
-   GENERATOR SECTION
-   ======================================== */
-
-.generator-section {
-    min-height: 100vh;
-    background: var(--gray-50);
-}
-
-/* Header */
-.generator-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 24px;
-    background: white;
-    border-bottom: 1px solid var(--gray-200);
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.back-link {
-    color: var(--gray-500);
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.back-link:hover {
-    color: var(--primary);
-}
-
-.header-left h1 {
-    font-size: 1.3rem;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.user-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.user-name {
-    font-weight: 500;
-    font-size: 0.95rem;
-}
-
-.btn-logout {
-    padding: 8px 16px;
-    background: var(--gray-100);
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-logout:hover {
-    background: var(--gray-200);
-}
-
-/* Stats Bar */
-.stats-bar {
-    display: flex;
-    gap: 16px;
-    padding: 16px 24px;
-    background: white;
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-    padding: 12px 20px;
-    background: var(--gray-50);
-    border-radius: var(--radius-sm);
-    min-width: 100px;
-}
-
-.stat-label {
-    font-size: 0.75rem;
-    color: var(--gray-500);
-    text-transform: uppercase;
-}
-
-.stat-value {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: var(--primary);
-}
-
-/* Tabs */
-.tabs-container {
-    display: flex;
-    gap: 8px;
-    padding: 16px 24px;
-    background: white;
-    border-bottom: 1px solid var(--gray-200);
-    overflow-x: auto;
-}
-
-.tab-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    background: var(--gray-100);
-    border: none;
-    border-radius: var(--radius);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.tab-btn:hover {
-    background: var(--gray-200);
-}
-
-.tab-btn.active {
-    background: var(--primary);
-    color: white;
-}
-
-.tab-count {
-    background: rgba(255,255,255,0.2);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 0.8rem;
-}
-
-.tab-btn.active .tab-count {
-    background: rgba(255,255,255,0.3);
-}
-
-/* Tab Panels */
-.tab-panels {
-    padding: 24px;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.tab-panel {
-    display: none;
-}
-
-.tab-panel.active {
-    display: block;
-}
-
-/* ========================================
-   FORM STYLES
-   ======================================== */
-
-.generator-form {
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-}
-
-.form-section {
-    padding: 24px;
-    border-bottom: 1px solid var(--gray-100);
-}
-
-.form-section:last-of-type {
-    border-bottom: none;
-}
-
-.form-section h3 {
-    font-size: 1rem;
-    margin-bottom: 16px;
-    color: var(--gray-700);
-}
-
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-group:last-child {
-    margin-bottom: 0;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: var(--gray-700);
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 12px 16px;
-    border: 2px solid var(--gray-200);
-    border-radius: var(--radius-sm);
-    font-size: 1rem;
-    transition: border-color 0.2s;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-.form-group textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-.form-hint {
-    display: block;
-    margin-top: 6px;
-    font-size: 0.8rem;
-    color: var(--gray-500);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-@media (max-width: 600px) {
-    .form-row {
-        grid-template-columns: 1fr;
+// Initialize generator page
+async function initGenerator() {
+    const isLoggedIn = await checkAuth();
+    
+    if (isLoggedIn) {
+        showGeneratorUI();
+        await loadUserStats();
+        await loadJobs();
+        startPolling();
+    } else {
+        showLoginUI();
     }
 }
 
-/* Upload Box - FIXED */
-.upload-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+function showLoginUI() {
+    document.getElementById('login-section').style.display = 'flex';
+    document.getElementById('generator-section').style.display = 'none';
 }
 
-@media (max-width: 600px) {
-    .upload-row {
-        grid-template-columns: 1fr;
+function showGeneratorUI() {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('generator-section').style.display = 'block';
+    
+    // Update user info
+    const user = getCurrentUser();
+    if (user) {
+        const avatar = document.getElementById('user-avatar');
+        const name = document.getElementById('user-name');
+        
+        if (avatar) avatar.src = user.user_metadata?.avatar_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email);
+        if (name) name.textContent = user.user_metadata?.full_name || user.email;
     }
 }
 
-.upload-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.upload-group label {
-    margin-bottom: 8px;
-    font-weight: 500;
-    font-size: 0.9rem;
-}
-
-.upload-box {
-    position: relative;
-    border: 2px dashed var(--gray-300);
-    border-radius: var(--radius);
-    min-height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    overflow: hidden;
-    background: var(--gray-50);
-}
-
-.upload-box:hover {
-    border-color: var(--primary);
-    background: white;
-}
-
-.upload-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    color: var(--gray-400);
-    text-align: center;
-    padding: 20px;
-}
-
-.upload-icon {
-    font-size: 2.5rem;
-}
-
-/* Preview Image - INSIDE BOX */
-.upload-preview {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    background: var(--gray-100);
-    padding: 8px;
-}
-
-.upload-box.has-preview .upload-placeholder {
-    display: none;
-}
-
-/* Form Actions */
-.form-actions {
-    padding: 24px;
-    background: var(--gray-50);
-}
-
-.btn-primary {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 14px 28px;
-    border-radius: var(--radius);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.btn-primary:hover {
-    background: var(--primary-dark);
-}
-
-.btn-primary:disabled {
-    background: var(--gray-300);
-    cursor: not-allowed;
-}
-
-.btn-large {
-    width: 100%;
-    padding: 16px;
-    font-size: 1.1rem;
-}
-
-.form-note {
-    margin-top: 16px;
-    text-align: center;
-    font-size: 0.85rem;
-    color: var(--gray-500);
-}
-
-/* ========================================
-   JOBS GRID
-   ======================================== */
-
-.jobs-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 16px;
-}
-
-.job-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 20px;
-    box-shadow: var(--shadow);
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.job-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-}
-
-.job-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-}
-
-.job-info {
-    flex: 1;
-}
-
-.job-title {
-    font-weight: 600;
-    font-size: 1.05rem;
-    margin-bottom: 4px;
-}
-
-.job-date {
-    font-size: 0.8rem;
-    color: var(--gray-500);
-}
-
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-.status-pending {
-    background: var(--gray-100);
-    color: var(--gray-600);
-}
-
-.status-processing {
-    background: #fef3c7;
-    color: #d97706;
-}
-
-.status-completed {
-    background: #d1fae5;
-    color: #059669;
-}
-
-.status-failed {
-    background: #fee2e2;
-    color: #dc2626;
-}
-
-/* Job Progress */
-.job-progress {
-    margin-top: 12px;
-}
-
-.progress-bar {
-    height: 6px;
-    background: var(--gray-200);
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: var(--primary);
-    border-radius: 3px;
-    transition: width 0.3s;
-}
-
-.progress-step {
-    margin-top: 6px;
-    font-size: 0.8rem;
-    color: var(--gray-500);
-}
-
-/* Job Preview */
-.job-preview {
-    display: flex;
-    gap: 8px;
-    margin-top: 12px;
-    overflow-x: auto;
-}
-
-.job-preview img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-}
-
-.more-count {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 60px;
-    height: 60px;
-    background: var(--gray-100);
-    border-radius: var(--radius-sm);
-    font-size: 0.85rem;
-    color: var(--gray-500);
-}
-
-/* Empty State */
-.empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--gray-400);
-    grid-column: 1 / -1;
-}
-
-.empty-icon {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 12px;
-}
-
-.empty-sub {
-    font-size: 0.85rem;
-    margin-top: 4px;
-}
-
-/* ========================================
-   MODAL
-   ======================================== */
-
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.modal.active {
-    display: flex;
-}
-
-.modal-content {
-    background: white;
-    border-radius: var(--radius);
-    max-width: 800px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-}
-
-.modal-close {
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 36px;
-    height: 36px;
-    border: none;
-    background: var(--gray-100);
-    border-radius: 50%;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
-}
-
-.modal-close:hover {
-    background: var(--gray-200);
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24px;
-    padding-right: 60px;
-    border-bottom: 1px solid var(--gray-200);
-}
-
-.modal-header h2 {
-    font-size: 1.2rem;
-}
-
-.modal-body {
-    padding: 24px;
-}
-
-.modal-section {
-    margin-bottom: 24px;
-}
-
-.modal-section:last-child {
-    margin-bottom: 0;
-}
-
-/* Progress in Modal */
-.progress-container {
-    text-align: center;
-}
-
-.progress-bar-large {
-    height: 12px;
-    background: var(--gray-200);
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 12px;
-}
-
-.progress-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.9rem;
-    color: var(--gray-600);
-    margin-bottom: 8px;
-}
-
-/* Results in Modal */
-.result-section {
-    margin-bottom: 24px;
-}
-
-.result-section h3 {
-    font-size: 1rem;
-    margin-bottom: 12px;
-    color: var(--gray-700);
-}
-
-.result-gallery {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-@media (max-width: 600px) {
-    .result-gallery {
-        grid-template-columns: repeat(2, 1fr);
+// Load user stats (limit, usage)
+async function loadUserStats() {
+    try {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        const { data, error } = await supabase.rpc('check_limit', {
+            p_user_id: user.id
+        });
+        
+        if (error) {
+            console.error('Load stats error:', error);
+            return;
+        }
+        
+        if (data && data.length > 0) {
+            const stats = data[0];
+            const planEl = document.getElementById('user-plan');
+            const remainingEl = document.getElementById('user-remaining');
+            
+            if (planEl) planEl.textContent = stats.plan_name || 'Free';
+            if (remainingEl) {
+                remainingEl.textContent = stats.daily_limit === -1 ? '∞' : stats.remaining;
+            }
+        }
+    } catch (error) {
+        console.error('Load stats error:', error);
     }
 }
 
-.result-item {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+// Load user jobs
+async function loadJobs() {
+    try {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        const { data: jobs, error } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+        
+        if (error) {
+            console.error('Load jobs error:', error);
+            return;
+        }
+        
+        userJobs = jobs || [];
+        renderJobs();
+    } catch (error) {
+        console.error('Load jobs error:', error);
+    }
 }
 
-.result-item img,
-.result-item video {
-    width: 100%;
-    aspect-ratio: 9/16;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    background: var(--gray-100);
-}
-
-.result-video-large {
-    width: 100%;
-    max-height: 400px;
-    border-radius: var(--radius-sm);
-    background: var(--gray-900);
-}
-
-.result-audio {
-    width: 100%;
-}
-
-.result-script {
-    background: var(--gray-50);
-    padding: 16px;
-    border-radius: var(--radius-sm);
-    line-height: 1.6;
-    font-style: italic;
-}
-
-.download-link {
-    display: inline-block;
-    padding: 6px 12px;
-    background: var(--primary);
-    color: white;
-    text-decoration: none;
-    border-radius: var(--radius-sm);
-    font-size: 0.8rem;
-    text-align: center;
-}
-
-.download-link:hover {
-    background: var(--primary-dark);
-}
-
-/* Error Section */
-.error-section {
-    background: #fee2e2;
-    padding: 16px;
-    border-radius: var(--radius-sm);
-    color: #dc2626;
-}
-
-/* ========================================
-   RESPONSIVE
-   ======================================== */
-
-@media (max-width: 768px) {
-    .generator-header {
-        flex-direction: column;
-        align-items: flex-start;
+// Render jobs to UI
+function renderJobs() {
+    const activeJobs = userJobs.filter(j => ['pending', 'processing'].includes(j.status));
+    const historyJobs = userJobs.filter(j => ['completed', 'failed'].includes(j.status));
+    
+    // Update tab counts
+    const activeCount = document.getElementById('active-count');
+    const historyCount = document.getElementById('history-count');
+    if (activeCount) activeCount.textContent = activeJobs.length;
+    if (historyCount) historyCount.textContent = historyJobs.length;
+    
+    // Render active jobs
+    const activeContainer = document.getElementById('active-jobs');
+    if (activeContainer) {
+        if (activeJobs.length === 0) {
+            activeContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">🚀</span>
+                    <p>Tidak ada proses berjalan</p>
+                    <p class="empty-sub">Submit job baru untuk memulai</p>
+                </div>
+            `;
+        } else {
+            activeContainer.innerHTML = activeJobs.map(job => createJobCard(job)).join('');
+        }
     }
     
-    .header-right {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .stats-bar {
-        overflow-x: auto;
-    }
-    
-    .tab-panels {
-        padding: 16px;
-    }
-    
-    .form-section {
-        padding: 16px;
-    }
-    
-    .modal-content {
-        max-height: 95vh;
+    // Render history
+    const historyContainer = document.getElementById('history-jobs');
+    if (historyContainer) {
+        if (historyJobs.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">📁</span>
+                    <p>Belum ada riwayat</p>
+                    <p class="empty-sub">Hasil generate akan muncul di sini</p>
+                </div>
+            `;
+        } else {
+            historyContainer.innerHTML = historyJobs.map(job => createJobCard(job)).join('');
+        }
     }
 }
+
+function createJobCard(job) {
+    const input = job.input_data || {};
+    const results = job.results || {};
+    const date = new Date(job.created_at).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+    });
+    
+    let progressHtml = '';
+    if (['pending', 'processing'].includes(job.status)) {
+        const percent = job.progress_percent || 0;
+        progressHtml = `
+            <div class="job-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percent}%"></div>
+                </div>
+                <p class="progress-step">${job.step_name || 'Menunggu...'} (${percent}%)</p>
+            </div>
+        `;
+    }
+    
+    let previewHtml = '';
+    if (results.images && results.images.length > 0) {
+        previewHtml = `
+            <div class="job-preview">
+                ${results.images.slice(0, 3).map(url => `<img src="${url}" alt="Preview" loading="lazy">`).join('')}
+                ${results.images.length > 3 ? `<span class="more-count">+${results.images.length - 3}</span>` : ''}
+            </div>
+        `;
+    }
+    
+    const statusLabels = {
+        pending: 'Menunggu',
+        processing: 'Diproses',
+        completed: 'Selesai',
+        failed: 'Gagal'
+    };
+    
+    return `
+        <div class="job-card" onclick="openJobModal('${job.id}')">
+            <div class="job-header">
+                <div class="job-info">
+                    <div class="job-title">${input.product_name || 'Untitled'}</div>
+                    <div class="job-date">${date}</div>
+                </div>
+                <span class="status-badge status-${job.status}">${statusLabels[job.status] || job.status}</span>
+            </div>
+            ${progressHtml}
+            ${previewHtml}
+        </div>
+    `;
+}
+
+// Submit new job
+async function submitJob(event) {
+    event.preventDefault();
+    
+    const user = getCurrentUser();
+    if (!user) {
+        alert('Silakan login terlebih dahulu');
+        return;
+    }
+    
+    const productInput = document.getElementById('input-product-image');
+    const productName = document.getElementById('input-name').value.trim();
+    
+    if (!productInput.files || !productInput.files[0]) {
+        alert('Upload foto produk terlebih dahulu');
+        return;
+    }
+    
+    if (!productName) {
+        alert('Isi nama produk');
+        return;
+    }
+    
+    // Check limit
+    try {
+        const { data: limitData, error: limitError } = await supabase.rpc('check_limit', {
+            p_user_id: user.id
+        });
+        
+        if (limitError) {
+            console.error('Limit check error:', limitError);
+        } else if (limitData && limitData.length > 0 && !limitData[0].allowed) {
+            alert('Limit harian habis! Upgrade plan untuk lebih banyak.');
+            return;
+        }
+    } catch (error) {
+        console.error('Limit check error:', error);
+    }
+    
+    const submitBtn = document.getElementById('btn-submit');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Mengupload...';
+    
+    try {
+        // Upload product image
+        const productFile = productInput.files[0];
+        const productPath = `uploads/${user.id}/${Date.now()}_product.${productFile.name.split('.').pop()}`;
+        
+        const { error: uploadError } = await supabase.storage
+            .from('results')
+            .upload(productPath, productFile);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: { publicUrl: productUrl } } = supabase.storage
+            .from('results')
+            .getPublicUrl(productPath);
+        
+        // Upload model image if exists
+        let modelUrl = null;
+        const modelInput = document.getElementById('input-model-image');
+        if (modelInput.files && modelInput.files[0]) {
+            const modelFile = modelInput.files[0];
+            const modelPath = `uploads/${user.id}/${Date.now()}_model.${modelFile.name.split('.').pop()}`;
+            
+            const { error: modelUploadError } = await supabase.storage
+                .from('results')
+                .upload(modelPath, modelFile);
+            
+            if (!modelUploadError) {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('results')
+                    .getPublicUrl(modelPath);
+                modelUrl = publicUrl;
+            }
+        }
+        
+        // Get generate mode
+        const generateModeEl = document.getElementById('input-generate-mode');
+        const generateMode = generateModeEl ? generateModeEl.value : 'full';
+        
+        // Prepare job data
+        const inputData = {
+            user_id: user.id,
+            product_name: productName,
+            price: document.getElementById('input-price').value.trim(),
+            pros: document.getElementById('input-pros').value.trim(),
+            style_preset: document.getElementById('input-style').value,
+            custom_style: document.getElementById('input-custom-style')?.value?.trim() || '',
+            animation_order: document.getElementById('input-animation-order').value,
+            generate_mode: generateMode,
+            product_image_url: productUrl,
+            model_image_url: modelUrl
+        };
+        
+        // Insert job
+        const { error: insertError } = await supabase
+            .from('jobs')
+            .insert({
+                user_id: user.id,
+                service: 'ugc',
+                status: 'pending',
+                input_data: inputData
+            });
+        
+        if (insertError) throw insertError;
+        
+        alert('Job berhasil dibuat! Proses akan berjalan otomatis.');
+        
+        // Reset form
+        document.getElementById('generator-form').reset();
+        document.querySelectorAll('.upload-preview').forEach(p => p.style.display = 'none');
+        
+        // Switch to active tab
+        switchTab('active');
+        
+        // Reload jobs
+        await loadJobs();
+        
+    } catch (error) {
+        console.error('Submit error:', error);
+        alert('Gagal submit: ' + (error.message || 'Terjadi kesalahan'));
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+    }
+}
+
+// Polling for updates
+function startPolling() {
+    if (pollingInterval) return;
+    
+    pollingInterval = setInterval(async () => {
+        const hasActiveJobs = userJobs.some(j => ['pending', 'processing'].includes(j.status));
+        if (hasActiveJobs) {
+            await loadJobs();
+            await loadUserStats();
+        }
+    }, 5000);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+// Tab switching
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `tab-${tabName}`);
+    });
+}
+
+// Job modal
+function openJobModal(jobId) {
+    const job = userJobs.find(j => j.id === jobId);
+    if (!job) return;
+    
+    const modal = document.getElementById('job-modal');
+    const input = job.input_data || {};
+    const results = job.results || {};
+    
+    document.getElementById('modal-title').textContent = input.product_name || 'Detail Job';
+    document.getElementById('modal-status').textContent = job.status;
+    document.getElementById('modal-status').className = `status-badge status-${job.status}`;
+    
+    const progressSection = document.getElementById('modal-progress');
+    const resultsSection = document.getElementById('modal-results');
+    const errorSection = document.getElementById('modal-error');
+    
+    if (['pending', 'processing'].includes(job.status)) {
+        progressSection.style.display = 'block';
+        resultsSection.style.display = 'none';
+        errorSection.style.display = 'none';
+        
+        document.getElementById('modal-progress-fill').style.width = `${job.progress_percent || 0}%`;
+        document.getElementById('modal-progress-percent').textContent = `${job.progress_percent || 0}%`;
+        document.getElementById('modal-step').textContent = job.step_name || 'Menunggu...';
+        document.getElementById('modal-steps').textContent = `Step ${job.current_step || 0} / ${job.total_steps || 8}`;
+        
+    } else if (job.status === 'completed') {
+        progressSection.style.display = 'none';
+        resultsSection.style.display = 'block';
+        errorSection.style.display = 'none';
+        
+        // Images
+        const imagesContainer = document.getElementById('modal-images');
+        if (results.images && results.images.length > 0) {
+            imagesContainer.innerHTML = results.images.map(url => `
+                <div class="result-item">
+                    <a href="${url}" target="_blank"><img src="${url}" alt="Result" loading="lazy"></a>
+                    <a href="${url}" download class="download-link">⬇️ Download</a>
+                </div>
+            `).join('');
+            imagesContainer.parentElement.style.display = 'block';
+        } else {
+            imagesContainer.parentElement.style.display = 'none';
+        }
+        
+        // Videos
+        const videosContainer = document.getElementById('modal-videos');
+        if (results.videos && results.videos.length > 0) {
+            videosContainer.innerHTML = results.videos.map(url => `
+                <div class="result-item">
+                    <video src="${url}" controls></video>
+                    <a href="${url}" download class="download-link">⬇️ Download</a>
+                </div>
+            `).join('');
+            videosContainer.parentElement.style.display = 'block';
+        } else {
+            videosContainer.parentElement.style.display = 'none';
+        }
+        
+        // Final video
+        const finalVideoEl = document.getElementById('modal-final-video');
+        if (results.final_video) {
+            finalVideoEl.src = results.final_video;
+            finalVideoEl.parentElement.style.display = 'block';
+        } else {
+            finalVideoEl.parentElement.style.display = 'none';
+        }
+        
+        // Audio
+        const audioEl = document.getElementById('modal-audio');
+        if (results.audio) {
+            audioEl.src = results.audio;
+            audioEl.parentElement.style.display = 'block';
+        } else {
+            audioEl.parentElement.style.display = 'none';
+        }
+        
+        // Script
+        const scriptEl = document.getElementById('modal-script');
+        if (results.script) {
+            scriptEl.textContent = results.script;
+            scriptEl.parentElement.style.display = 'block';
+        } else {
+            scriptEl.parentElement.style.display = 'none';
+        }
+        
+    } else if (job.status === 'failed') {
+        progressSection.style.display = 'none';
+        resultsSection.style.display = 'none';
+        errorSection.style.display = 'block';
+        document.getElementById('modal-error-msg').textContent = job.error_message || 'Terjadi kesalahan tidak diketahui';
+    }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeJobModal() {
+    document.getElementById('job-modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Image upload preview
+function setupImageUpload(inputId, previewId) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    
+    if (!input || !preview) return;
+    
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                // Add class to parent for styling
+                preview.closest('.upload-box')?.classList.add('has-preview');
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+            preview.closest('.upload-box')?.classList.remove('has-preview');
+        }
+    });
+}
+
+// Download result
+function downloadResult(url, filename) {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename || 'result';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    initGenerator();
+    setupImageUpload('input-product-image', 'preview-product');
+    setupImageUpload('input-model-image', 'preview-model');
+    
+    // Form submit
+    const form = document.getElementById('generator-form');
+    if (form) {
+        form.addEventListener('submit', submitJob);
+    }
+    
+    // Tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+    
+    // Modal close
+    const closeBtn = document.getElementById('btn-close-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeJobModal);
+    }
+    
+    const modal = document.getElementById('job-modal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'job-modal') closeJobModal();
+        });
+    }
+    
+    // Escape key to close modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeJobModal();
+    });
+    
+    // Style dropdown - show/hide custom style field
+    const styleSelect = document.getElementById('input-style');
+    if (styleSelect) {
+        styleSelect.addEventListener('change', (e) => {
+            const customGroup = document.getElementById('custom-style-group');
+            if (customGroup) {
+                customGroup.style.display = e.target.value === 'Custom (Tulis Sendiri)' ? 'block' : 'none';
+            }
+        });
+    }
+    
+    // Logout button
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+    
+    // Login button
+    const loginBtn = document.getElementById('btn-login-google');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', loginWithGoogle);
+    }
+});
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopPolling();
+});
