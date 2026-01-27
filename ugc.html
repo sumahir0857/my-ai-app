@@ -558,27 +558,40 @@ function resetOutputs() {
     if (audioPlaceholder) audioPlaceholder.classList.remove('hidden');
     if (audioPlayer) audioPlayer.classList.add('hidden');
 }
-
-// ✨ HELPER: Validasi user data dari backend
+// ✨ HELPER: Validasi user data dari backend - DIPERBAIKI
 function isValidUserData(userData) {
-    // Cek apakah userData adalah object yang valid dengan data yang diperlukan
-    if (!userData) return false;
-    if (typeof userData !== 'object') return false;
-    if (Array.isArray(userData)) return false;
+    // Debug log
+    console.log("🔍 Validating userData:", userData);
+    console.log("  - type:", typeof userData);
+    console.log("  - is null:", userData === null);
+    console.log("  - is array:", Array.isArray(userData));
     
-    // Cek apakah object kosong
-    if (Object.keys(userData).length === 0) return false;
+    if (!userData) {
+        console.log("  ❌ userData is falsy");
+        return false;
+    }
     
-    // Cek apakah ada field wajib (gemini_refresh_cookie)
-    if (!userData.gemini_refresh_cookie) return false;
+    if (typeof userData !== 'object') {
+        console.log("  ❌ userData is not object");
+        return false;
+    }
     
+    if (Array.isArray(userData)) {
+        console.log("  ❌ userData is array");
+        return false;
+    }
+    
+    const keys = Object.keys(userData);
+    console.log("  - keys:", keys);
+    console.log("  - keys count:", keys.length);
+    
+    if (keys.length === 0) {
+        console.log("  ❌ userData is empty object");
+        return false;
+    }
+    
+    console.log("  ✅ userData is valid");
     return true;
-}
-
-// ✨ HELPER: Ambil nilai input dengan aman
-function getInputValue(id) {
-    const el = document.getElementById(id);
-    return el ? (el.value || '').trim() : '';
 }
 
 // ===== LOGIN - DIPERBAIKI =====
@@ -596,18 +609,35 @@ window.doLogin = async function() {
         await ensureConnected();
         const result = await client.predict("/handle_login", [password]);
         
-        console.log("🔐 Login result:", result.data);
+        // ✨ DEBUG: Lihat semua data yang dikembalikan
+        console.log("🔐 Login result.data:", result.data);
+        console.log("🔐 result.data[0] (userData):", result.data[0]);
+        console.log("🔐 result.data[3] (statusMsg):", result.data[3]);
         
         const [userData, , , statusMsg] = result.data;
         
-        // ✨ VALIDASI YANG LEBIH KETAT
-        if (isValidUserData(userData)) {
+        // ✨ VALIDASI LEBIH SEDERHANA
+        // Login berhasil jika:
+        // 1. userData bukan null/undefined
+        // 2. userData adalah object dengan isi
+        // 3. statusMsg kosong (tidak ada pesan error)
+        
+        const hasUserData = userData && 
+                           typeof userData === 'object' && 
+                           !Array.isArray(userData) && 
+                           Object.keys(userData).length > 0;
+        
+        const noErrorMsg = !statusMsg || statusMsg === "" || statusMsg.trim() === "";
+        
+        console.log("🔐 hasUserData:", hasUserData);
+        console.log("🔐 noErrorMsg:", noErrorMsg);
+        
+        if (hasUserData && noErrorMsg) {
             currentUser = userData;
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainSection').classList.remove('hidden');
-            console.log("✅ Login berhasil");
+            console.log("✅ Login berhasil!");
         } else {
-            // Login gagal
             currentUser = null;
             showError('loginError', statusMsg || '❌ Password salah');
             console.log("❌ Login gagal:", statusMsg);
@@ -619,10 +649,6 @@ window.doLogin = async function() {
         setButtonLoading('btnLogin', false, 'Masuk');
     }
 };
-
-document.getElementById('inputPassword')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') doLogin();
-});
 
 // ===== IMAGES ONLY - DIPERBAIKI =====
 window.doImagesOnly = async function() {
