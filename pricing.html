@@ -6,499 +6,348 @@
     <title>Pricing - OrbitBot</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Midtrans Snap -->
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-YOUR_CLIENT_KEY"></script>
     <style>
         * { font-family: 'Space Grotesk', sans-serif; }
-        body { background: #050510; }
+        body { 
+            background: linear-gradient(135deg, #050510 0%, #0a0a1f 50%, #050510 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
         .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
         .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
         @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .glow-purple { box-shadow: 0 0 40px rgba(139, 92, 246, 0.3); }
-        .gradient-border { position: relative; }
-        .gradient-border::before { content: ''; position: absolute; inset: 0; padding: 2px; border-radius: inherit; background: linear-gradient(135deg, #8b5cf6, #06b6d4); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
-        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
-        .reveal.active { opacity: 1; transform: translateY(0); }
-        .page-transition { animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 32px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+        .pricing-card.popular {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .pricing-card.popular::before {
+            content: 'POPULER';
+            position: absolute;
+            top: 12px;
+            right: -35px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 4px 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            transform: rotate(45deg);
+        }
+        .price-tag {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            color: #94a3b8;
+        }
+        .feature-item .check {
+            width: 20px;
+            height: 20px;
+            background: rgba(34, 197, 94, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #22c55e;
+            font-size: 12px;
+        }
+        .btn-subscribe {
+            width: 100%;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        .btn-subscribe.primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        .btn-subscribe.primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+        }
+        .btn-subscribe.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .btn-subscribe.secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .btn-subscribe:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .current-plan-badge {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .subscription-info {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body class="text-white page-transition">
+<body>
+    <!-- Stars Background -->
     <div class="stars" id="stars"></div>
-    
-    <!-- Navbar -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16 md:h-20">
-                <a href="index.html" class="flex items-center space-x-2 text-xl font-bold">
-                    <span class="text-2xl">🛰️</span>
-                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
-                </a>
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="tools.html" class="text-slate-300 hover:text-white transition">Tools</a>
-                    <a href="showcase.html" class="text-slate-300 hover:text-white transition">Showcase</a>
-                    <a href="pricing.html" class="text-white font-medium">Pricing</a>
-                    <a href="docs.html" class="text-slate-300 hover:text-white transition">Docs</a>
-                    <a href="generator.html" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-medium hover:opacity-90 transition transform hover:scale-105">🚀 Generate UGC</a>
-                </div>
-                <button id="menuBtn" class="md:hidden text-white p-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-            </div>
-            <div id="mobileMenu" class="hidden md:hidden pb-4">
-                <div class="flex flex-col space-y-3 glass rounded-xl p-4 mt-2">
-                    <a href="tools.html" class="text-slate-300 hover:text-white transition py-2">Tools</a>
-                    <a href="showcase.html" class="text-slate-300 hover:text-white transition py-2">Showcase</a>
-                    <a href="pricing.html" class="text-white font-medium py-2">Pricing</a>
-                    <a href="docs.html" class="text-slate-300 hover:text-white transition py-2">Docs</a>
-                    <a href="#" class="px-5 py-2.5 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-medium text-center">Launch App →</a>
-                </div>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Header -->
-    <section class="pt-32 pb-16 relative">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p class="text-white">Memproses pembayaran...</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="relative z-10 container mx-auto px-4 py-12">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-12">
+            <a href="index.html" class="text-white/70 hover:text-white transition">← Beranda</a>
+            <div id="user-info" class="flex items-center gap-4" style="display: none;">
+                <img id="user-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full">
+                <span id="user-name" class="text-white"></span>
+                <button id="btn-logout" class="text-white/70 hover:text-white text-sm">Keluar</button>
+            </div>
+            <button id="btn-login" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition" style="display: none;">
+                Login untuk Berlangganan
+            </button>
+        </header>
+
+        <!-- Title -->
+        <div class="text-center mb-12">
             <h1 class="text-4xl md:text-5xl font-bold mb-4">
-                <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Pricing</span>
+                Pilih Plan yang <span class="text-indigo-400">Tepat</span> untuk Anda
             </h1>
-            <p class="text-lg text-slate-400">Mulai gratis, upgrade sesuai kebutuhan</p>
+            <p class="text-white/60 text-lg max-w-2xl mx-auto">
+                Tingkatkan produktivitas dengan akses lebih banyak generate per hari
+            </p>
         </div>
-    </section>
 
-    <!-- Toggle -->
-    <section class="pb-8 relative z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-center gap-4">
-                <span class="text-slate-400" id="monthlyLabel">Bulanan</span>
-                <button id="billingToggle" class="relative w-14 h-7 bg-slate-700 rounded-full transition-colors">
-                    <span class="absolute top-1 left-1 w-5 h-5 bg-white rounded-full transition-transform" id="toggleDot"></span>
+        <!-- Current Subscription Info -->
+        <div id="subscription-info" class="subscription-info max-w-2xl mx-auto text-center" style="display: none;">
+            <p class="text-white/70 mb-2">Plan Anda Saat Ini</p>
+            <p class="text-2xl font-bold text-white mb-1" id="current-plan-name">Free</p>
+            <p class="text-white/60" id="current-plan-expiry"></p>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            <!-- Free -->
+            <div class="pricing-card" data-plan="free">
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-white mb-2">Free</h3>
+                    <p class="text-white/60 text-sm">Cocok untuk mencoba</p>
+                </div>
+                <div class="mb-6">
+                    <span class="price-tag">Gratis</span>
+                </div>
+                <div class="space-y-2 mb-8">
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>1x generate / hari</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Hasil disimpan 7 hari</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Watermark</span>
+                    </div>
+                </div>
+                <button class="btn-subscribe secondary btn-select-plan" data-plan="free" disabled>
+                    Plan Gratis
                 </button>
-                <span class="text-slate-400" id="yearlyLabel">Tahunan <span class="text-green-400 text-sm">Hemat 20%</span></span>
+            </div>
+
+            <!-- Basic -->
+            <div class="pricing-card" data-plan="basic">
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-white mb-2">Basic</h3>
+                    <p class="text-white/60 text-sm">Untuk kreator pemula</p>
+                </div>
+                <div class="mb-6">
+                    <span class="price-tag">25rb</span>
+                    <span class="text-white/60">/bulan</span>
+                </div>
+                <div class="space-y-2 mb-8">
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>5x generate / hari</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Hasil disimpan 30 hari</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Priority queue</span>
+                    </div>
+                </div>
+                <button class="btn-subscribe primary btn-select-plan" data-plan="basic">
+                    Pilih Basic
+                </button>
+            </div>
+
+            <!-- Pro (Popular) -->
+            <div class="pricing-card popular" data-plan="pro">
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-white mb-2">Pro</h3>
+                    <p class="text-white/60 text-sm">Untuk kreator aktif</p>
+                </div>
+                <div class="mb-6">
+                    <span class="price-tag">75rb</span>
+                    <span class="text-white/60">/bulan</span>
+                </div>
+                <div class="space-y-2 mb-8">
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>20x generate / hari</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Hasil disimpan 90 hari</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Priority queue</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>No watermark</span>
+                    </div>
+                </div>
+                <button class="btn-subscribe primary btn-select-plan" data-plan="pro">
+                    Pilih Pro
+                </button>
+            </div>
+
+            <!-- Unlimited -->
+            <div class="pricing-card" data-plan="unlimited">
+                <div class="mb-6">
+                    <h3 class="text-xl font-semibold text-white mb-2">Unlimited</h3>
+                    <p class="text-white/60 text-sm">Untuk bisnis & agency</p>
+                </div>
+                <div class="mb-6">
+                    <span class="price-tag">150rb</span>
+                    <span class="text-white/60">/bulan</span>
+                </div>
+                <div class="space-y-2 mb-8">
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Unlimited generate</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Hasil disimpan selamanya</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>Priority queue</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>No watermark</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="check">✓</span>
+                        <span>API access</span>
+                    </div>
+                </div>
+                <button class="btn-subscribe primary btn-select-plan" data-plan="unlimited">
+                    Pilih Unlimited
+                </button>
             </div>
         </div>
-    </section>
 
-    <!-- Pricing Cards -->
-    <section class="py-12 relative z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-                
-                <!-- Free -->
-                <div class="reveal glass rounded-2xl p-6 lg:p-8">
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">Free</h3>
-                        <p class="text-slate-400 text-sm">Untuk mencoba OrbitBot</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold">Rp 0</span>
-                        <span class="text-slate-400">/bulan</span>
-                    </div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">1 generate/hari</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Watermark kecil</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">720p quality</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Basic voices</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-slate-600">✗</span>
-                            <span class="text-slate-500">Priority render</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-slate-600">✗</span>
-                            <span class="text-slate-500">Custom style</span>
-                        </li>
-                    </ul>
-                    <a href="generator.html" class="block w-full py-3 rounded-full glass font-medium hover:bg-white/10 transition text-center">
-                        Mulai Gratis
-                    </a>
-                </div>
-
-                <!-- Basic -->
-                <div class="reveal glass rounded-2xl p-6 lg:p-8">
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">Basic</h3>
-                        <p class="text-slate-400 text-sm">Untuk kreator pemula</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold monthly-price">Rp 25.000</span>
-                        <span class="text-4xl font-bold yearly-price hidden">Rp 20.000</span>
-                        <span class="text-slate-400">/bulan</span>
-                    </div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">5 generate/hari</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">No watermark</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">1080p quality</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Premium voices</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Custom style</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-slate-600">✗</span>
-                            <span class="text-slate-500">Priority render</span>
-                        </li>
-                    </ul>
-                    <a href="generator.html" class="block w-full py-3 rounded-full glass font-medium hover:bg-white/10 transition text-center">
-                        Pilih Basic
-                    </a>
-                </div>
-
-                <!-- Pro - Featured -->
-                <div class="reveal glass rounded-2xl p-6 lg:p-8 gradient-border glow-purple relative md:-mt-4 md:mb-4">
-                    <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full text-xs font-medium">
-                        BEST VALUE
-                    </div>
-                    <div class="mb-6 pt-2">
-                        <h3 class="text-xl font-semibold mb-2">Pro</h3>
-                        <p class="text-slate-400 text-sm">Untuk kreator serius</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold monthly-price">Rp 75.000</span>
-                        <span class="text-4xl font-bold yearly-price hidden">Rp 60.000</span>
-                        <span class="text-slate-400">/bulan</span>
-                    </div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">20 generate/hari</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">No watermark</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">4K quality</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">All voices</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Custom style</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Priority render</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Email support</span>
-                        </li>
-                    </ul>
-                    <a href="generator.html" class="block w-full py-3 rounded-full bg-gradient-to-r from-purple-600 to-cyan-600 font-medium hover:opacity-90 transition transform hover:scale-105 text-center">
-                        Pilih Pro
-                    </a>
-                </div>
-
-                <!-- Unlimited -->
-                <div class="reveal glass rounded-2xl p-6 lg:p-8">
-                    <div class="mb-6">
-                        <h3 class="text-xl font-semibold mb-2">Unlimited</h3>
-                        <p class="text-slate-400 text-sm">Tanpa batas kreasi</p>
-                    </div>
-                    <div class="mb-6">
-                        <span class="text-4xl font-bold monthly-price">Rp 150.000</span>
-                        <span class="text-4xl font-bold yearly-price hidden">Rp 120.000</span>
-                        <span class="text-slate-400">/bulan</span>
-                    </div>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Unlimited generate</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">No watermark</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">4K quality</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">All voices + clone</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Custom style</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Priority render</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">API access</span>
-                        </li>
-                        <li class="flex items-center gap-3">
-                            <span class="text-green-400">✓</span>
-                            <span class="text-slate-300">Discord support</span>
-                        </li>
-                    </ul>
-                    <a href="generator.html" class="block w-full py-3 rounded-full glass font-medium hover:bg-white/10 transition text-center">
-                        Pilih Unlimited
-                    </a>
-                </div>
-
-            </div>
+        <!-- FAQ atau info tambahan -->
+        <div class="text-center mt-16">
+            <p class="text-white/60">
+                💳 Pembayaran aman via Midtrans (QRIS, Bank Transfer, E-wallet, dll)
+            </p>
+            <p class="text-white/40 text-sm mt-2">
+                Langganan berlaku 30 hari sejak pembayaran. Tidak ada perpanjangan otomatis.
+            </p>
         </div>
-    </section>
+    </div>
 
-    <!-- Comparison Table -->
-    <section class="py-20 relative z-10">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12 reveal">Perbandingan Fitur</h2>
-            <div class="overflow-x-auto reveal">
-                <table class="w-full glass rounded-xl overflow-hidden">
-                    <thead>
-                        <tr class="border-b border-white/10">
-                            <th class="text-left p-4 font-medium">Fitur</th>
-                            <th class="p-4 font-medium">Starter</th>
-                            <th class="p-4 font-medium text-purple-400">Pro</th>
-                            <th class="p-4 font-medium">Unlimited</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-slate-300">
-                        <tr class="border-b border-white/5">
-                            <td class="p-4">Video/bulan</td>
-                            <td class="p-4 text-center">5</td>
-                            <td class="p-4 text-center">50</td>
-                            <td class="p-4 text-center">∞</td>
-                        </tr>
-                        <tr class="border-b border-white/5">
-                            <td class="p-4">Gambar/bulan</td>
-                            <td class="p-4 text-center">10</td>
-                            <td class="p-4 text-center">200</td>
-                            <td class="p-4 text-center">∞</td>
-                        </tr>
-                        <tr class="border-b border-white/5">
-                            <td class="p-4">Kualitas Video</td>
-                            <td class="p-4 text-center">720p</td>
-                            <td class="p-4 text-center">1080p</td>
-                            <td class="p-4 text-center">4K</td>
-                        </tr>
-                        <tr class="border-b border-white/5">
-                            <td class="p-4">Watermark</td>
-                            <td class="p-4 text-center">Ya</td>
-                            <td class="p-4 text-center text-green-400">Tidak</td>
-                            <td class="p-4 text-center text-green-400">Tidak</td>
-                        </tr>
-                        <tr class="border-b border-white/5">
-                            <td class="p-4">Priority Render</td>
-                            <td class="p-4 text-center text-slate-600">✗</td>
-                            <td class="p-4 text-center text-green-400">✓</td>
-                            <td class="p-4 text-center text-green-400">✓</td>
-                        </tr>
-                        <tr class="border-b border-white/5">
-                            <td class="p-4">API Access</td>
-                            <td class="p-4 text-center text-slate-600">✗</td>
-                            <td class="p-4 text-center text-slate-600">✗</td>
-                            <td class="p-4 text-center text-green-400">✓</td>
-                        </tr>
-                        <tr>
-                            <td class="p-4">Voice Clone</td>
-                            <td class="p-4 text-center text-slate-600">✗</td>
-                            <td class="p-4 text-center text-slate-600">✗</td>
-                            <td class="p-4 text-center text-green-400">✓</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="py-20 relative z-10">
-        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 class="text-2xl md:text-3xl font-bold text-center mb-12 reveal">Pertanyaan Umum</h2>
-            
-            <div class="space-y-4" id="faqContainer">
-                <!-- FAQ 1 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Bagaimana cara pembayaran?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Kami menerima pembayaran via Transfer Bank, QRIS, OVO, GoPay, Dana, dan kartu kredit/debit. Semua pembayaran diproses secara aman.
-                    </div>
-                </div>
-
-                <!-- FAQ 2 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Bisa cancel kapan saja?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Ya! Kamu bisa cancel subscription kapan saja. Akses Pro/Unlimited akan tetap aktif sampai akhir periode billing.
-                    </div>
-                </div>
-
-                <!-- FAQ 3 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Apakah ada trial Pro?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Saat ini kami menawarkan Starter plan gratis untuk mencoba semua fitur dasar. Untuk Pro trial, silakan hubungi tim kami.
-                    </div>
-                </div>
-
-                <!-- FAQ 4 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Video/gambar sisa bulan ini hangus?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Ya, kuota tidak bisa diakumulasi ke bulan berikutnya. Kuota akan di-reset setiap awal periode billing.
-                    </div>
-                </div>
-
-                <!-- FAQ 5 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Bisa refund?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Kami menawarkan refund dalam 7 hari pertama jika kamu belum menggunakan lebih dari 20% kuota. Hubungi support untuk proses refund.
-                    </div>
-                </div>
-
-                <!-- FAQ 6 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Bagaimana cara upgrade/downgrade?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Kamu bisa upgrade/downgrade kapan saja dari dashboard. Perubahan akan berlaku di periode billing berikutnya.
-                    </div>
-                </div>
-
-                <!-- FAQ 7 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Apakah aman?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Tentu! Kami menggunakan enkripsi SSL dan payment gateway terpercaya. Data kamu aman bersama kami.
-                    </div>
-                </div>
-
-                <!-- FAQ 8 -->
-                <div class="faq-item reveal glass rounded-xl overflow-hidden">
-                    <button class="faq-btn w-full flex items-center justify-between p-5 text-left">
-                        <span class="font-medium">Butuh bantuan lain?</span>
-                        <svg class="w-5 h-5 transition-transform faq-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                    </button>
-                    <div class="faq-answer hidden px-5 pb-5 text-slate-400">
-                        Hubungi kami via email di support@orbitbot.com atau join Discord community untuk bantuan lebih cepat.
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Bottom CTA -->
-    <section class="py-20 relative z-10">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="glass rounded-2xl p-8 md:p-12 reveal">
-                <h2 class="text-2xl md:text-3xl font-bold mb-4">Masih Bingung? 🤔</h2>
-                <p class="text-slate-400 mb-8">Hubungi kami untuk konsultasi gratis</p>
-                <a href="#" class="inline-flex items-center px-8 py-3 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-full font-medium hover:opacity-90 transition transform hover:scale-105">
-                    Hubungi Kami <span class="ml-2">→</span>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-16 relative z-10" style="background: #030308;">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-4 gap-12 mb-12">
-                <div class="md:col-span-1">
-                    <a href="index.html" class="flex items-center space-x-2 text-xl font-bold mb-4">
-                        <span class="text-2xl">🛰️</span>
-                        <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
-                    </a>
-                    <p class="text-slate-400 text-sm">Your AI Tools Universe</p>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Quick Links</h4>
-                    <ul class="space-y-2 text-slate-400">
-                        <li><a href="tools.html" class="hover:text-white transition">Tools</a></li>
-                        <li><a href="showcase.html" class="hover:text-white transition">Showcase</a></li>
-                        <li><a href="pricing.html" class="hover:text-white transition">Pricing</a></li>
-                        <li><a href="docs.html" class="hover:text-white transition">Docs</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Support</h4>
-                    <ul class="space-y-2 text-slate-400">
-                        <li><a href="docs.html" class="hover:text-white transition">Help Center</a></li>
-                        <li><a href="#" class="hover:text-white transition">Contact</a></li>
-                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="font-semibold mb-4">Connect</h4>
-                    <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-purple-600/20 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-purple-600/20 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full glass flex items-center justify-center hover:bg-purple-600/20 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="border-t border-white/10 pt-8 text-center text-slate-500 text-sm">
-                <p>© 2025 OrbitBot. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/pricing.js"></script>
+    
     <script>
         // Generate stars
         const starsContainer = document.getElementById('stars');
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 150; i++) {
             const star = document.createElement('div');
             star.className = 'star';
             star.style.left = Math.random() * 100 + '%';
@@ -508,56 +357,6 @@
             star.style.height = star.style.width;
             starsContainer.appendChild(star);
         }
-
-        // Navbar scroll
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) navbar.classList.add('glass');
-            else navbar.classList.remove('glass');
-        });
-
-        // Mobile menu
-        document.getElementById('menuBtn').addEventListener('click', () => {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        });
-
-        // Billing toggle
-        const billingToggle = document.getElementById('billingToggle');
-        const toggleDot = document.getElementById('toggleDot');
-        let isYearly = false;
-
-        billingToggle.addEventListener('click', () => {
-            isYearly = !isYearly;
-            toggleDot.style.transform = isYearly ? 'translateX(28px)' : 'translateX(0)';
-            billingToggle.classList.toggle('bg-purple-600', isYearly);
-            billingToggle.classList.toggle('bg-slate-700', !isYearly);
-            
-            document.querySelectorAll('.monthly-price').forEach(el => el.classList.toggle('hidden', isYearly));
-            document.querySelectorAll('.yearly-price').forEach(el => el.classList.toggle('hidden', !isYearly));
-        });
-
-        // FAQ accordion
-        document.querySelectorAll('.faq-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const answer = btn.nextElementSibling;
-                const icon = btn.querySelector('.faq-icon');
-                
-                answer.classList.toggle('hidden');
-                icon.style.transform = answer.classList.contains('hidden') ? 'rotate(0)' : 'rotate(180deg)';
-            });
-        });
-
-        // Scroll reveal
-        const reveals = document.querySelectorAll('.reveal');
-        const revealOnScroll = () => {
-            reveals.forEach(el => {
-                const windowHeight = window.innerHeight;
-                const elementTop = el.getBoundingClientRect().top;
-                if (elementTop < windowHeight - 100) el.classList.add('active');
-            });
-        };
-        window.addEventListener('scroll', revealOnScroll);
-        revealOnScroll();
     </script>
 </body>
 </html>
