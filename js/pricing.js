@@ -1,9 +1,11 @@
 // ============================================
-// PRICING PAGE - v2.0 SANDBOX VERSION
+// PRICING PAGE - v2.1 SANDBOX VERSION
+// ============================================
+// CATATAN: SUPABASE_URL sudah ada di supabase-config.js
+// Jadi kita langsung pakai variabel yang sudah ada
 // ============================================
 
-// Supabase URL (ganti dengan project Anda)
-const SUPABASE_URL = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co';
+// Gunakan SUPABASE_URL dari supabase-config.js
 const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1`;
 
 let currentUser = null;
@@ -214,7 +216,7 @@ async function selectPlan(planId) {
         console.log('✅ Order created:', order);
         
         // Step 2: Get Midtrans token via Edge Function
-        console.log('🔑 Getting Midtrans token...');
+        console.log('🔑 Getting Midtrans token from:', EDGE_FUNCTION_URL);
         
         const { data: { session } } = await supabaseClient.auth.getSession();
         
@@ -298,16 +300,19 @@ function showLoading(show) {
 // ========================================
 
 function setupEventListeners() {
+    // Plan selection buttons
     document.querySelectorAll('.btn-select-plan').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const planId = btn.dataset.plan;
+            console.log('Button clicked, plan:', planId, 'disabled:', btn.disabled);
             if (planId && !btn.disabled) {
                 selectPlan(planId);
             }
         });
     });
     
+    // Login button
     const loginBtn = document.getElementById('btn-login');
     if (loginBtn) {
         loginBtn.addEventListener('click', async (e) => {
@@ -316,6 +321,7 @@ function setupEventListeners() {
         });
     }
     
+    // Logout button
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async (e) => {
@@ -324,6 +330,8 @@ function setupEventListeners() {
             window.location.reload();
         });
     }
+    
+    console.log('✅ Event listeners setup complete');
 }
 
 // ========================================
@@ -332,7 +340,8 @@ function setupEventListeners() {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 DOM ready, initializing pricing (SANDBOX)...');
+    console.log('📡 Edge Function URL:', EDGE_FUNCTION_URL);
     initPricing();
 });
 
-console.log('✅ Pricing.js v2.0 SANDBOX loaded');
+console.log('✅ Pricing.js v2.1 SANDBOX loaded');
