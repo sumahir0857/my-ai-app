@@ -1,16 +1,13 @@
-// supabase/functions/midtrans-webhook/index.ts
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { crypto } from "https://deno.land/std@0.168.0/crypto/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const MIDTRANS_SERVER_KEY = Deno.env.get("MIDTRANS_SERVER_KEY")!;
+const MIDTRANS_SERVER_KEY = Deno.env.get("MIDTRANS_SERVER_KEY") || "Mid-server-miTgH21efvE9ucKHvbauulFW";
 
-// Verify Midtrans signature
 async function verifySignature(
   orderId: string,
   statusCode: string,
@@ -23,7 +20,7 @@ async function verifySignature(
   const data = encoder.encode(payload);
   const hashBuffer = await crypto.subtle.digest("SHA-512", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   return hashHex === signatureKey;
 }
 
@@ -34,7 +31,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    console.log("Webhook received:", JSON.stringify(body, null, 2));
+    console.log("📨 Webhook received:", JSON.stringify(body, null, 2));
 
     const {
       order_id,
@@ -47,7 +44,6 @@ serve(async (req) => {
       fraud_status,
     } = body;
 
-    // Verify signature
     const isValid = await verifySignature(
       order_id,
       status_code,
@@ -57,92 +53,76 @@ serve(async (req) => {
     );
 
     if (!isValid) {
-      console.error("Invalid signature!");
+      console.error("❌ Invalid signature for order:", order_id);
       return new Response(
         JSON.stringify({ success: false, message: "Invalid signature" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Create Supabase client with service role
+    console.log("✅ Signature verified for order:", order_id);
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Handle different transaction statuses
-    let paymentStatus = "pending";
     let shouldActivate = false;
 
     if (transaction_status === "capture") {
-      if (fraud_status === "accept") {
-        paymentStatus = "paid";
-        shouldActivate = true;
-      } else if (fraud_status === "challenge") {
-        paymentStatus = "pending";
-      }
+      shouldActivate = fraud_status === "accept";
     } else if (transaction_status === "settlement") {
-      paymentStatus = "paid";
       shouldActivate = true;
-    } else if (transaction_status === "pending") {
-      paymentStatus = "pending";
-    } else if (
-      transaction_status === "deny" ||
-      transaction_status === "cancel" ||
-      transaction_status === "expire"
-    ) {
-      paymentStatus = "failed";
-      
-      // Update payment status to failed
+    } else if (["deny", "cancel", "expire"].includes(transaction_status)) {
       await supabase
         .from("payments")
         .update({
-          status: paymentStatus,
+          status: "failed",
           status_message: transaction_status,
           midtrans_response: body,
           updated_at: new Date().toISOString(),
         })
         .eq("order_id", order_id);
-        
-      // Update subscription status
+
       const { data: payment } = await supabase
         .from("payments")
         .select("subscription_id")
         .eq("order_id", order_id)
         .single();
-        
+
       if (payment?.subscription_id) {
         await supabase
           .from("subscriptions")
           .update({ status: "cancelled", updated_at: new Date().toISOString() })
           .eq("id", payment.subscription_id);
       }
-    } else if (transaction_status === "refund") {
-      paymentStatus = "refunded";
+
+      console.log("❌ Payment failed/cancelled:", order_id);
     }
 
-    // Activate subscription if payment successful
     if (shouldActivate) {
-      const { data, error } = await supabase.rpc("activate_subscription", {
+      console.log("🎉 Activating subscription for order:", order_id);
+
+      const { error } = await supabase.rpc("activate_subscription", {
         p_order_id: order_id,
-        p_transaction_id: transaction_id,
-        p_payment_type: payment_type,
+        p_transaction_id: transaction_id || null,
+        p_payment_type: payment_type || null,
         p_midtrans_response: body,
       });
 
       if (error) {
-        console.error("Failed to activate subscription:", error);
+        console.error("❌ Failed to activate:", error);
       } else {
-        console.log("Subscription activated successfully");
+        console.log("✅ Subscription activated!");
       }
     }
 
     return new Response(
-      JSON.stringify({ success: true, status: paymentStatus }),
+      JSON.stringify({ success: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error("Webhook error:", error);
+    console.error("❌ Webhook error:", error.message);
     return new Response(
       JSON.stringify({ success: false, message: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
