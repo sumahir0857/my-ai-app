@@ -1,9 +1,10 @@
 // ============================================
-// PRICING PAGE - v1.0
+// PRICING PAGE - v2.0 SANDBOX VERSION
 // ============================================
 
-// Supabase Edge Function URL
-const EDGE_FUNCTION_URL = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co/functions/v1';
+// Supabase URL (ganti dengan project Anda)
+const SUPABASE_URL = 'https://xhjwmhoxrszzrwsmqhxi.supabase.co';
+const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1`;
 
 let currentUser = null;
 let currentSubscription = null;
@@ -13,15 +14,22 @@ let currentSubscription = null;
 // ========================================
 
 async function initPricing() {
-    console.log('💳 Initializing pricing page...');
+    console.log('💳 Initializing pricing page (SANDBOX)...');
     
-    const isLoggedIn = await checkAuth();
-    
-    if (isLoggedIn) {
-        currentUser = getCurrentUser();
-        showUserUI();
-        await loadSubscriptionInfo();
-    } else {
+    try {
+        const isLoggedIn = await checkAuth();
+        
+        if (isLoggedIn) {
+            currentUser = getCurrentUser();
+            console.log('✅ User logged in:', currentUser?.email);
+            showUserUI();
+            await loadSubscriptionInfo();
+        } else {
+            console.log('⚠️ User not logged in');
+            showLoginUI();
+        }
+    } catch (error) {
+        console.error('Init error:', error);
         showLoginUI();
     }
     
@@ -29,8 +37,11 @@ async function initPricing() {
 }
 
 function showUserUI() {
-    document.getElementById('btn-login').style.display = 'none';
-    document.getElementById('user-info').style.display = 'flex';
+    const loginBtn = document.getElementById('btn-login');
+    const userSection = document.getElementById('user-section');
+    
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (userSection) userSection.style.display = 'flex';
     
     if (currentUser) {
         const avatar = document.getElementById('user-avatar');
@@ -38,18 +49,22 @@ function showUserUI() {
         
         if (avatar) {
             avatar.src = currentUser.user_metadata?.avatar_url || 
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.email)}&background=6366f1&color=fff`;
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.email || 'U')}&background=6366f1&color=fff`;
         }
         if (name) {
-            name.textContent = currentUser.user_metadata?.full_name || currentUser.email;
+            name.textContent = currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'User';
         }
     }
 }
 
 function showLoginUI() {
-    document.getElementById('btn-login').style.display = 'block';
-    document.getElementById('user-info').style.display = 'none';
-    document.getElementById('subscription-info').style.display = 'none';
+    const loginBtn = document.getElementById('btn-login');
+    const userSection = document.getElementById('user-section');
+    const subInfo = document.getElementById('subscription-info');
+    
+    if (loginBtn) loginBtn.style.display = 'block';
+    if (userSection) userSection.style.display = 'none';
+    if (subInfo) subInfo.style.display = 'none';
 }
 
 // ========================================
@@ -58,12 +73,16 @@ function showLoginUI() {
 
 async function loadSubscriptionInfo() {
     try {
+        console.log('📊 Loading subscription info...');
+        
         const { data, error } = await supabaseClient.rpc('get_my_subscription');
         
         if (error) {
             console.error('Error loading subscription:', error);
             return;
         }
+        
+        console.log('Subscription data:', data);
         
         if (data && data.length > 0) {
             currentSubscription = data[0];
@@ -78,48 +97,50 @@ function updateSubscriptionUI() {
     const sub = currentSubscription;
     if (!sub) return;
     
-    // Update subscription info box
+    console.log('📦 Current plan:', sub.plan_id);
+    
     const infoBox = document.getElementById('subscription-info');
-    const planName = document.getElementById('current-plan-name');
+    const planDisplay = document.getElementById('current-plan-display');
     const planExpiry = document.getElementById('current-plan-expiry');
     
-    if (sub.plan_id !== 'free') {
-        infoBox.style.display = 'block';
-        planName.textContent = sub.plan_name;
+    if (sub.plan_id && sub.plan_id !== 'free') {
+        if (infoBox) infoBox.style.display = 'block';
+        if (planDisplay) planDisplay.textContent = sub.plan_name || sub.plan_id;
         
-        if (sub.expires_at) {
+        if (planExpiry && sub.expires_at) {
             const expiryDate = new Date(sub.expires_at).toLocaleDateString('id-ID', {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric'
             });
-            planExpiry.textContent = `Berlaku hingga ${expiryDate} (${sub.days_remaining} hari lagi)`;
+            const daysLeft = sub.days_remaining || 0;
+            planExpiry.textContent = `Berlaku hingga ${expiryDate} (${daysLeft} hari lagi)`;
         }
     } else {
-        infoBox.style.display = 'none';
+        if (infoBox) infoBox.style.display = 'none';
     }
     
-    // Update pricing cards
     document.querySelectorAll('.pricing-card').forEach(card => {
         const planId = card.dataset.plan;
         const btn = card.querySelector('.btn-select-plan');
+        if (!btn) return;
         
-        // Remove existing badge
         const existingBadge = card.querySelector('.current-plan-badge');
         if (existingBadge) existingBadge.remove();
         
         if (planId === sub.plan_id) {
-            // Current plan
             btn.disabled = true;
-            btn.textContent = 'Plan Aktif';
+            btn.textContent = '✓ Plan Aktif';
             btn.classList.remove('primary');
             btn.classList.add('secondary');
             
-            // Add badge
-            const badge = document.createElement('span');
-            badge.className = 'current-plan-badge';
-            badge.textContent = 'PLAN ANDA';
-            card.querySelector('h3').after(badge);
+            const title = card.querySelector('h3');
+            if (title) {
+                const badge = document.createElement('span');
+                badge.className = 'current-plan-badge';
+                badge.textContent = 'AKTIF';
+                title.appendChild(badge);
+            }
         } else if (planId === 'free') {
             btn.disabled = true;
             btn.textContent = 'Plan Gratis';
@@ -127,6 +148,9 @@ function updateSubscriptionUI() {
             btn.disabled = false;
             btn.classList.add('primary');
             btn.classList.remove('secondary');
+            
+            const prices = { basic: '25.000', pro: '75.000', unlimited: '150.000' };
+            btn.textContent = `Pilih ${planId.charAt(0).toUpperCase() + planId.slice(1)} - Rp ${prices[planId]}`;
         }
     });
 }
@@ -136,27 +160,35 @@ function updateSubscriptionUI() {
 // ========================================
 
 async function selectPlan(planId) {
+    console.log('💳 Selected plan:', planId);
+    
     if (!currentUser) {
-        // Redirect to login
-        alert('Silakan login terlebih dahulu');
+        alert('Silakan login terlebih dahulu untuk berlangganan');
         await loginWithGoogle();
         return;
     }
     
     if (planId === 'free') {
-        alert('Anda sudah menggunakan plan gratis');
         return;
     }
     
-    // Confirm purchase
-    const planNames = {
-        basic: 'Basic (Rp 25.000)',
-        pro: 'Pro (Rp 75.000)',
-        unlimited: 'Unlimited (Rp 150.000)'
+    const planDetails = {
+        basic: { name: 'Basic', price: 'Rp 25.000', limit: '5x generate/hari' },
+        pro: { name: 'Pro', price: 'Rp 75.000', limit: '20x generate/hari' },
+        unlimited: { name: 'Unlimited', price: 'Rp 150.000', limit: 'Unlimited generate' }
     };
     
+    const plan = planDetails[planId];
+    if (!plan) return;
+    
     const confirmed = confirm(
-        `Anda akan berlangganan ${planNames[planId]} untuk 30 hari.\n\nLanjutkan ke pembayaran?`
+        `🧪 MODE SANDBOX - Testing Only\n\n` +
+        `🛒 Konfirmasi Pembelian\n\n` +
+        `Plan: ${plan.name}\n` +
+        `Harga: ${plan.price}\n` +
+        `Benefit: ${plan.limit}\n` +
+        `Durasi: 30 hari\n\n` +
+        `Lanjutkan ke pembayaran?`
     );
     
     if (!confirmed) return;
@@ -164,48 +196,79 @@ async function selectPlan(planId) {
     showLoading(true);
     
     try {
-        // Get session token
+        // Step 1: Create order in database
+        console.log('📝 Creating payment order...');
+        
+        const { data: orderData, error: orderError } = await supabaseClient
+            .rpc('create_payment_order', { p_plan_id: planId });
+        
+        if (orderError) {
+            throw new Error(orderError.message);
+        }
+        
+        if (!orderData || orderData.length === 0 || !orderData[0].success) {
+            throw new Error(orderData?.[0]?.message || 'Failed to create order');
+        }
+        
+        const order = orderData[0];
+        console.log('✅ Order created:', order);
+        
+        // Step 2: Get Midtrans token via Edge Function
+        console.log('🔑 Getting Midtrans token...');
+        
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (!session) {
             throw new Error('Session expired. Please login again.');
         }
         
-        // Call edge function to create payment
         const response = await fetch(`${EDGE_FUNCTION_URL}/create-payment`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${session.access_token}`
             },
-            body: JSON.stringify({ plan_id: planId })
+            body: JSON.stringify({ 
+                plan_id: planId,
+                order_id: order.order_id,
+                amount: order.amount,
+                plan_name: order.plan_name
+            })
         });
         
         const result = await response.json();
+        console.log('Midtrans response:', result);
         
         if (!result.success) {
             throw new Error(result.message || 'Failed to create payment');
         }
         
-        console.log('Payment created:', result);
-        
-        // Open Midtrans Snap
         showLoading(false);
+        
+        console.log('🔓 Opening Midtrans Snap...');
+        
+        // Check if snap is loaded
+        if (typeof window.snap === 'undefined') {
+            throw new Error('Midtrans Snap not loaded. Please refresh the page.');
+        }
         
         window.snap.pay(result.snap_token, {
             onSuccess: function(result) {
-                console.log('Payment success:', result);
-                alert('Pembayaran berhasil! Plan Anda akan segera diaktifkan.');
-                window.location.reload();
+                console.log('✅ Payment success:', result);
+                alert('🎉 Pembayaran berhasil!\n\nPlan Anda akan segera diaktifkan.');
+                setTimeout(() => window.location.reload(), 1500);
             },
             onPending: function(result) {
-                console.log('Payment pending:', result);
-                alert('Pembayaran pending. Silakan selesaikan pembayaran Anda.');
-                window.location.href = '/payment-pending.html?order_id=' + result.order_id;
+                console.log('⏳ Payment pending:', result);
+                alert(
+                    '⏳ Pembayaran Pending\n\n' +
+                    'Silakan selesaikan pembayaran Anda.\n' +
+                    'Plan akan aktif setelah pembayaran dikonfirmasi.'
+                );
             },
             onError: function(result) {
-                console.error('Payment error:', result);
-                alert('Pembayaran gagal. Silakan coba lagi.');
+                console.error('❌ Payment error:', result);
+                alert('❌ Pembayaran gagal.\n\nSilakan coba lagi.');
             },
             onClose: function() {
                 console.log('Payment popup closed');
@@ -213,8 +276,8 @@ async function selectPlan(planId) {
         });
         
     } catch (error) {
-        console.error('Payment error:', error);
-        alert('Error: ' + error.message);
+        console.error('❌ Payment error:', error);
+        alert('❌ Error: ' + error.message);
         showLoading(false);
     }
 }
@@ -222,7 +285,11 @@ async function selectPlan(planId) {
 function showLoading(show) {
     const overlay = document.getElementById('loading-overlay');
     if (overlay) {
-        overlay.classList.toggle('active', show);
+        if (show) {
+            overlay.classList.add('active');
+        } else {
+            overlay.classList.remove('active');
+        }
     }
 }
 
@@ -231,26 +298,28 @@ function showLoading(show) {
 // ========================================
 
 function setupEventListeners() {
-    // Plan selection buttons
     document.querySelectorAll('.btn-select-plan').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
             const planId = btn.dataset.plan;
-            selectPlan(planId);
+            if (planId && !btn.disabled) {
+                selectPlan(planId);
+            }
         });
     });
     
-    // Login button
     const loginBtn = document.getElementById('btn-login');
     if (loginBtn) {
-        loginBtn.addEventListener('click', async () => {
+        loginBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
             await loginWithGoogle();
         });
     }
     
-    // Logout button
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', async () => {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
             await logout();
             window.location.reload();
         });
@@ -261,6 +330,9 @@ function setupEventListeners() {
 // INITIALIZE
 // ========================================
 
-document.addEventListener('DOMContentLoaded', initPricing);
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM ready, initializing pricing (SANDBOX)...');
+    initPricing();
+});
 
-console.log('✅ Pricing.js loaded');
+console.log('✅ Pricing.js v2.0 SANDBOX loaded');
