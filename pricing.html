@@ -7,14 +7,21 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Midtrans Snap -->
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-YOUR_CLIENT_KEY"></script>
+    
+    <!-- ✅ MIDTRANS SNAP - SANDBOX -->
+    <script 
+        src="https://app.sandbox.midtrans.com/snap/snap.js" 
+        data-client-key="Mid-client-hyM69TbC-Y3OFKzA">
+    </script>
+    
     <style>
         * { font-family: 'Space Grotesk', sans-serif; }
         body { 
             background: linear-gradient(135deg, #050510 0%, #0a0a1f 50%, #050510 100%);
             color: #ffffff;
             min-height: 100vh;
+            margin: 0;
+            padding: 0;
         }
         .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
         .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
@@ -51,11 +58,12 @@
             transform: rotate(45deg);
         }
         .price-tag {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: 700;
             background: linear-gradient(135deg, #ffffff, #a5b4fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .feature-item {
             display: flex;
@@ -63,6 +71,7 @@
             gap: 12px;
             padding: 8px 0;
             color: #94a3b8;
+            font-size: 0.9rem;
         }
         .feature-item .check {
             width: 20px;
@@ -74,22 +83,24 @@
             justify-content: center;
             color: #22c55e;
             font-size: 12px;
+            flex-shrink: 0;
         }
         .btn-subscribe {
             width: 100%;
-            padding: 16px 32px;
+            padding: 14px 24px;
             border-radius: 12px;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             transition: all 0.3s ease;
             border: none;
+            margin-top: 8px;
         }
         .btn-subscribe.primary {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
         }
-        .btn-subscribe.primary:hover {
+        .btn-subscribe.primary:hover:not(:disabled) {
             transform: scale(1.02);
             box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
         }
@@ -98,41 +109,97 @@
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        .btn-subscribe.secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-        }
         .btn-subscribe:disabled {
-            opacity: 0.5;
+            opacity: 0.6;
             cursor: not-allowed;
+            transform: none !important;
         }
         .current-plan-badge {
+            display: inline-block;
             background: linear-gradient(135deg, #22c55e, #16a34a);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
+            margin-left: 8px;
         }
         .subscription-info {
             background: rgba(99, 102, 241, 0.1);
             border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 12px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 24px;
             margin-bottom: 40px;
         }
-        
-        /* Loading overlay */
+        .sandbox-badge {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f59e0b;
+            color: #000;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 1000;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+        .back-link {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: white; }
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid rgba(99, 102, 241, 0.5);
+        }
+        .user-name { color: white; font-weight: 500; }
+        .btn-logout {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            font-size: 0.85rem;
+            padding: 4px 8px;
+        }
+        .btn-logout:hover { color: white; }
+        .btn-login {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-login:hover { background: rgba(255,255,255,0.15); }
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            z-index: 9999;
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -148,193 +215,157 @@
             border-top-color: #6366f1;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) {
+            .pricing-card { padding: 24px; }
+            .price-tag { font-size: 2rem; }
         }
     </style>
 </head>
 <body>
+    <!-- Sandbox Badge -->
+    <div class="sandbox-badge">🧪 MODE SANDBOX - Testing Only</div>
+
     <!-- Stars Background -->
     <div class="stars" id="stars"></div>
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loading-overlay">
-        <div class="text-center">
-            <div class="loading-spinner mx-auto mb-4"></div>
-            <p class="text-white">Memproses pembayaran...</p>
-        </div>
+        <div class="loading-spinner"></div>
+        <p style="color: white; font-size: 1.1rem;">Memproses pembayaran...</p>
+        <p style="color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-top: 8px;">Mohon tunggu sebentar</p>
     </div>
 
     <!-- Main Content -->
-    <div class="relative z-10 container mx-auto px-4 py-12">
+    <div style="position: relative; z-index: 10; max-width: 1200px; margin: 0 auto; padding: 20px; padding-top: 60px;">
+        
         <!-- Header -->
-        <header class="flex justify-between items-center mb-12">
-            <a href="index.html" class="text-white/70 hover:text-white transition">← Beranda</a>
-            <div id="user-info" class="flex items-center gap-4" style="display: none;">
-                <img id="user-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-full">
-                <span id="user-name" class="text-white"></span>
-                <button id="btn-logout" class="text-white/70 hover:text-white text-sm">Keluar</button>
+        <header class="page-header">
+            <a href="index.html" class="back-link">← Beranda</a>
+            
+            <div id="user-section" class="user-section" style="display: none;">
+                <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
+                <span id="user-name" class="user-name"></span>
+                <button id="btn-logout" class="btn-logout">Keluar</button>
             </div>
-            <button id="btn-login" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition" style="display: none;">
-                Login untuk Berlangganan
+            
+            <button id="btn-login" class="btn-login" style="display: none;">
+                🔐 Login untuk Berlangganan
             </button>
         </header>
 
         <!-- Title -->
-        <div class="text-center mb-12">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">
-                Pilih Plan yang <span class="text-indigo-400">Tepat</span> untuk Anda
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 16px;">
+                Pilih Plan yang <span style="color: #818cf8;">Tepat</span> untuk Anda
             </h1>
-            <p class="text-white/60 text-lg max-w-2xl mx-auto">
+            <p style="color: rgba(255,255,255,0.6); font-size: 1.1rem; max-width: 600px; margin: 0 auto;">
                 Tingkatkan produktivitas dengan akses lebih banyak generate per hari
             </p>
         </div>
 
         <!-- Current Subscription Info -->
-        <div id="subscription-info" class="subscription-info max-w-2xl mx-auto text-center" style="display: none;">
-            <p class="text-white/70 mb-2">Plan Anda Saat Ini</p>
-            <p class="text-2xl font-bold text-white mb-1" id="current-plan-name">Free</p>
-            <p class="text-white/60" id="current-plan-expiry"></p>
+        <div id="subscription-info" class="subscription-info" style="display: none; max-width: 500px; margin: 0 auto 40px;">
+            <p style="color: rgba(255,255,255,0.7); margin: 0 0 8px; text-align: center;">📦 Plan Anda Saat Ini</p>
+            <p id="current-plan-display" style="font-size: 1.5rem; font-weight: 700; color: white; text-align: center; margin: 0 0 4px;"></p>
+            <p id="current-plan-expiry" style="color: rgba(255,255,255,0.6); text-align: center; margin: 0; font-size: 0.9rem;"></p>
         </div>
 
-        <!-- Pricing Cards -->
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            <!-- Free -->
+        <!-- Pricing Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; margin-bottom: 60px;">
+            
+            <!-- Free Plan -->
             <div class="pricing-card" data-plan="free">
-                <div class="mb-6">
-                    <h3 class="text-xl font-semibold text-white mb-2">Free</h3>
-                    <p class="text-white/60 text-sm">Cocok untuk mencoba</p>
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 1.3rem; font-weight: 600; color: white; margin: 0 0 4px;">Free</h3>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0;">Cocok untuk mencoba</p>
                 </div>
-                <div class="mb-6">
+                <div style="margin-bottom: 24px;">
                     <span class="price-tag">Gratis</span>
                 </div>
-                <div class="space-y-2 mb-8">
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>1x generate / hari</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Hasil disimpan 7 hari</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Watermark</span>
-                    </div>
+                <div style="margin-bottom: 24px;">
+                    <div class="feature-item"><span class="check">✓</span><span>1x generate / hari</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Hasil disimpan 7 hari</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Dengan watermark</span></div>
                 </div>
                 <button class="btn-subscribe secondary btn-select-plan" data-plan="free" disabled>
                     Plan Gratis
                 </button>
             </div>
 
-            <!-- Basic -->
+            <!-- Basic Plan -->
             <div class="pricing-card" data-plan="basic">
-                <div class="mb-6">
-                    <h3 class="text-xl font-semibold text-white mb-2">Basic</h3>
-                    <p class="text-white/60 text-sm">Untuk kreator pemula</p>
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 1.3rem; font-weight: 600; color: white; margin: 0 0 4px;">Basic</h3>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0;">Untuk kreator pemula</p>
                 </div>
-                <div class="mb-6">
-                    <span class="price-tag">25rb</span>
-                    <span class="text-white/60">/bulan</span>
+                <div style="margin-bottom: 24px;">
+                    <span class="price-tag">Rp 25rb</span>
+                    <span style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">/bulan</span>
                 </div>
-                <div class="space-y-2 mb-8">
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>5x generate / hari</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Hasil disimpan 30 hari</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Priority queue</span>
-                    </div>
+                <div style="margin-bottom: 24px;">
+                    <div class="feature-item"><span class="check">✓</span><span>5x generate / hari</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Hasil disimpan 30 hari</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Priority queue</span></div>
                 </div>
                 <button class="btn-subscribe primary btn-select-plan" data-plan="basic">
-                    Pilih Basic
+                    Pilih Basic - Rp 25.000
                 </button>
             </div>
 
-            <!-- Pro (Popular) -->
+            <!-- Pro Plan (Popular) -->
             <div class="pricing-card popular" data-plan="pro">
-                <div class="mb-6">
-                    <h3 class="text-xl font-semibold text-white mb-2">Pro</h3>
-                    <p class="text-white/60 text-sm">Untuk kreator aktif</p>
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 1.3rem; font-weight: 600; color: white; margin: 0 0 4px;">Pro</h3>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0;">Untuk kreator aktif</p>
                 </div>
-                <div class="mb-6">
-                    <span class="price-tag">75rb</span>
-                    <span class="text-white/60">/bulan</span>
+                <div style="margin-bottom: 24px;">
+                    <span class="price-tag">Rp 75rb</span>
+                    <span style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">/bulan</span>
                 </div>
-                <div class="space-y-2 mb-8">
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>20x generate / hari</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Hasil disimpan 90 hari</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Priority queue</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>No watermark</span>
-                    </div>
+                <div style="margin-bottom: 24px;">
+                    <div class="feature-item"><span class="check">✓</span><span>20x generate / hari</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Hasil disimpan 90 hari</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Priority queue</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Tanpa watermark</span></div>
                 </div>
                 <button class="btn-subscribe primary btn-select-plan" data-plan="pro">
-                    Pilih Pro
+                    Pilih Pro - Rp 75.000
                 </button>
             </div>
 
-            <!-- Unlimited -->
+            <!-- Unlimited Plan -->
             <div class="pricing-card" data-plan="unlimited">
-                <div class="mb-6">
-                    <h3 class="text-xl font-semibold text-white mb-2">Unlimited</h3>
-                    <p class="text-white/60 text-sm">Untuk bisnis & agency</p>
+                <div style="margin-bottom: 20px;">
+                    <h3 style="font-size: 1.3rem; font-weight: 600; color: white; margin: 0 0 4px;">Unlimited</h3>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.85rem; margin: 0;">Untuk bisnis & agency</p>
                 </div>
-                <div class="mb-6">
-                    <span class="price-tag">150rb</span>
-                    <span class="text-white/60">/bulan</span>
+                <div style="margin-bottom: 24px;">
+                    <span class="price-tag">Rp 150rb</span>
+                    <span style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">/bulan</span>
                 </div>
-                <div class="space-y-2 mb-8">
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Unlimited generate</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Hasil disimpan selamanya</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>Priority queue</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>No watermark</span>
-                    </div>
-                    <div class="feature-item">
-                        <span class="check">✓</span>
-                        <span>API access</span>
-                    </div>
+                <div style="margin-bottom: 24px;">
+                    <div class="feature-item"><span class="check">✓</span><span>Unlimited generate</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Hasil disimpan selamanya</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Priority queue</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>Tanpa watermark</span></div>
+                    <div class="feature-item"><span class="check">✓</span><span>API access</span></div>
                 </div>
                 <button class="btn-subscribe primary btn-select-plan" data-plan="unlimited">
-                    Pilih Unlimited
+                    Pilih Unlimited - Rp 150.000
                 </button>
             </div>
         </div>
 
-        <!-- FAQ atau info tambahan -->
-        <div class="text-center mt-16">
-            <p class="text-white/60">
-                💳 Pembayaran aman via Midtrans (QRIS, Bank Transfer, E-wallet, dll)
+        <!-- Footer Info -->
+        <div style="text-align: center; padding: 20px 0;">
+            <p style="color: rgba(255,255,255,0.6); margin: 0 0 8px;">
+                💳 Pembayaran aman via <strong>Midtrans</strong> (QRIS, Bank Transfer, GoPay, OVO, dll)
             </p>
-            <p class="text-white/40 text-sm mt-2">
-                Langganan berlaku 30 hari sejak pembayaran. Tidak ada perpanjangan otomatis.
+            <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin: 0;">
+                Langganan berlaku 30 hari sejak pembayaran berhasil. Tidak ada perpanjangan otomatis.
             </p>
         </div>
     </div>
@@ -345,7 +376,7 @@
     <script src="js/pricing.js"></script>
     
     <script>
-        // Generate stars
+        // Generate stars background
         const starsContainer = document.getElementById('stars');
         for (let i = 0; i < 150; i++) {
             const star = document.createElement('div');
