@@ -3,44 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Affiliate Generator - OrbitBot</title>
+    <title>Affiliate AI - OrbitBot</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Link CSS lama tetap ada, tapi style di bawah akan menimpa tampilannya -->
     <link rel="stylesheet" href="css/generator.css">
+    
     <style>
-        * { font-family: 'Space Grotesk', sans-serif; }
+        /* --- CORE STYLES & OVERRIDES --- */
+        :root {
+            --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+            --card-bg: #0f1016;
+            --card-border: #1f2937;
+            --input-bg: #050510;
+        }
+
+        * { font-family: 'Space Grotesk', sans-serif; box-sizing: border-box; }
+        
         body { 
-            background: #050510; 
+            background: #020205; 
             color: #ffffff;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
+
+        /* Stars Background */
         .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
         .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
         @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        /* --- UI COMPONENTS (Tools Style) --- */
+        
+        /* Container Utama yang Rapi */
+        .main-container {
+            max-width: 600px; /* Kompak seperti tampilan mobile di desktop */
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header Style */
+        .app-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-top: 1rem;
+        }
+        
+        .app-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #a78bfa, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .back-nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            text-decoration: none;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* User Info & Stats Compact */
+        .user-panel {
+            background: rgba(15, 16, 22, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 50px;
+            padding: 8px 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+        }
+        
+        .user-panel span { color: #cbd5e1; }
+        .user-panel strong { color: #fff; }
+
+        /* Pill Tabs (Seperti di Pilih Tools) */
+        .tabs-pill-container {
+            display: flex;
+            justify-content: center;
+            background: #0f1016;
+            padding: 5px;
+            border-radius: 50px;
+            border: 1px solid #1f2937;
+            margin-bottom: 25px;
+            gap: 5px;
+        }
+
+        .tab-pill {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 10px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .tab-pill.active {
+            background: #7c3aed; /* Purple solid */
+            color: white;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+        
+        .tab-count {
+            background: rgba(0,0,0,0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            margin-left: 4px;
+        }
+
+        /* Card Sections (Kotak-kotak tools) */
+        .tool-card {
+            background: #11121c;
+            border: 1px solid #2d2d42;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        .tool-card:hover {
+            border-color: #4c4c68;
+        }
+
+        .tool-card h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Inputs Styling */
+        .form-group { margin-bottom: 15px; }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            background: #050508;
+            border: 1px solid #2d2d42;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+        }
+
+        /* Upload Styling */
+        .upload-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .upload-box {
+            background: #050508;
+            border: 1px dashed #4b5563;
+            border-radius: 12px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .upload-box:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .upload-placeholder {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .upload-icon { font-size: 1.5rem; display: block; margin-bottom: 5px; }
+        .upload-preview { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Action Buttons */
+        .btn-primary {
+            width: 100%;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 50px; /* Pill shape */
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+        }
+
+        /* History Warning Banner */
+        .warning-banner {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #fcd34d;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+        }
+
+        /* Tabs Logic Display */
+        .tab-panel { display: none; animation: fadeIn 0.3s; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Responsive Fixes */
+        @media (max-width: 480px) {
+            .upload-row { grid-template-columns: 1fr; }
+            .tabs-pill-container { flex-wrap: wrap; }
+            .tab-pill { padding: 8px 12px; font-size: 0.85rem; }
+            .app-title { font-size: 1.5rem; }
+        }
+
+        /* Modal Styles (Tetap menggunakan style lama tapi disesuaikan dikit) */
+        .modal { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.8); 
+            backdrop-filter: blur(5px);
+            z-index: 1000; 
+            display: none; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        .modal-content { 
+            background: #11121c; 
+            border: 1px solid #2d2d42; 
+            width: 90%; 
+            max-width: 500px; 
+            padding: 20px; 
+            border-radius: 20px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
     </style>
 </head>
 <body>
     <!-- Stars Background -->
     <div class="stars" id="stars"></div>
 
-    <!-- Login Section -->
-    <div id="login-section" class="login-section" style="display: none;">
-        <div class="login-container">
+    <!-- Login Section (Tidak diubah, hanya hidden default) -->
+    <div id="login-section" class="login-section" style="display: none; height: 100vh; display: flex; align-items: center; justify-content: center;">
+        <div class="tool-card" style="text-align: center; max-width: 400px; margin: 20px;">
             <div class="login-header">
-                <h1>🛰️ Video Affiliate Generator</h1>
-                <p>Buat konten affiliate profesional dengan AI</p>
+                <h1 class="app-title">🛰️ Affiliate AI</h1>
+                <p style="color: #94a3b8;">Buat konten affiliate profesional dengan AI</p>
             </div>
             
-            <div class="login-features">
-                <div class="feature-item">📸 Generate 3 foto produk berkualitas</div>
-                <div class="feature-item">🎬 Generate 3 video animasi menarik</div>
-                <div class="feature-item">🎵 Generate audio promosi + script</div>
+            <div style="text-align: left; margin: 20px 0; color: #cbd5e1;">
+                <div style="margin-bottom: 10px;">📸 Generate 3 foto produk berkualitas</div>
+                <div style="margin-bottom: 10px;">🎬 Generate 3 video animasi menarik</div>
+                <div style="margin-bottom: 10px;">🎵 Generate audio promosi + script</div>
             </div>
             
-            <button id="btn-login-google" class="btn-google">
+            <button id="btn-login-google" class="btn-primary" style="background: white; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px;">
                 <svg viewBox="0 0 24 24" width="20" height="20">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -49,49 +314,39 @@
                 </svg>
                 Masuk dengan Google
             </button>
-            
-            <p style="margin-top: 24px; font-size: 0.85rem; color: #64748b;">
-                🔒 Aman & gratis untuk memulai
-            </p>
         </div>
     </div>
 
-    <!-- Generator Section -->
-    <div id="generator-section" class="generator-section" style="display: none;">
-        <!-- Header -->
-        <header class="generator-header">
-            <div class="header-left">
-                <a href="index.html" class="back-link">← Beranda</a>
-                <h1>🛰️ Video Affiliate Generator</h1>
-            </div>
-            <div class="header-right">
-                <div class="user-info">
-                    <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
-                    <span id="user-name" class="user-name"></span>
-                </div>
-                <button id="btn-logout" class="btn-logout">Keluar</button>
-            </div>
+    <!-- Generator Section (Tampilan Baru) -->
+    <div id="generator-section" class="main-container" style="display: none;">
+        
+        <!-- Header & Nav -->
+        <a href="index.html" class="back-nav">← Tools</a>
+        <header class="app-header">
+            <h1 class="app-title">Video Affiliate</h1>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 5px;">Powered by AI • VEO 3.1</p>
         </header>
 
-        <!-- Stats Bar -->
-        <div class="stats-bar">
-            <div class="stat-item">
-                <span class="stat-label">Plan</span>
-                <span id="user-plan" class="stat-value">Free</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Sisa Hari Ini</span>
-                <span id="user-remaining" class="stat-value">0</span>
+        <!-- User Stats Panel -->
+        <div style="text-align: center;">
+            <div class="user-panel">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <img id="user-avatar" src="" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%;">
+                    <span id="user-name">User</span>
+                </div>
+                <div>Plan: <strong id="user-plan" style="color: #a78bfa;">Free</strong></div>
+                <div>Sisa: <strong id="user-remaining">0</strong></div>
+                <button id="btn-logout" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;">✕</button>
             </div>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs-container">
-            <button class="tab-btn active" data-tab="create">✨ Buat Baru</button>
-            <button class="tab-btn" data-tab="active">
-                ⚡ Sedang Proses <span id="active-count" class="tab-count">0</span>
+        <!-- Pill Navigation (Tabs) -->
+        <div class="tabs-pill-container">
+            <button class="tab-pill active" data-tab="create">✨ Buat</button>
+            <button class="tab-pill" data-tab="active">
+                ⚡ Proses <span id="active-count" class="tab-count">0</span>
             </button>
-            <button class="tab-btn" data-tab="history">
+            <button class="tab-pill" data-tab="history">
                 📁 Riwayat <span id="history-count" class="tab-count">0</span>
             </button>
         </div>
@@ -100,10 +355,11 @@
         <div class="tab-panels">
             <!-- Tab: Buat Baru -->
             <div id="tab-create" class="tab-panel active">
-                <form id="generator-form" class="generator-form">
-                    <!-- Upload Section -->
-                    <div class="form-section">
-                        <h3>📷 Upload Gambar</h3>
+                <form id="generator-form">
+                    
+                    <!-- Card 1: Upload -->
+                    <div class="tool-card">
+                        <h3>📷 Media Produk</h3>
                         <div class="upload-row">
                             <div class="upload-group">
                                 <label>Foto Produk (WAJIB)</label>
@@ -111,19 +367,19 @@
                                     <input type="file" id="input-product-image" accept="image/*" hidden>
                                     <div class="upload-placeholder">
                                         <span class="upload-icon">📦</span>
-                                        <span>Klik untuk upload</span>
+                                        <span>Klik Upload</span>
                                     </div>
                                     <img id="preview-product" class="upload-preview" style="display:none;">
                                 </div>
                             </div>
                             
                             <div class="upload-group">
-                                <label>Foto Model (Opsional)</label>
+                                <label>Model (Opsional)</label>
                                 <div class="upload-box" onclick="document.getElementById('input-model-image').click()">
                                     <input type="file" id="input-model-image" accept="image/*" hidden>
                                     <div class="upload-placeholder">
                                         <span class="upload-icon">👤</span>
-                                        <span>Klik untuk upload</span>
+                                        <span>Klik Upload</span>
                                     </div>
                                     <img id="preview-model" class="upload-preview" style="display:none;">
                                 </div>
@@ -131,29 +387,29 @@
                         </div>
                     </div>
 
-                    <!-- Product Details -->
-                    <div class="form-section">
-                        <h3>📝 Detail Produk</h3>
+                    <!-- Card 2: Detail -->
+                    <div class="tool-card">
+                        <h3>📝 Informasi Produk</h3>
                         <div class="form-group">
                             <label for="input-name">Nama Produk *</label>
                             <input type="text" id="input-name" placeholder="Contoh: Sepatu Sneakers Premium" required>
                         </div>
                         
-                        <div class="form-row">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                             <div class="form-group">
                                 <label for="input-price">Harga</label>
-                                <input type="text" id="input-price" placeholder="Contoh: Rp 299.000">
+                                <input type="text" id="input-price" placeholder="Rp 299.000">
                             </div>
                             <div class="form-group">
                                 <label for="input-pros">Kelebihan</label>
-                                <input type="text" id="input-pros" placeholder="Contoh: Ringan, anti air, nyaman">
+                                <input type="text" id="input-pros" placeholder="Ringan, nyaman">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Style Options -->
-                    <div class="form-section">
-                        <h3>🎨 Pengaturan Gaya</h3>
+                    <!-- Card 3: Style & Settings -->
+                    <div class="tool-card">
+                        <h3>🎨 Gaya & Pengaturan</h3>
                         
                         <div class="form-group">
                             <label for="input-style">Preset Gaya Foto</label>
@@ -172,26 +428,19 @@
                         
                         <div class="form-group" id="custom-style-group" style="display: none;">
                             <label for="input-custom-style">Instruksi Custom</label>
-                            <textarea id="input-custom-style" placeholder="Contoh: Model memakai sepatu sambil jogging di taman"></textarea>
+                            <textarea id="input-custom-style" rows="2" placeholder="Contoh: Model memakai sepatu sambil jogging"></textarea>
                         </div>
                         
                         <div class="form-group">
                             <label for="input-animation-order">Urutan Video Generator</label>
                             <select id="input-animation-order">
-                                <option value="veo_first">VEO 3.1 dulu → Grok (Kualitas Tinggi)</option>
-                                <option value="grok_first">Grok dulu → VEO 3.1 (Lebih Cepat)</option>
+                                <option value="veo_first">VEO 3.1 (Kualitas Tinggi)</option>
+                                <option value="grok_first">Grok (Lebih Cepat)</option>
                             </select>
-                            <small id="animation-order-hint" class="form-hint">
-                                VEO 3.1 menghasilkan kualitas lebih bagus tapi lebih lambat
-                            </small>
                         </div>
-                    </div>
 
-                    <!-- Generate Mode -->
-                    <div class="form-section">
-                        <h3>⚡ Mode Generate</h3>
                         <div class="form-group">
-                            <label for="input-generate-mode">Pilih apa yang ingin digenerate</label>
+                            <label for="input-generate-mode">Mode Generate</label>
                             <select id="input-generate-mode">
                                 <option value="full">🚀 Full Pipeline (Gambar + Video + Audio)</option>
                                 <option value="images_only">🖼️ Gambar Saja (3 Foto)</option>
@@ -199,104 +448,108 @@
                         </div>
                     </div>
 
-                    <!-- Submit Buttons -->
-                    <div class="form-actions">
-                        <button type="submit" id="btn-submit" class="btn-primary btn-large">
+                    <!-- Submit -->
+                    <div style="margin-top: 25px; margin-bottom: 50px;">
+                        <button type="submit" id="btn-submit" class="btn-primary">
                             🚀 Generate Sekarang
                         </button>
+                        <p style="text-align: center; color: #64748b; font-size: 0.8rem; margin-top: 15px;">
+                            Estimasi waktu: 5-20 menit. <br>Halaman boleh ditutup saat proses berjalan.
+                        </p>
                     </div>
-                    
-                    <p class="form-note">
-                        Proses generate membutuhkan waktu 5-20 menit tergantung mode yang dipilih.<br>
-                        Kamu bisa menutup halaman ini dan kembali nanti.
-                    </p>
                 </form>
             </div>
 
             <!-- Tab: Sedang Proses -->
             <div id="tab-active" class="tab-panel">
                 <div id="active-jobs" class="jobs-grid">
-                    <div class="empty-state">
-                        <span class="empty-icon">🚀</span>
+                    <div class="tool-card" style="text-align: center; padding: 40px 20px;">
+                        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">⚡</span>
                         <p>Tidak ada proses berjalan</p>
-                        <p class="empty-sub">Submit job baru untuk memulai</p>
+                        <p style="color: #64748b; font-size: 0.9rem;">Submit job baru untuk memulai</p>
                     </div>
                 </div>
             </div>
 
             <!-- Tab: Riwayat -->
             <div id="tab-history" class="tab-panel">
+                <!-- NEW: Warning Banner -->
+                <div class="warning-banner">
+                    <span style="font-size: 1.2rem;">⚠️</span>
+                    <span>Peringatan: Riwayat akan dihapus otomatis setelah <strong>3 jam</strong>. Unduh hasil Anda segera!</span>
+                </div>
+
                 <div id="history-jobs" class="jobs-grid">
-                    <div class="empty-state">
-                        <span class="empty-icon">📁</span>
+                    <div class="tool-card" style="text-align: center; padding: 40px 20px;">
+                        <span style="font-size: 2rem; display: block; margin-bottom: 10px;">📁</span>
                         <p>Belum ada riwayat</p>
-                        <p class="empty-sub">Hasil generate akan muncul di sini</p>
+                        <p style="color: #64748b; font-size: 0.9rem;">Hasil generate akan muncul di sini</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Job Modal -->
+    <!-- Job Modal (Popup Detail) -->
     <div id="job-modal" class="modal">
         <div class="modal-content">
-            <button id="btn-close-modal" class="modal-close">&times;</button>
-            
-            <div class="modal-header">
-                <h2 id="modal-title">Detail Job</h2>
-                <span id="modal-status" class="status-badge">pending</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="modal-title" style="margin: 0; font-size: 1.2rem;">Detail Job</h2>
+                <button id="btn-close-modal" class="modal-close" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
             </div>
             
             <div class="modal-body">
+                <span id="modal-status" class="status-badge" style="background: #334155; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem;">pending</span>
+                
                 <!-- Progress Section -->
-                <div id="modal-progress" class="modal-section">
+                <div id="modal-progress" class="modal-section" style="margin-top: 20px;">
                     <div class="progress-container">
-                        <div class="progress-bar-large">
-                            <div id="modal-progress-fill" class="progress-fill"></div>
+                        <div class="progress-bar-large" style="background: #1e293b; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 10px;">
+                            <div id="modal-progress-fill" class="progress-fill" style="width: 0%; height: 100%; background: var(--primary-gradient);"></div>
                         </div>
-                        <div class="progress-info">
+                        <div class="progress-info" style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8;">
                             <span id="modal-progress-percent">0%</span>
                             <span id="modal-steps">Step 0 / 8</span>
                         </div>
-                        <p id="modal-step" class="progress-step">Menunggu...</p>
+                        <p id="modal-step" class="progress-step" style="text-align: center; font-size: 0.9rem; margin-top: 10px; color: #cbd5e1;">Menunggu...</p>
                     </div>
                 </div>
                 
                 <!-- Results Section -->
-                <div id="modal-results" class="modal-section" style="display: none;">
+                <div id="modal-results" class="modal-section" style="display: none; margin-top: 20px;">
                     <!-- Images -->
                     <div class="result-section">
-                        <h3>📸 Gambar</h3>
-                        <div id="modal-images" class="result-gallery"></div>
+                        <h3 style="font-size: 1rem; color: #a78bfa;">📸 Gambar</h3>
+                        <div id="modal-images" class="result-gallery" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;"></div>
                     </div>
                     
                     <!-- Videos -->
-                    <div class="result-section">
-                        <h3>🎬 Video Clip</h3>
-                        <div id="modal-videos" class="result-gallery"></div>
+                    <div class="result-section" style="margin-top: 15px;">
+                        <h3 style="font-size: 1rem; color: #a78bfa;">🎬 Video Clip</h3>
+                        <div id="modal-videos" class="result-gallery" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;"></div>
                     </div>
                     
                     <!-- Final Video -->
-                    <div class="result-section">
-                        <h3>🎥 Video Final</h3>
-                        <video id="modal-final-video" controls class="result-video-large"></video>
+                    <div class="result-section" style="margin-top: 15px;">
+                        <h3 style="font-size: 1rem; color: #a78bfa;">🎥 Video Final</h3>
+                        <video id="modal-final-video" controls class="result-video-large" style="width: 100%; border-radius: 8px;"></video>
                     </div>
                     
                     <!-- Audio -->
-                    <div class="result-section">
-                        <h3>🎵 Audio</h3>
-                        <audio id="modal-audio" controls class="result-audio"></audio>
+                    <div class="result-section" style="margin-top: 15px;">
+                        <h3 style="font-size: 1rem; color: #a78bfa;">🎵 Audio</h3>
+                        <audio id="modal-audio" controls class="result-audio" style="width: 100%;"></audio>
                     </div>
                     
                     <!-- Script -->
-                    <div class="result-section">
-                        <h3>📝 Script</h3>
-                        <p id="modal-script" class="result-script"></p>
+                    <div class="result-section" style="margin-top: 15px;">
+                        <h3 style="font-size: 1rem; color: #a78bfa;">📝 Script</h3>
+                        <p id="modal-script" class="result-script" style="background: #1e293b; padding: 10px; border-radius: 8px; font-size: 0.9rem; color: #cbd5e1;"></p>
                     </div>
                 </div>
                 
                 <!-- Error Section -->
-                <div id="modal-error" class="modal-section error-section" style="display: none;">
+                <div id="modal-error" class="modal-section error-section" style="display: none; color: #ef4444; margin-top: 20px; text-align: center;">
                     <p id="modal-error-msg"></p>
                 </div>
             </div>
@@ -335,32 +588,21 @@
 </div>
 
 <script>
-    // 1. Simpan alert asli browser (untuk jaga-jaga)
     const originalAlert = window.alert;
-
-    // 2. Timpa fungsi alert() dengan Custom Modal kita
     window.alert = function(message) {
-        // Masukkan pesan ke dalam modal HTML
         const msgElement = document.getElementById('orbit-alert-msg');
         if (msgElement) {
-            msgElement.innerText = message; // innerText support \n (baris baru)
-            
-            // Tampilkan modal
+            msgElement.innerText = message;
             const modal = document.getElementById('orbit-alert');
             modal.style.display = 'flex';
         } else {
-            // Fallback jika HTML belum siap
             console.log("Custom alert error, using native");
             originalAlert(message);
         }
     };
-
-    // 3. Fungsi untuk menutup alert
     function closeOrbitAlert() {
         document.getElementById('orbit-alert').style.display = 'none';
     }
-    
-    // Opsional: Tutup jika klik di luar kotak
     document.getElementById('orbit-alert').addEventListener('click', function(e) {
         if (e.target === this) {
             closeOrbitAlert();
@@ -368,4 +610,4 @@
     });
 </script>
 </body>
-</html>  
+</html>
