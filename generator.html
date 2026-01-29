@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Saya tetap meload CSS lama agar struktur dasar aman, tapi akan kita override di style bawah -->
+    <!-- CSS Lama tetap diload agar layout dasar aman -->
     <link rel="stylesheet" href="css/generator.css">
     
     <style>
@@ -17,7 +17,7 @@
             --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
             --glass-bg: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-blur: blur(20px);
+            --accent-glow: rgba(139, 92, 246, 0.15);
         }
 
         * { font-family: 'Space Grotesk', sans-serif; box-sizing: border-box; }
@@ -35,32 +35,31 @@
         .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
         @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-        /* Navbar Style (Mirip Pilih Tools) */
+        /* --- NEW NAVBAR STYLE --- */
         .orbit-nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1.5rem 3rem;
+            padding: 1.2rem 3rem;
             position: sticky;
             top: 0;
             z-index: 50;
-            background: rgba(5, 5, 16, 0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(5, 5, 16, 0.85);
+            backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--glass-border);
         }
 
         .orbit-logo {
+            font-weight: 700;
+            font-size: 1.4rem;
+            text-decoration: none;
+            color: white;
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: 700;
-            font-size: 1.25rem;
-            text-decoration: none;
-            color: white;
         }
 
-        /* User Profile in Nav */
-        .nav-user-section {
+        .nav-right {
             display: flex;
             align-items: center;
             gap: 20px;
@@ -69,90 +68,72 @@
         .user-pill {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             background: var(--glass-bg);
             padding: 6px 16px;
             border-radius: 50px;
             border: 1px solid var(--glass-border);
         }
-
-        .user-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #6366f1; }
         
-        /* Buttons */
-        .btn-gradient {
-            background: var(--primary-gradient);
-            border: none;
-            color: white;
-            padding: 10px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .btn-gradient:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
-        }
-
-        .btn-outline {
+        .btn-logout {
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #ccc;
-            padding: 8px 18px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 8px 20px;
             border-radius: 50px;
             cursor: pointer;
             transition: 0.2s;
             font-size: 0.9rem;
         }
-        .btn-outline:hover { border-color: white; color: white; }
+        .btn-logout:hover { background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #fff; }
 
-        /* Main Container */
+        /* --- MAIN LAYOUT --- */
         .main-content {
-            max-width: 1200px;
+            max-width: 1000px; /* Lebar konten dibatasi agar enak dibaca */
             margin: 0 auto;
-            padding: 2rem;
+            padding: 2.5rem 1.5rem;
         }
 
-        /* Page Title Section */
-        .page-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
+        /* Page Header */
+        .page-header { text-align: center; margin-bottom: 3rem; }
+        .back-link { color: #94a3b8; text-decoration: none; font-size: 0.9rem; display: inline-block; margin-bottom: 10px; transition: 0.2s; }
+        .back-link:hover { color: white; transform: translateX(-5px); }
         .page-title {
             font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin: 0 0 0.5rem 0;
             background: linear-gradient(to right, #fff, #a5b4fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .page-subtitle { color: #94a3b8; }
-
-        /* Stats Bar Styling */
+        
+        /* Stats Bar */
         .stats-bar {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
             justify-content: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
-        .stat-card {
+        .stat-item {
             background: #0f1021;
             border: 1px solid var(--glass-border);
-            padding: 10px 20px;
-            border-radius: 12px;
-            min-width: 140px;
+            padding: 12px 24px;
+            border-radius: 16px;
+            min-width: 160px;
             text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
-        .stat-label { font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 4px; }
-        .stat-value { font-size: 1.1rem; font-weight: 600; color: #fff; }
+        .stat-label { font-size: 0.85rem; color: #64748b; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 1.25rem; font-weight: 600; color: #fff; }
 
-        /* Tabs Styling (Pill Shape) */
+        /* Tabs (Pill Style) */
         .tabs-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 2rem;
-            background: #0f1021;
+            background: #0b0c17;
             padding: 6px;
             border-radius: 50px;
             width: fit-content;
@@ -168,58 +149,42 @@
             border-radius: 40px;
             cursor: pointer;
             font-weight: 500;
-            transition: 0.3s;
+            transition: all 0.3s ease;
         }
         .tab-btn.active {
             background: #2e2e4a;
             color: white;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         .tab-count {
             background: rgba(255,255,255,0.1);
             padding: 2px 8px;
             border-radius: 10px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             margin-left: 6px;
         }
 
-        /* Form & Cards Glass Styling */
-        .tab-panel { animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .generator-form {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
+        /* Form Styling */
         .form-section {
-            background: #0b0c17; /* Darker card bg */
+            background: #0b0c17;
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 2rem;
             margin-bottom: 1.5rem;
             position: relative;
-            overflow: hidden;
         }
-        /* Subtle glow effect on top of cards */
+        /* Top Glow Accent */
         .form-section::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 1px;
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
         }
 
         .form-section h3 {
-            margin-top: 0;
-            margin-bottom: 1.5rem;
-            color: #e2e8f0;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-top: 0; margin-bottom: 1.5rem; color: #e2e8f0; font-size: 1.2rem;
+            display: flex; align-items: center; gap: 10px;
         }
 
-        /* Upload Box Styling */
+        /* Upload Areas */
         .upload-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 640px) { .upload-row { grid-template-columns: 1fr; } }
 
@@ -227,32 +192,29 @@
             border: 2px dashed rgba(255,255,255,0.15);
             background: rgba(255,255,255,0.02);
             border-radius: 16px;
-            height: 160px;
+            height: 180px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: 0.3s;
-            position: relative;
-            overflow: hidden;
+            position: relative; overflow: hidden;
         }
         .upload-box:hover {
-            border-color: #8b5cf6;
-            background: rgba(139, 92, 246, 0.05);
+            border-color: #8b5cf6; background: rgba(139, 92, 246, 0.05);
         }
-        .upload-placeholder { text-align: center; color: #94a3b8; display: flex; flex-direction: column; gap: 8px; }
-        .upload-icon { font-size: 24px; }
-        .upload-preview { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+        .upload-placeholder { text-align: center; color: #94a3b8; display: flex; flex-direction: column; gap: 10px; }
+        .upload-icon { font-size: 28px; }
 
-        /* Inputs Styling */
-        label { display: block; margin-bottom: 8px; color: #cbd5e1; font-size: 0.9rem; font-weight: 500; }
+        /* Inputs */
+        label { display: block; margin-bottom: 8px; color: #cbd5e1; font-size: 0.95rem; font-weight: 500; }
         
         input[type="text"], select, textarea {
             width: 100%;
-            background: #1e1e2d;
+            background: #151628;
             border: 1px solid var(--glass-border);
             color: white;
-            padding: 12px 16px;
+            padding: 14px 16px;
             border-radius: 12px;
             font-size: 1rem;
             transition: 0.3s;
@@ -260,81 +222,103 @@
         }
         input[type="text"]:focus, select:focus, textarea:focus {
             border-color: #8b5cf6;
-            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-            background: #252538;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: #1c1d33;
         }
-
+        
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 1.5rem; }
-        
-        /* Modal Styling (Tetap mempertahankan fungsi) */
-        .modal {
-            display: none; 
-            position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; 
-            background-color: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-            align-items: center; justify-content: center;
+        .form-hint { display: block; margin-top: 8px; color: #94a3b8; font-size: 0.85rem; font-style: italic; }
+
+        /* Primary Button */
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 16px;
+            width: 100%;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1rem;
         }
-        .modal-content {
-            background: #0f1021;
-            border: 1px solid var(--glass-border);
-            margin: auto;
-            padding: 2rem;
-            border-radius: 24px;
-            width: 90%; max-width: 800px;
-            max-height: 90vh; overflow-y: auto;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.5);
         }
 
-        /* Result Gallery Grid */
-        .result-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
+        .form-note {
+            text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 1.5rem; line-height: 1.6;
+            background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px;
         }
-        .result-gallery img, .result-gallery video {
-            width: 100%; border-radius: 8px; border: 1px solid #333;
+
+        /* Warning Text for History */
+        .history-warning {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            color: #fcd34d;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        
-        /* Utility */
+
+        /* Login Styling Clean Up */
         .login-container {
-            background: #0f1021;
+            background: #0b0c17;
             border: 1px solid var(--glass-border);
             padding: 3rem;
             border-radius: 24px;
             text-align: center;
-            max-width: 400px;
-            margin: 100px auto;
+            max-width: 450px;
+            margin: 80px auto;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
+        .login-features { text-align: left; margin: 2rem 0; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; }
+        .feature-item { margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #cbd5e1; }
+        .feature-item:last-child { margin-bottom: 0; }
         
-        /* Override display none from inline style for flex layouts */
-        .header-right { display: flex; align-items: center; gap: 15px; }
+        .btn-google {
+            background: white; color: #1e293b; border: none; padding: 14px; border-radius: 50px;
+            width: 100%; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-google:hover { background: #f1f5f9; }
 
-        .btn-large {
-            width: 100%;
-            padding: 16px;
-            font-size: 1.1rem;
-            margin-top: 1rem;
+        /* Modal Clean up */
+        .modal-content {
+            background: #0f1021;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
         }
-        
-        .form-note { text-align: center; color: #64748b; font-size: 0.85rem; margin-top: 1.5rem; line-height: 1.5; }
     </style>
 </head>
 <body>
     <!-- Stars Background -->
     <div class="stars" id="stars"></div>
 
-    <!-- Login Section (Desain disesuaikan dikit biar rapi) -->
+    <!-- Login Section (TEKS UTUH) -->
     <div id="login-section" class="login-section" style="display: none;">
         <div class="login-container">
             <div class="login-header">
-                <h1>🛰️ OrbitBot</h1>
-                <h2>Video Affiliate Generator</h2>
-                <p style="color: #94a3b8; margin-bottom: 2rem;">Buat konten affiliate profesional dengan AI</p>
+                <h1 style="font-size: 1.8rem; margin-bottom: 10px;">🛰️ Video Affiliate Generator</h1>
+                <p style="color: #94a3b8;">Buat konten affiliate profesional dengan AI</p>
             </div>
             
-            <button id="btn-login-google" class="btn-gradient" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;">
-                <!-- SVG Google tetap sama -->
-                <svg viewBox="0 0 24 24" width="20" height="20" style="background: white; border-radius: 50%; padding: 2px;">
+            <div class="login-features">
+                <div class="feature-item">📸 Generate 3 foto produk berkualitas</div>
+                <div class="feature-item">🎬 Generate 3 video animasi menarik</div>
+                <div class="feature-item">🎵 Generate audio promosi + script</div>
+            </div>
+            
+            <button id="btn-login-google" class="btn-google">
+                <svg viewBox="0 0 24 24" width="20" height="20">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -342,13 +326,17 @@
                 </svg>
                 Masuk dengan Google
             </button>
+            
+            <p style="margin-top: 24px; font-size: 0.85rem; color: #64748b;">
+                🔒 Aman & gratis untuk memulai
+            </p>
         </div>
     </div>
 
     <!-- Generator Section -->
     <div id="generator-section" style="display: none;">
         
-        <!-- NEW NAVBAR (Menggantikan Header Lama tapi fungsi tetap sama) -->
+        <!-- NEW NAVBAR (Design OrbitBot) -->
         <nav class="orbit-nav">
             <div class="nav-left">
                 <a href="index.html" class="orbit-logo">
@@ -356,47 +344,44 @@
                 </a>
             </div>
             
-            <div class="nav-user-section">
-                <a href="index.html" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Tools</a>
-                <a href="#" style="color: #94a3b8; text-decoration: none; font-size: 0.9rem;">Showcase</a>
-                
-                <!-- User Info Container -->
+            <div class="nav-right">
+                <!-- User Info -->
                 <div class="user-pill">
                     <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
                     <span id="user-name" class="user-name" style="font-size: 0.9rem; font-weight: 500;">User</span>
                 </div>
-                
-                <button id="btn-logout" class="btn-outline">Keluar</button>
+                <!-- Logout Button -->
+                <button id="btn-logout" class="btn-logout">Keluar</button>
             </div>
         </nav>
 
-        <!-- Main Content Wrapper -->
+        <!-- Main Content Container -->
         <div class="main-content">
             
-            <!-- Page Title -->
+            <!-- Header (Teks Kembali & Judul) -->
             <header class="page-header">
-                <div style="margin-bottom: 1rem;"><a href="index.html" style="color: #64748b; text-decoration: none;">← Kembali ke Dashboard</a></div>
+                <a href="index.html" class="back-link">← Beranda</a>
                 <h1 class="page-title">Video Affiliate Generator</h1>
-                <p class="page-subtitle">Buat konten affiliate lengkap: gambar, video, dan script dengan AI.</p>
+                <p style="color: #94a3b8;">Buat konten affiliate lengkap dalam satu klik</p>
             </header>
 
-            <!-- Stats Bar (Redesigned) -->
+            <!-- Stats Bar -->
             <div class="stats-bar">
-                <div class="stat-card">
-                    <span class="stat-label">Plan Saat Ini</span>
+                <div class="stat-item">
+                    <span class="stat-label">Plan</span>
                     <span id="user-plan" class="stat-value" style="color: #a78bfa;">Free</span>
                 </div>
-                <div class="stat-card">
-                    <span class="stat-label">Credit Hari Ini</span>
+                <div class="stat-item">
+                    <span class="stat-label">Sisa Hari Ini</span>
                     <span id="user-remaining" class="stat-value">0</span>
                 </div>
             </div>
 
-            <!-- Tabs (Redesigned to Pill Shape) -->
+            <!-- Tabs (Design baru, Teks asli) -->
             <div class="tabs-container">
                 <button class="tab-btn active" data-tab="create">✨ Buat Baru</button>
                 <button class="tab-btn" data-tab="active">
-                    ⚡ Proses <span id="active-count" class="tab-count">0</span>
+                    ⚡ Sedang Proses <span id="active-count" class="tab-count">0</span>
                 </button>
                 <button class="tab-btn" data-tab="history">
                     📁 Riwayat <span id="history-count" class="tab-count">0</span>
@@ -409,9 +394,9 @@
                 <div id="tab-create" class="tab-panel active">
                     <form id="generator-form" class="generator-form">
                         
-                        <!-- Upload Section -->
+                        <!-- Upload Section (Teks & ID UTUH) -->
                         <div class="form-section">
-                            <h3>📷 Upload Asset</h3>
+                            <h3>📷 Upload Gambar</h3>
                             <div class="upload-row">
                                 <div class="upload-group">
                                     <label>Foto Produk (WAJIB)</label>
@@ -419,7 +404,7 @@
                                         <input type="file" id="input-product-image" accept="image/*" hidden>
                                         <div class="upload-placeholder">
                                             <span class="upload-icon">📦</span>
-                                            <span style="font-size: 0.85rem;">Upload Produk</span>
+                                            <span>Klik untuk upload</span>
                                         </div>
                                         <img id="preview-product" class="upload-preview" style="display:none;">
                                     </div>
@@ -431,7 +416,7 @@
                                         <input type="file" id="input-model-image" accept="image/*" hidden>
                                         <div class="upload-placeholder">
                                             <span class="upload-icon">👤</span>
-                                            <span style="font-size: 0.85rem;">Upload Model</span>
+                                            <span>Klik untuk upload</span>
                                         </div>
                                         <img id="preview-model" class="upload-preview" style="display:none;">
                                     </div>
@@ -439,7 +424,7 @@
                             </div>
                         </div>
 
-                        <!-- Product Details -->
+                        <!-- Product Details (Teks & ID UTUH) -->
                         <div class="form-section">
                             <h3>📝 Detail Produk</h3>
                             <div class="form-group">
@@ -454,14 +439,14 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="input-pros">Kelebihan</label>
-                                    <input type="text" id="input-pros" placeholder="Contoh: Ringan, anti air">
+                                    <input type="text" id="input-pros" placeholder="Contoh: Ringan, anti air, nyaman">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Style Options -->
+                        <!-- Style Options (Teks & ID UTUH) -->
                         <div class="form-section">
-                            <h3>🎨 Pengaturan AI</h3>
+                            <h3>🎨 Pengaturan Gaya</h3>
                             
                             <div class="form-row">
                                 <div class="form-group">
@@ -480,21 +465,28 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="input-animation-order">Engine Video</label>
+                                    <label for="input-animation-order">Urutan Video Generator</label>
                                     <select id="input-animation-order">
-                                        <option value="veo_first">VEO 3.1 (Kualitas Tinggi)</option>
-                                        <option value="grok_first">Grok (Lebih Cepat)</option>
+                                        <option value="veo_first">VEO 3.1 dulu → Grok (Kualitas Tinggi)</option>
+                                        <option value="grok_first">Grok dulu → VEO 3.1 (Lebih Cepat)</option>
                                     </select>
+                                    <small id="animation-order-hint" class="form-hint">
+                                        VEO 3.1 menghasilkan kualitas lebih bagus tapi lebih lambat
+                                    </small>
                                 </div>
                             </div>
                             
                             <div class="form-group" id="custom-style-group" style="display: none;">
                                 <label for="input-custom-style">Instruksi Custom</label>
-                                <textarea id="input-custom-style" rows="2" placeholder="Contoh: Model memakai sepatu sambil jogging di taman"></textarea>
+                                <textarea id="input-custom-style" placeholder="Contoh: Model memakai sepatu sambil jogging di taman"></textarea>
                             </div>
+                        </div>
 
+                        <!-- Generate Mode (Teks & ID UTUH) -->
+                        <div class="form-section">
+                            <h3>⚡ Mode Generate</h3>
                             <div class="form-group">
-                                <label for="input-generate-mode">Mode Generate</label>
+                                <label for="input-generate-mode">Pilih apa yang ingin digenerate</label>
                                 <select id="input-generate-mode">
                                     <option value="full">🚀 Full Pipeline (Gambar + Video + Audio)</option>
                                     <option value="images_only">🖼️ Gambar Saja (3 Foto)</option>
@@ -502,16 +494,16 @@
                             </div>
                         </div>
 
-                        <!-- Submit Buttons -->
+                        <!-- Submit Buttons (Teks & ID UTUH) -->
                         <div class="form-actions">
-                            <button type="submit" id="btn-submit" class="btn-gradient btn-large">
-                                🚀 Generate UGC Sekarang
+                            <button type="submit" id="btn-submit" class="btn-primary">
+                                🚀 Generate Sekarang
                             </button>
                         </div>
                         
                         <p class="form-note">
-                            Estimasi waktu: 5-20 menit.<br>
-                            Kamu bisa menutup halaman ini, notifikasi akan muncul di riwayat.
+                            Proses generate membutuhkan waktu 5-20 menit tergantung mode yang dipilih.<br>
+                            Kamu bisa menutup halaman ini dan kembali nanti.
                         </p>
                     </form>
                 </div>
@@ -519,19 +511,28 @@
                 <!-- Tab: Sedang Proses -->
                 <div id="tab-active" class="tab-panel" style="display: none;">
                     <div id="active-jobs" class="jobs-grid">
-                        <div class="empty-state" style="text-align: center; padding: 4rem; color: #64748b;">
-                            <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">⚡</span>
-                            <p>Tidak ada proses berjalan</p>
+                        <div class="empty-state" style="text-align: center; padding: 3rem; color: #64748b;">
+                            <span class="empty-icon" style="font-size: 2.5rem; display: block; margin-bottom: 1rem;">🚀</span>
+                            <p style="font-weight: 600;">Tidak ada proses berjalan</p>
+                            <p class="empty-sub">Submit job baru untuk memulai</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab: Riwayat -->
+                <!-- Tab: Riwayat (DITAMBAH PERINGATAN) -->
                 <div id="tab-history" class="tab-panel" style="display: none;">
+                    
+                    <!-- PERINGATAN BARU SESUAI REQUEST -->
+                    <div class="history-warning">
+                        <span>⚠️</span>
+                        <span>Perhatian: Hasil generate akan dihapus otomatis dari server setelah 3 jam.</span>
+                    </div>
+
                     <div id="history-jobs" class="jobs-grid">
-                        <div class="empty-state" style="text-align: center; padding: 4rem; color: #64748b;">
-                            <span style="font-size: 3rem; display: block; margin-bottom: 1rem;">📂</span>
-                            <p>Belum ada riwayat</p>
+                        <div class="empty-state" style="text-align: center; padding: 3rem; color: #64748b;">
+                            <span class="empty-icon" style="font-size: 2.5rem; display: block; margin-bottom: 1rem;">📁</span>
+                            <p style="font-weight: 600;">Belum ada riwayat</p>
+                            <p class="empty-sub">Hasil generate akan muncul di sini</p>
                         </div>
                     </div>
                 </div>
@@ -539,68 +540,66 @@
         </div>
     </div>
 
-    <!-- Job Modal (Struktur tetap sama, style mengikuti CSS di atas) -->
+    <!-- Job Modal (Teks & Struktur UTUH) -->
     <div id="job-modal" class="modal">
         <div class="modal-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 id="modal-title" style="margin: 0; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Detail Job</h2>
-                <button id="btn-close-modal" class="modal-close" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            </div>
+            <button id="btn-close-modal" class="modal-close">&times;</button>
             
-            <div class="modal-header" style="margin-bottom: 20px;">
-                <span id="modal-status" class="status-badge" style="background: #3b82f6; padding: 4px 12px; border-radius: 4px; font-size: 0.8rem;">pending</span>
+            <div class="modal-header">
+                <h2 id="modal-title" style="margin-bottom: 0;">Detail Job</h2>
+                <span id="modal-status" class="status-badge">pending</span>
             </div>
             
             <div class="modal-body">
                 <!-- Progress Section -->
                 <div id="modal-progress" class="modal-section">
                     <div class="progress-container">
-                        <div class="progress-bar-large" style="height: 6px; background: #333; border-radius: 10px; overflow: hidden; margin-bottom: 10px;">
-                            <div id="modal-progress-fill" class="progress-fill" style="height: 100%; width: 0%; background: var(--primary-gradient); transition: width 0.3s;"></div>
+                        <div class="progress-bar-large">
+                            <div id="modal-progress-fill" class="progress-fill"></div>
                         </div>
-                        <div class="progress-info" style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #94a3b8;">
+                        <div class="progress-info">
                             <span id="modal-progress-percent">0%</span>
                             <span id="modal-steps">Step 0 / 8</span>
                         </div>
-                        <p id="modal-step" class="progress-step" style="text-align: center; margin-top: 10px;">Menunggu...</p>
+                        <p id="modal-step" class="progress-step">Menunggu...</p>
                     </div>
                 </div>
                 
                 <!-- Results Section -->
                 <div id="modal-results" class="modal-section" style="display: none;">
                     <!-- Images -->
-                    <div class="result-section" style="margin-bottom: 2rem;">
+                    <div class="result-section">
                         <h3>📸 Gambar</h3>
                         <div id="modal-images" class="result-gallery"></div>
                     </div>
                     
                     <!-- Videos -->
-                    <div class="result-section" style="margin-bottom: 2rem;">
+                    <div class="result-section">
                         <h3>🎬 Video Clip</h3>
                         <div id="modal-videos" class="result-gallery"></div>
                     </div>
                     
                     <!-- Final Video -->
-                    <div class="result-section" style="margin-bottom: 2rem;">
+                    <div class="result-section">
                         <h3>🎥 Video Final</h3>
-                        <video id="modal-final-video" controls class="result-video-large" style="width: 100%; border-radius: 12px;"></video>
+                        <video id="modal-final-video" controls class="result-video-large"></video>
                     </div>
                     
                     <!-- Audio -->
-                    <div class="result-section" style="margin-bottom: 2rem;">
+                    <div class="result-section">
                         <h3>🎵 Audio</h3>
-                        <audio id="modal-audio" controls class="result-audio" style="width: 100%;"></audio>
+                        <audio id="modal-audio" controls class="result-audio"></audio>
                     </div>
                     
                     <!-- Script -->
                     <div class="result-section">
                         <h3>📝 Script</h3>
-                        <p id="modal-script" class="result-script" style="background: #1e1e2d; padding: 1rem; border-radius: 8px; color: #cbd5e1;"></p>
+                        <p id="modal-script" class="result-script"></p>
                     </div>
                 </div>
                 
                 <!-- Error Section -->
-                <div id="modal-error" class="modal-section error-section" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.5); padding: 1rem; border-radius: 8px; color: #fca5a5;">
+                <div id="modal-error" class="modal-section error-section" style="display: none;">
                     <p id="modal-error-msg"></p>
                 </div>
             </div>
@@ -613,7 +612,7 @@
     <script src="js/generator.js"></script>
     
     <script>
-        // Generate stars
+        // Generate stars (Background animation)
         const starsContainer = document.getElementById('stars');
         for (let i = 0; i < 150; i++) {
             const star = document.createElement('div');
@@ -626,7 +625,7 @@
             starsContainer.appendChild(star);
         }
 
-        // Script tambahan untuk Tab switching UI (Logic dasar sudah ada di generator.js, ini hanya backup UI)
+        // Simple Tab Logic helper (jika script generator.js belum mengcover tab baru ini)
         document.querySelectorAll('.tab-btn').forEach(button => {
             button.addEventListener('click', () => {
                 document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
