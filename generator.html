@@ -636,5 +636,50 @@
             });
         });
     </script>
+    <!-- Custom Alert Modal Structure -->
+<div id="orbit-alert" class="modal" style="z-index: 9999;">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🛰️</div>
+        <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem;">OrbitBot Notification</h3>
+        <p id="orbit-alert-msg" style="color: #cbd5e1; white-space: pre-line; line-height: 1.6; margin-bottom: 2rem;"></p>
+        <button onclick="closeOrbitAlert()" class="btn-primary" style="padding: 10px 30px; width: auto; min-width: 120px;">
+            Oke, Siap!
+        </button>
+    </div>
+</div>
+
+<script>
+    // 1. Simpan alert asli browser (untuk jaga-jaga)
+    const originalAlert = window.alert;
+
+    // 2. Timpa fungsi alert() dengan Custom Modal kita
+    window.alert = function(message) {
+        // Masukkan pesan ke dalam modal HTML
+        const msgElement = document.getElementById('orbit-alert-msg');
+        if (msgElement) {
+            msgElement.innerText = message; // innerText support \n (baris baru)
+            
+            // Tampilkan modal
+            const modal = document.getElementById('orbit-alert');
+            modal.style.display = 'flex';
+        } else {
+            // Fallback jika HTML belum siap
+            console.log("Custom alert error, using native");
+            originalAlert(message);
+        }
+    };
+
+    // 3. Fungsi untuk menutup alert
+    function closeOrbitAlert() {
+        document.getElementById('orbit-alert').style.display = 'none';
+    }
+    
+    // Opsional: Tutup jika klik di luar kotak
+    document.getElementById('orbit-alert').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeOrbitAlert();
+        }
+    });
+</script>
 </body>
 </html>
