@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Generator - OrbitBot</title>
     
-    <!-- Supabase SDK - HARUS PERTAMA -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Styles -->
     <link rel="stylesheet" href="css/video-generator.css">
 </head>
 <body>
@@ -17,10 +14,10 @@
         <header class="header">
             <a href="/" class="back-link">← Kembali</a>
             <h1>🎬 Video Generator</h1>
-            <p>Create stunning videos with AI (VEO 3.1 & Grok)</p>
+            <p>Buat video AI dengan VEO 3.1</p>
         </header>
         
-        <!-- User Info Bar (shown when logged in) -->
+        <!-- User Bar -->
         <div id="user-bar" class="user-bar" style="display: none;">
             <div class="user-info">
                 <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
@@ -35,12 +32,12 @@
             <button id="btn-logout" class="btn-logout">Logout</button>
         </div>
         
-        <!-- Login Section (shown when not logged in) -->
+        <!-- Login Section -->
         <section id="login-section" class="login-section" style="display: none;">
             <div class="login-box">
                 <div class="login-icon">🎬</div>
                 <h2>Login untuk Mulai</h2>
-                <p>Buat video AI dengan VEO 3.1 dan Grok</p>
+                <p>Buat video AI berkualitas tinggi dengan VEO 3.1</p>
                 <button id="btn-login-google" class="btn-google">
                     <svg width="18" height="18" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -53,7 +50,7 @@
             </div>
         </section>
         
-        <!-- Main Generator Section (shown when logged in) -->
+        <!-- Main Generator Section -->
         <main id="generator-section" class="generator-section" style="display: none;">
             
             <!-- Mode Selection -->
@@ -81,6 +78,11 @@
                         <img id="preview-image" class="image-preview" style="display: none;" alt="Preview">
                         <button type="button" id="btn-remove-image" class="btn-remove" style="display: none;">✕</button>
                     </div>
+                    <!-- Detected Ratio Info -->
+                    <div id="detected-ratio-info" class="detected-ratio-info" style="display: none;">
+                        <span class="ratio-icon">📐</span>
+                        <span id="detected-ratio-text">Rasio terdeteksi: -</span>
+                    </div>
                 </div>
                 
                 <!-- Prompt -->
@@ -96,64 +98,41 @@
                     <span class="char-count"><span id="char-count">0</span>/500</span>
                 </div>
                 
-                <!-- Options Row -->
-                <div class="options-row">
-                    <!-- Aspect Ratio -->
-                    <div class="form-section">
-                        <label>Rasio Aspek</label>
-                        <div class="ratio-options">
-                            <label class="ratio-option">
-                                <input type="radio" name="ratio" value="9:16" checked>
-                                <span class="ratio-box vertical">
-                                    <span class="ratio-icon">📱</span>
-                                    9:16
-                                </span>
-                            </label>
-                            <label class="ratio-option">
-                                <input type="radio" name="ratio" value="16:9">
-                                <span class="ratio-box horizontal">
-                                    <span class="ratio-icon">🖥️</span>
-                                    16:9
-                                </span>
-                            </label>
-                            <label class="ratio-option">
-                                <input type="radio" name="ratio" value="1:1">
-                                <span class="ratio-box square">
-                                    <span class="ratio-icon">⬜</span>
-                                    1:1
-                                </span>
-                            </label>
-                        </div>
+                <!-- Aspect Ratio (for text-to-video only) -->
+                <div id="ratio-section" class="form-section">
+                    <label>Rasio Aspek</label>
+                    <div class="ratio-options">
+                        <label class="ratio-option">
+                            <input type="radio" name="ratio" value="9:16" checked>
+                            <span class="ratio-box vertical">
+                                <span class="ratio-icon-box">📱</span>
+                                <span>9:16</span>
+                                <span class="ratio-label">Portrait</span>
+                            </span>
+                        </label>
+                        <label class="ratio-option">
+                            <input type="radio" name="ratio" value="16:9">
+                            <span class="ratio-box horizontal">
+                                <span class="ratio-icon-box">🖥️</span>
+                                <span>16:9</span>
+                                <span class="ratio-label">Landscape</span>
+                            </span>
+                        </label>
+                        <label class="ratio-option">
+                            <input type="radio" name="ratio" value="1:1">
+                            <span class="ratio-box square">
+                                <span class="ratio-icon-box">⬜</span>
+                                <span>1:1</span>
+                                <span class="ratio-label">Square</span>
+                            </span>
+                        </label>
                     </div>
-                    
-                    <!-- Engine Selection -->
-                    <div class="form-section">
-                        <label>AI Engine</label>
-                        <div class="engine-options">
-                            <label class="engine-option">
-                                <input type="radio" name="engine" value="auto" checked>
-                                <span class="engine-box">
-                                    <span class="engine-icon">🔄</span>
-                                    Auto
-                                </span>
-                            </label>
-                            <label class="engine-option" id="veo-option">
-                                <input type="radio" name="engine" value="veo">
-                                <span class="engine-box">
-                                    <span class="engine-icon">🎬</span>
-                                    VEO 3.1
-                                </span>
-                            </label>
-                            <label class="engine-option">
-                                <input type="radio" name="engine" value="grok">
-                                <span class="engine-box">
-                                    <span class="engine-icon">🚀</span>
-                                    Grok
-                                </span>
-                            </label>
-                        </div>
-                        <p id="engine-hint" class="hint-text"></p>
-                    </div>
+                </div>
+                
+                <!-- Engine Info -->
+                <div class="engine-info">
+                    <span class="engine-badge">🎬 VEO 3.1</span>
+                    <span class="engine-desc">Video AI berkualitas tinggi</span>
                 </div>
                 
                 <!-- Submit Button -->
@@ -174,6 +153,7 @@
                 </div>
                 <p id="progress-text" class="progress-text">Memulai...</p>
                 <p id="progress-step" class="progress-step">Step 0/4</p>
+                <p class="progress-note">💡 VEO 3.1 menghasilkan video berkualitas tinggi. Proses biasanya memakan waktu 2-4 menit.</p>
             </div>
             
             <!-- Result Section -->
@@ -195,6 +175,7 @@
             <div id="error-section" class="error-section" style="display: none;">
                 <h3>❌ Gagal Generate</h3>
                 <p id="error-message"></p>
+                <p class="error-note">💡 Kuota Anda dikembalikan otomatis karena proses gagal.</p>
                 <button id="btn-retry" class="btn-retry">🔄 Coba Lagi</button>
             </div>
             
@@ -245,7 +226,6 @@
                         <span id="modal-status-badge" class="status-badge">-</span>
                     </div>
                     
-                    <!-- Progress (for active jobs) -->
                     <div id="modal-progress" class="modal-section" style="display: none;">
                         <div class="progress-bar">
                             <div class="progress-fill" id="modal-progress-fill"></div>
@@ -254,18 +234,15 @@
                         <p id="modal-progress-step">Step 0/4</p>
                     </div>
                     
-                    <!-- Result (for completed jobs) -->
                     <div id="modal-result" class="modal-section" style="display: none;">
                         <video id="modal-video" controls class="modal-video"></video>
                         <a id="modal-download" class="btn-download" download>⬇️ Download</a>
                     </div>
                     
-                    <!-- Error (for failed jobs) -->
                     <div id="modal-error" class="modal-section" style="display: none;">
                         <p id="modal-error-msg" class="error-msg"></p>
                     </div>
                     
-                    <!-- Info -->
                     <div id="modal-info" class="modal-info"></div>
                 </div>
             </div>
@@ -273,11 +250,10 @@
         
         <!-- Footer -->
         <footer class="footer">
-            <p>Powered by OrbitBot • VEO 3.1 & Grok AI</p>
+            <p>Powered by OrbitBot • VEO 3.1</p>
         </footer>
     </div>
     
-    <!-- PENTING: Load supabase-config.js DULU sebelum video-generator.js -->
     <script src="js/supabase-config.js"></script>
     <script src="js/video-generator.js"></script>
 </body>
