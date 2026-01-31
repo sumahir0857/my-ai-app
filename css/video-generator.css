@@ -1,653 +1,858 @@
-/* ============================================
-   VIDEO GENERATOR - STYLES
-   ============================================ */
+// ============================================
+// VIDEO GENERATOR - v1.0
+// ============================================
+// Menggunakan shared auth dari supabase-config.js
+// ============================================
 
-:root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --success: #10b981;
-    --error: #ef4444;
-    --warning: #f59e0b;
-    --bg: #0f172a;
-    --bg-card: #1e293b;
-    --bg-input: #334155;
-    --text: #f8fafc;
-    --text-muted: #94a3b8;
-    --border: #475569;
-    --radius: 12px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-}
+let pollingInterval = null;
+let userJobs = [];
+let currentMode = 'text-to-video';
+let selectedImageBase64 = null;
+let currentJobId = null;
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+// ========================================
+// INITIALIZATION
+// ========================================
 
-body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* ============================================
-   HEADER
-   ============================================ */
-
-.header {
-    text-align: center;
-    padding: 40px 0;
-}
-
-.header h1 {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    background: linear-gradient(135deg, var(--primary), #a855f7);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.header p {
-    color: var(--text-muted);
-}
-
-.user-info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-    padding: 10px 20px;
-    background: var(--bg-card);
-    border-radius: 50px;
-    display: inline-flex;
-}
-
-.quota-badge {
-    background: var(--primary);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.quota-badge.quota-empty {
-    background: var(--error);
-}
-
-.btn-small {
-    padding: 6px 12px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text);
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: all 0.2s;
-}
-
-.btn-small:hover {
-    background: var(--bg-input);
-}
-
-/* ============================================
-   AUTH SECTION
-   ============================================ */
-
-.auth-section {
-    display: flex;
-    justify-content: center;
-    padding: 60px 0;
-}
-
-.auth-box {
-    background: var(--bg-card);
-    padding: 40px;
-    border-radius: var(--radius);
-    text-align: center;
-    max-width: 400px;
-    width: 100%;
-}
-
-.auth-box h2 {
-    margin-bottom: 10px;
-}
-
-.auth-box p {
-    color: var(--text-muted);
-    margin-bottom: 30px;
-}
-
-.btn-google {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 24px;
-    background: white;
-    color: #333;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-google:hover {
-    background: #f5f5f5;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-}
-
-/* ============================================
-   MODE SELECTOR
-   ============================================ */
-
-.mode-selector {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-}
-
-.mode-btn {
-    flex: 1;
-    padding: 15px;
-    background: var(--bg-card);
-    border: 2px solid transparent;
-    border-radius: var(--radius);
-    color: var(--text);
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.mode-btn:hover {
-    background: var(--bg-input);
-}
-
-.mode-btn.active {
-    border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.1);
-}
-
-/* ============================================
-   FORM
-   ============================================ */
-
-.video-form {
-    background: var(--bg-card);
-    padding: 30px;
-    border-radius: var(--radius);
-    margin-bottom: 30px;
-}
-
-.form-section {
-    margin-bottom: 25px;
-}
-
-.form-section label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
-    color: var(--text);
-}
-
-/* Upload Area */
-.upload-area {
-    position: relative;
-    border: 2px dashed var(--border);
-    border-radius: var(--radius);
-    padding: 40px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.upload-area:hover,
-.upload-area.dragover {
-    border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.05);
-}
-
-.upload-placeholder .upload-icon {
-    font-size: 3rem;
-    display: block;
-    margin-bottom: 10px;
-}
-
-.upload-hint {
-    color: var(--text-muted);
-    font-size: 0.85rem;
-}
-
-.image-preview {
-    max-width: 100%;
-    max-height: 300px;
-    border-radius: 8px;
-}
-
-.btn-remove {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--error);
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 1rem;
-}
-
-/* Textarea */
-textarea {
-    width: 100%;
-    padding: 15px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 1rem;
-    resize: vertical;
-    min-height: 100px;
-}
-
-textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-}
-
-textarea::placeholder {
-    color: var(--text-muted);
-}
-
-.char-count {
-    display: block;
-    text-align: right;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    margin-top: 5px;
-}
-
-/* Options Row */
-.options-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-@media (max-width: 600px) {
-    .options-row {
-        grid-template-columns: 1fr;
+async function initVideoGenerator() {
+    console.log('🎬 Initializing Video Generator...');
+    
+    // Gunakan checkAuth() dari supabase-config.js
+    const isLoggedIn = await checkAuth();
+    
+    if (isLoggedIn) {
+        console.log('✅ User is logged in');
+        showGeneratorUI();
+        await loadUserStats();
+        await loadJobs();
+        startPolling();
+    } else {
+        console.log('⚠️ User not logged in');
+        showLoginUI();
     }
 }
 
-/* Ratio Options */
-.ratio-options {
-    display: flex;
-    gap: 10px;
+function showLoginUI() {
+    const loginSection = document.getElementById('login-section');
+    const generatorSection = document.getElementById('generator-section');
+    const userBar = document.getElementById('user-bar');
+    
+    if (loginSection) loginSection.style.display = 'flex';
+    if (generatorSection) generatorSection.style.display = 'none';
+    if (userBar) userBar.style.display = 'none';
 }
 
-.ratio-option input {
-    display: none;
+function showGeneratorUI() {
+    const loginSection = document.getElementById('login-section');
+    const generatorSection = document.getElementById('generator-section');
+    const userBar = document.getElementById('user-bar');
+    
+    if (loginSection) loginSection.style.display = 'none';
+    if (generatorSection) generatorSection.style.display = 'block';
+    if (userBar) userBar.style.display = 'flex';
+    
+    // Update user info - getCurrentUser() dari supabase-config.js
+    const user = getCurrentUser();
+    if (user) {
+        const avatar = document.getElementById('user-avatar');
+        const name = document.getElementById('user-name');
+        
+        if (avatar) {
+            avatar.src = user.user_metadata?.avatar_url || 
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email)}&background=6366f1&color=fff`;
+        }
+        if (name) {
+            name.textContent = user.user_metadata?.full_name || user.email;
+        }
+    }
 }
 
-.ratio-box {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 15px;
-    background: var(--bg-input);
-    border: 2px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.9rem;
+// ========================================
+// LOAD USER STATS
+// ========================================
+
+async function loadUserStats() {
+    try {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        // Coba function baru dulu (check_service_limit)
+        let result = await supabaseClient.rpc('check_service_limit', {
+            p_service: 'video'
+        });
+        
+        // Fallback ke check_limit jika function baru tidak ada
+        if (result.error && result.error.message.includes('does not exist')) {
+            console.log('📊 Falling back to check_limit');
+            result = await supabaseClient.rpc('check_limit');
+        }
+        
+        if (result.error) {
+            console.error('❌ Load stats error:', result.error);
+            updateStatsUI({ plan_name: 'Free', remaining: 0, daily_limit: 1 });
+            return;
+        }
+        
+        if (result.data && result.data.length > 0) {
+            const stats = result.data[0];
+            console.log('📊 User stats:', stats);
+            updateStatsUI(stats);
+        }
+    } catch (error) {
+        console.error('❌ Load stats error:', error);
+    }
 }
 
-.ratio-option input:checked + .ratio-box {
-    border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.1);
+function updateStatsUI(stats) {
+    const planEl = document.getElementById('user-plan');
+    const remainingEl = document.getElementById('user-remaining');
+    const engineHint = document.getElementById('engine-hint');
+    
+    if (planEl) planEl.textContent = stats.plan_name || 'Free';
+    if (remainingEl) {
+        remainingEl.textContent = stats.daily_limit === -1 ? '∞' : (stats.remaining || 0);
+    }
+    
+    // Free plan: hanya Grok
+    const isFree = stats.daily_limit === 1 || (stats.plan_name || '').toLowerCase() === 'free';
+    
+    const veoInput = document.querySelector('input[name="engine"][value="veo"]');
+    const autoInput = document.querySelector('input[name="engine"][value="auto"]');
+    const grokInput = document.querySelector('input[name="engine"][value="grok"]');
+    
+    if (isFree) {
+        if (grokInput) grokInput.checked = true;
+        if (veoInput) veoInput.disabled = true;
+        if (autoInput) autoInput.disabled = true;
+        if (engineHint) {
+            engineHint.innerHTML = '⚠️ <strong>Free plan hanya bisa Grok</strong>';
+            engineHint.style.color = '#f59e0b';
+        }
+    } else {
+        if (veoInput) veoInput.disabled = false;
+        if (autoInput) autoInput.disabled = false;
+        if (engineHint) {
+            engineHint.textContent = 'VEO 3.1 kualitas lebih bagus, Grok lebih cepat';
+            engineHint.style.color = '';
+        }
+    }
+    
+    // Update generate button
+    const generateBtn = document.getElementById('btn-generate');
+    if (generateBtn) {
+        if (stats.remaining <= 0 && stats.daily_limit !== -1) {
+            generateBtn.disabled = true;
+            generateBtn.title = 'Limit harian habis';
+        } else {
+            generateBtn.disabled = false;
+            generateBtn.title = '';
+        }
+    }
 }
 
-.ratio-box.vertical { width: 40px; height: 60px; }
-.ratio-box.horizontal { width: 60px; height: 40px; }
-.ratio-box.square { width: 50px; height: 50px; }
+// ========================================
+// LOAD JOBS
+// ========================================
 
-/* Engine Options */
-.engine-options {
-    display: flex;
-    gap: 10px;
+async function loadJobs() {
+    try {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        // RLS akan otomatis filter berdasarkan user
+        const { data: jobs, error } = await supabaseClient
+            .from('jobs')
+            .select('*')
+            .eq('service', 'video')
+            .order('created_at', { ascending: false })
+            .limit(20);
+        
+        if (error) {
+            console.error('❌ Load jobs error:', error);
+            return;
+        }
+        
+        console.log('✅ Loaded video jobs:', jobs?.length || 0);
+        userJobs = jobs || [];
+        renderJobs();
+    } catch (error) {
+        console.error('❌ Load jobs error:', error);
+    }
 }
 
-.engine-option input {
-    display: none;
+// ========================================
+// RENDER JOBS
+// ========================================
+
+function renderJobs() {
+    const activeJobs = userJobs.filter(j => ['pending', 'processing'].includes(j.status));
+    const historyJobs = userJobs.filter(j => ['completed', 'failed'].includes(j.status));
+    
+    // Update counts
+    const activeCount = document.getElementById('active-count');
+    const historyCount = document.getElementById('history-count');
+    if (activeCount) activeCount.textContent = activeJobs.length;
+    if (historyCount) historyCount.textContent = historyJobs.length;
+    
+    // Render active
+    const activeContainer = document.getElementById('active-jobs');
+    if (activeContainer) {
+        if (activeJobs.length === 0) {
+            activeContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">🚀</span>
+                    <p>Tidak ada proses berjalan</p>
+                </div>
+            `;
+        } else {
+            activeContainer.innerHTML = activeJobs.map(job => createJobCard(job)).join('');
+        }
+    }
+    
+    // Render history
+    const historyContainer = document.getElementById('history-jobs');
+    if (historyContainer) {
+        if (historyJobs.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">📁</span>
+                    <p>Belum ada riwayat</p>
+                </div>
+            `;
+        } else {
+            historyContainer.innerHTML = historyJobs.map(job => createJobCard(job)).join('');
+        }
+    }
 }
 
-.engine-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 12px 16px;
-    background: var(--bg-input);
-    border: 2px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 0.85rem;
+function createJobCard(job) {
+    const input = job.input_data || {};
+    let results = job.results || {};
+    if (typeof results === 'string') {
+        try { results = JSON.parse(results); } catch (e) { results = {}; }
+    }
+    
+    const date = new Date(job.created_at).toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+    });
+    
+    const statusLabels = {
+        pending: '⏳ Menunggu',
+        processing: '🔄 Diproses',
+        completed: '✅ Selesai',
+        failed: '❌ Gagal'
+    };
+    
+    let progressHtml = '';
+    if (['pending', 'processing'].includes(job.status)) {
+        const percent = job.progress_percent || 0;
+        progressHtml = `
+            <div class="job-progress">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percent}%"></div>
+                </div>
+                <p class="progress-text">${job.step_name || 'Menunggu...'} (${percent}%)</p>
+            </div>
+        `;
+    }
+    
+    let previewHtml = '';
+    if (results.video_url) {
+        previewHtml = `
+            <div class="job-preview">
+                <video src="${results.video_url}" muted></video>
+            </div>
+        `;
+    }
+    
+    return `
+        <div class="job-card" onclick="openJobModal('${job.id}')">
+            <div class="job-header">
+                <div class="job-info">
+                    <div class="job-title">${escapeHtml((input.prompt || 'Video').substring(0, 40))}...</div>
+                    <div class="job-meta">
+                        <span>${date}</span>
+                        <span>•</span>
+                        <span>${input.aspect_ratio || '9:16'}</span>
+                        <span>•</span>
+                        <span>${(input.engine || 'auto').toUpperCase()}</span>
+                    </div>
+                </div>
+                <span class="status-badge status-${job.status}">${statusLabels[job.status]}</span>
+            </div>
+            ${progressHtml}
+            ${previewHtml}
+        </div>
+    `;
 }
 
-.engine-option input:checked + .engine-box {
-    border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.1);
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text || '';
+    return div.innerHTML;
 }
 
-.engine-option input:disabled + .engine-box {
-    opacity: 0.5;
-    cursor: not-allowed;
+// ========================================
+// MODE SWITCHING
+// ========================================
+
+function switchMode(mode) {
+    currentMode = mode;
+    
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+    
+    const imageSection = document.getElementById('image-upload-section');
+    if (mode === 'image-to-video') {
+        if (imageSection) imageSection.style.display = 'block';
+    } else {
+        if (imageSection) imageSection.style.display = 'none';
+        clearImage();
+    }
 }
 
-.engine-icon {
-    font-size: 1.5rem;
-    margin-bottom: 4px;
+// ========================================
+// IMAGE HANDLING
+// ========================================
+
+function handleImageSelect(file) {
+    if (!file || !file.type.startsWith('image/')) {
+        alert('Pilih file gambar yang valid');
+        return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+        alert('Ukuran file terlalu besar (maks 10MB)');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        selectedImageBase64 = e.target.result;
+        
+        const preview = document.getElementById('preview-image');
+        const placeholder = document.getElementById('upload-placeholder');
+        const removeBtn = document.getElementById('btn-remove-image');
+        
+        if (preview) {
+            preview.src = selectedImageBase64;
+            preview.style.display = 'block';
+        }
+        if (placeholder) placeholder.style.display = 'none';
+        if (removeBtn) removeBtn.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
 }
 
-/* Generate Button */
-.btn-generate {
-    width: 100%;
-    padding: 16px;
-    background: linear-gradient(135deg, var(--primary), #a855f7);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+function clearImage() {
+    selectedImageBase64 = null;
+    
+    const input = document.getElementById('input-image');
+    const preview = document.getElementById('preview-image');
+    const placeholder = document.getElementById('upload-placeholder');
+    const removeBtn = document.getElementById('btn-remove-image');
+    
+    if (input) input.value = '';
+    if (preview) {
+        preview.style.display = 'none';
+        preview.src = '';
+    }
+    if (placeholder) placeholder.style.display = 'block';
+    if (removeBtn) removeBtn.style.display = 'none';
 }
 
-.btn-generate:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+// ========================================
+// SUBMIT JOB
+// ========================================
+
+async function submitVideoJob(event) {
+    event.preventDefault();
+    
+    const user = getCurrentUser();
+    if (!user) {
+        alert('Silakan login terlebih dahulu');
+        return;
+    }
+    
+    const prompt = document.getElementById('input-prompt')?.value?.trim();
+    const ratioInput = document.querySelector('input[name="ratio"]:checked');
+    const engineInput = document.querySelector('input[name="engine"]:checked');
+    
+    const ratio = ratioInput?.value || '9:16';
+    const engine = engineInput?.value || 'auto';
+    
+    // Validasi
+    if (!prompt) {
+        alert('Masukkan deskripsi video');
+        return;
+    }
+    
+    if (currentMode === 'image-to-video' && !selectedImageBase64) {
+        alert('Upload gambar untuk mode Image-to-Video');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('btn-generate');
+    const btnText = submitBtn?.querySelector('.btn-text');
+    const btnLoading = submitBtn?.querySelector('.btn-loading');
+    
+    if (submitBtn) submitBtn.disabled = true;
+    if (btnText) btnText.style.display = 'none';
+    if (btnLoading) btnLoading.style.display = 'inline-flex';
+    
+    // Show progress
+    hideAllSections();
+    const progressSection = document.getElementById('progress-section');
+    if (progressSection) progressSection.style.display = 'block';
+    updateProgress(0, 'Memvalidasi...');
+    
+    try {
+        // Check limit dulu
+        let limitResult = await supabaseClient.rpc('check_service_limit', {
+            p_service: 'video'
+        });
+        
+        if (limitResult.error && limitResult.error.message.includes('does not exist')) {
+            limitResult = await supabaseClient.rpc('check_limit');
+        }
+        
+        if (limitResult.error) throw new Error('Gagal cek kuota: ' + limitResult.error.message);
+        
+        const quota = limitResult.data?.[0];
+        if (quota && !quota.allowed) {
+            throw new Error(`Limit harian habis! (${quota.current_count}/${quota.daily_limit})`);
+        }
+        
+        updateProgress(10, 'Membuat job...');
+        
+        // Prepare input data
+        const inputData = {
+            prompt: prompt.substring(0, 500),
+            aspect_ratio: ratio,
+            engine: engine
+        };
+        
+        if (selectedImageBase64) {
+            inputData.image_base64 = selectedImageBase64;
+        }
+        
+        // Create job
+        let jobResult = await supabaseClient.rpc('create_service_job', {
+            p_service: 'video',
+            p_input_data: inputData,
+            p_total_steps: 4
+        });
+        
+        // Fallback
+        if (jobResult.error && jobResult.error.message.includes('does not exist')) {
+            jobResult = await supabaseClient.rpc('create_job_secure', {
+                p_service: 'video',
+                p_input_data: inputData,
+                p_total_steps: 4
+            });
+        }
+        
+        if (jobResult.error) throw jobResult.error;
+        
+        const result = jobResult.data?.[0];
+        if (!result || !result.success) {
+            throw new Error(result?.message || 'Gagal membuat job');
+        }
+        
+        console.log('✅ Job created:', result.job_id);
+        currentJobId = result.job_id;
+        
+        // Start polling this specific job
+        startJobPolling(result.job_id);
+        
+        // Update stats
+        await loadUserStats();
+        
+        // Reset form
+        document.getElementById('input-prompt').value = '';
+        document.getElementById('char-count').textContent = '0';
+        clearImage();
+        
+    } catch (error) {
+        console.error('❌ Submit error:', error);
+        showError(error.message);
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (btnText) btnText.style.display = 'inline';
+        if (btnLoading) btnLoading.style.display = 'none';
+    }
 }
 
-.btn-generate:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+// ========================================
+// JOB POLLING
+// ========================================
+
+function startJobPolling(jobId) {
+    if (pollingInterval) clearInterval(pollingInterval);
+    
+    pollingInterval = setInterval(async () => {
+        try {
+            const { data: job, error } = await supabaseClient
+                .from('jobs')
+                .select('*')
+                .eq('id', jobId)
+                .single();
+            
+            if (error) throw error;
+            if (!job) return;
+            
+            updateProgress(job.progress_percent, job.step_name);
+            
+            if (job.status === 'completed') {
+                stopPolling();
+                showResult(job.results);
+                await loadJobs();
+            } else if (job.status === 'failed') {
+                stopPolling();
+                showError(job.error_message || 'Video generation failed');
+                await loadJobs();
+            }
+            
+        } catch (error) {
+            console.error('Polling error:', error);
+        }
+    }, 3000);
 }
 
-.btn-loading {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+function startPolling() {
+    if (pollingInterval) return;
+    
+    pollingInterval = setInterval(async () => {
+        const hasActive = userJobs.some(j => ['pending', 'processing'].includes(j.status));
+        if (hasActive) {
+            await loadJobs();
+        }
+    }, 5000);
 }
 
-.spinner {
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+function updateProgress(percent, text) {
+    const fill = document.getElementById('progress-fill');
+    const textEl = document.getElementById('progress-text');
+    const stepEl = document.getElementById('progress-step');
+    
+    if (fill) fill.style.width = `${percent || 0}%`;
+    if (textEl) textEl.textContent = text || 'Memproses...';
+    if (stepEl) stepEl.textContent = `${percent || 0}%`;
 }
 
-/* ============================================
-   PROGRESS
-   ============================================ */
+// ========================================
+// RESULT & ERROR
+// ========================================
 
-.progress-section {
-    background: var(--bg-card);
-    padding: 30px;
-    border-radius: var(--radius);
-    margin-bottom: 30px;
-    text-align: center;
+function showResult(results) {
+    hideAllSections();
+    
+    let parsedResults = results;
+    if (typeof results === 'string') {
+        try { parsedResults = JSON.parse(results); } catch (e) { parsedResults = {}; }
+    }
+    
+    const resultSection = document.getElementById('result-section');
+    const video = document.getElementById('result-video');
+    const downloadBtn = document.getElementById('btn-download');
+    const resultInfo = document.getElementById('result-info');
+    
+    if (resultSection) resultSection.style.display = 'block';
+    
+    const videoUrl = parsedResults?.video_url;
+    if (video && videoUrl) video.src = videoUrl;
+    if (downloadBtn && videoUrl) downloadBtn.href = videoUrl;
+    
+    if (resultInfo) {
+        resultInfo.innerHTML = `
+            <span>🎬 Engine: ${(parsedResults?.engine_used || 'AI').toUpperCase()}</span>
+            <span>📐 Rasio: ${parsedResults?.aspect_ratio || '9:16'}</span>
+            <span>📹 Mode: ${parsedResults?.mode || 'text-to-video'}</span>
+        `;
+    }
 }
 
-.progress-bar {
-    height: 8px;
-    background: var(--bg-input);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 20px 0;
+function showError(message) {
+    hideAllSections();
+    
+    const errorSection = document.getElementById('error-section');
+    const errorMsg = document.getElementById('error-message');
+    
+    if (errorSection) errorSection.style.display = 'block';
+    if (errorMsg) errorMsg.textContent = message || 'Terjadi kesalahan';
 }
 
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary), #a855f7);
-    border-radius: 4px;
-    width: 0%;
-    transition: width 0.5s ease;
+function hideAllSections() {
+    const sections = ['progress-section', 'result-section', 'error-section'];
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
 }
 
-.progress-text {
-    color: var(--text-muted);
+function resetGenerator() {
+    hideAllSections();
+    currentJobId = null;
+    loadJobs();
+    loadUserStats();
 }
 
-/* ============================================
-   RESULT
-   ============================================ */
+// ========================================
+// TAB SWITCHING
+// ========================================
 
-.result-section {
-    background: var(--bg-card);
-    padding: 30px;
-    border-radius: var(--radius);
-    margin-bottom: 30px;
-    text-align: center;
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `tab-${tabName}`);
+    });
 }
 
-.result-video {
-    width: 100%;
-    max-height: 500px;
-    border-radius: 8px;
-    margin: 20px 0;
-    background: black;
+// ========================================
+// JOB MODAL
+// ========================================
+
+function openJobModal(jobId) {
+    const job = userJobs.find(j => j.id === jobId);
+    if (!job) return;
+    
+    const modal = document.getElementById('job-modal');
+    const input = job.input_data || {};
+    
+    let results = job.results || {};
+    if (typeof results === 'string') {
+        try { results = JSON.parse(results); } catch (e) { results = {}; }
+    }
+    
+    // Title
+    const title = document.getElementById('modal-title');
+    if (title) title.textContent = (input.prompt || 'Video').substring(0, 50) + '...';
+    
+    // Status
+    const statusBadge = document.getElementById('modal-status-badge');
+    const statusLabels = { pending: '⏳ Menunggu', processing: '🔄 Diproses', completed: '✅ Selesai', failed: '❌ Gagal' };
+    if (statusBadge) {
+        statusBadge.textContent = statusLabels[job.status] || job.status;
+        statusBadge.className = `status-badge status-${job.status}`;
+    }
+    
+    // Sections
+    const progressEl = document.getElementById('modal-progress');
+    const resultEl = document.getElementById('modal-result');
+    const errorEl = document.getElementById('modal-error');
+    
+    if (['pending', 'processing'].includes(job.status)) {
+        if (progressEl) progressEl.style.display = 'block';
+        if (resultEl) resultEl.style.display = 'none';
+        if (errorEl) errorEl.style.display = 'none';
+        
+        const fill = document.getElementById('modal-progress-fill');
+        const text = document.getElementById('modal-progress-text');
+        const step = document.getElementById('modal-progress-step');
+        
+        if (fill) fill.style.width = `${job.progress_percent || 0}%`;
+        if (text) text.textContent = job.step_name || 'Memproses...';
+        if (step) step.textContent = `Step ${job.current_step || 0}/${job.total_steps || 4}`;
+        
+    } else if (job.status === 'completed') {
+        if (progressEl) progressEl.style.display = 'none';
+        if (resultEl) resultEl.style.display = 'block';
+        if (errorEl) errorEl.style.display = 'none';
+        
+        const video = document.getElementById('modal-video');
+        const download = document.getElementById('modal-download');
+        
+        if (video && results.video_url) video.src = results.video_url;
+        if (download && results.video_url) download.href = results.video_url;
+        
+    } else if (job.status === 'failed') {
+        if (progressEl) progressEl.style.display = 'none';
+        if (resultEl) resultEl.style.display = 'none';
+        if (errorEl) errorEl.style.display = 'block';
+        
+        const errorMsg = document.getElementById('modal-error-msg');
+        if (errorMsg) errorMsg.textContent = job.error_message || 'Terjadi kesalahan';
+    }
+    
+    // Info
+    const infoEl = document.getElementById('modal-info');
+    if (infoEl) {
+        const date = new Date(job.created_at).toLocaleString('id-ID');
+        infoEl.innerHTML = `
+            <p><strong>Dibuat:</strong> ${date}</p>
+            <p><strong>Rasio:</strong> ${input.aspect_ratio || '9:16'}</p>
+            <p><strong>Engine:</strong> ${(input.engine || 'auto').toUpperCase()}</p>
+            ${results.engine_used ? `<p><strong>Engine digunakan:</strong> ${results.engine_used.toUpperCase()}</p>` : ''}
+        `;
+    }
+    
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
 }
 
-.result-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    margin-bottom: 20px;
+function closeJobModal() {
+    const modal = document.getElementById('job-modal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
-.btn-download {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: var(--success);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.2s;
-}
+// ========================================
+// EVENT LISTENERS
+// ========================================
 
-.btn-download:hover {
-    background: #059669;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 DOM loaded, initializing Video Generator...');
+    
+    // Initialize
+    initVideoGenerator();
+    
+    // Mode buttons
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+    });
+    
+    // Image upload
+    const uploadArea = document.getElementById('upload-area');
+    const imageInput = document.getElementById('input-image');
+    const removeBtn = document.getElementById('btn-remove-image');
+    
+    if (uploadArea && imageInput) {
+        uploadArea.addEventListener('click', (e) => {
+            if (e.target.id !== 'btn-remove-image') {
+                imageInput.click();
+            }
+        });
+        
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files?.[0]) handleImageSelect(e.target.files[0]);
+        });
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer?.files?.[0]) handleImageSelect(e.dataTransfer.files[0]);
+        });
+    }
+    
+    if (removeBtn) {
+        removeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            clearImage();
+        });
+    }
+    
+    // Char count
+    const promptInput = document.getElementById('input-prompt');
+    const charCount = document.getElementById('char-count');
+    if (promptInput && charCount) {
+        promptInput.addEventListener('input', () => {
+            charCount.textContent = promptInput.value.length;
+        });
+    }
+    
+    // Form submit
+    const form = document.getElementById('video-form');
+    if (form) {
+        form.addEventListener('submit', submitVideoJob);
+    }
+    
+    // Tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+    
+    // Result buttons
+    const newVideoBtn = document.getElementById('btn-new-video');
+    const retryBtn = document.getElementById('btn-retry');
+    if (newVideoBtn) newVideoBtn.addEventListener('click', resetGenerator);
+    if (retryBtn) retryBtn.addEventListener('click', resetGenerator);
+    
+    // Modal
+    const closeModalBtn = document.getElementById('btn-close-modal');
+    const modal = document.getElementById('job-modal');
+    
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeJobModal);
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'job-modal') closeJobModal();
+        });
+    }
+    
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeJobModal();
+    });
+    
+    // Login button - menggunakan loginWithGoogle() dari supabase-config.js
+    const loginBtn = document.getElementById('btn-login-google');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            // Override redirectTo untuk video-generator
+            supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin + '/video-generator.html'
+                }
+            });
+        });
+    }
+    
+    // Logout button - menggunakan logout() dari supabase-config.js
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logout);
+    }
+});
 
-.btn-new {
-    padding: 12px 24px;
-    background: var(--bg-input);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
+// Auth state listener - untuk deteksi login dari halaman lain
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    console.log('🔄 Auth state changed:', event);
+    
+    if (event === 'SIGNED_IN' && session) {
+        currentUser = session.user;
+        showGeneratorUI();
+        loadUserStats();
+        loadJobs();
+        startPolling();
+    } else if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        showLoginUI();
+        stopPolling();
+    }
+});
 
-.btn-new:hover {
-    background: var(--border);
-}
+// Visibility change
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        stopPolling();
+    } else {
+        const user = getCurrentUser();
+        if (user) {
+            loadJobs();
+            startPolling();
+        }
+    }
+});
 
-.result-info {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
+// Cleanup
+window.addEventListener('beforeunload', stopPolling);
 
-/* ============================================
-   ERROR
-   ============================================ */
-
-.error-section {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid var(--error);
-    padding: 30px;
-    border-radius: var(--radius);
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-.error-section h3 {
-    color: var(--error);
-    margin-bottom: 10px;
-}
-
-.btn-retry {
-    margin-top: 20px;
-    padding: 12px 24px;
-    background: var(--error);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.btn-retry:hover {
-    background: #dc2626;
-}
-
-/* ============================================
-   HISTORY
-   ============================================ */
-
-.history-section {
-    background: var(--bg-card);
-    padding: 30px;
-    border-radius: var(--radius);
-}
-
-.history-section h3 {
-    margin-bottom: 20px;
-}
-
-.history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.no-history {
-    color: var(--text-muted);
-    text-align: center;
-    padding: 40px;
-}
-
-.history-item {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-    background: var(--bg-input);
-    border-radius: 8px;
-}
-
-.history-thumb {
-    width: 80px;
-    height: 60px;
-    background: var(--bg);
-    border-radius: 6px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-
-.history-thumb video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.history-thumb-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    font-size: 1.5rem;
-}
-
-.history-info {
-    flex: 1;
-}
-
-.history-prompt {
-    font-size: 0.9rem;
-    margin-bottom: 5px;
-}
-
-.history-date {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    margin-right: 10px;
-}
-
-.history-status {
-    font-size: 0.8rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-}
-
-.history-status.completed { background: rgba(16, 185, 129, 0.2); }
-.history-status.processing { background: rgba(99, 102, 241, 0.2); }
-.history-status.failed { background: rgba(239, 68, 68, 0.2); }
-.history-status.pending { background: rgba(245, 158, 11, 0.2); }
-
-.history-download {
-    text-decoration: none;
-    font-size: 1.2rem;
-    padding: 8px;
-    background: var(--bg-card);
-    border-radius: 6px;
-}
-
-/* ============================================
-   FOOTER
-   ============================================ */
-
-.footer {
-    text-align: center;
-    padding: 40px 0;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-}
-
-/* ============================================
-   UTILITIES
-   ============================================ */
-
-.hidden {
-    display: none !important;
-}
+console.log('✅ Video Generator.js loaded');
