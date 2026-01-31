@@ -1,13 +1,12 @@
 // ============================================
-// VIDEO GENERATOR - v1.0
-// ============================================
-// Menggunakan shared auth dari supabase-config.js
+// VIDEO GENERATOR - VEO 3.1 Only
 // ============================================
 
 let pollingInterval = null;
 let userJobs = [];
 let currentMode = 'text-to-video';
 let selectedImageBase64 = null;
+let selectedImageDimensions = { width: 0, height: 0 };
 let currentJobId = null;
 
 // ========================================
@@ -15,9 +14,8 @@ let currentJobId = null;
 // ========================================
 
 async function initVideoGenerator() {
-    console.log('🎬 Initializing Video Generator...');
+    console.log('🎬 Initializing Video Generator (VEO 3.1)...');
     
-    // Gunakan checkAuth() dari supabase-config.js
     const isLoggedIn = await checkAuth();
     
     if (isLoggedIn) {
@@ -51,7 +49,6 @@ function showGeneratorUI() {
     if (generatorSection) generatorSection.style.display = 'block';
     if (userBar) userBar.style.display = 'flex';
     
-    // Update user info - getCurrentUser() dari supabase-config.js
     const user = getCurrentUser();
     if (user) {
         const avatar = document.getElementById('user-avatar');
@@ -76,14 +73,11 @@ async function loadUserStats() {
         const user = getCurrentUser();
         if (!user) return;
         
-        // Coba function baru dulu (check_service_limit)
         let result = await supabaseClient.rpc('check_service_limit', {
             p_service: 'video'
         });
         
-        // Fallback ke check_limit jika function baru tidak ada
         if (result.error && result.error.message.includes('does not exist')) {
-            console.log('📊 Falling back to check_limit');
             result = await supabaseClient.rpc('check_limit');
         }
         
@@ -106,38 +100,12 @@ async function loadUserStats() {
 function updateStatsUI(stats) {
     const planEl = document.getElementById('user-plan');
     const remainingEl = document.getElementById('user-remaining');
-    const engineHint = document.getElementById('engine-hint');
     
     if (planEl) planEl.textContent = stats.plan_name || 'Free';
     if (remainingEl) {
         remainingEl.textContent = stats.daily_limit === -1 ? '∞' : (stats.remaining || 0);
     }
     
-    // Free plan: hanya Grok
-    const isFree = stats.daily_limit === 1 || (stats.plan_name || '').toLowerCase() === 'free';
-    
-    const veoInput = document.querySelector('input[name="engine"][value="veo"]');
-    const autoInput = document.querySelector('input[name="engine"][value="auto"]');
-    const grokInput = document.querySelector('input[name="engine"][value="grok"]');
-    
-    if (isFree) {
-        if (grokInput) grokInput.checked = true;
-        if (veoInput) veoInput.disabled = true;
-        if (autoInput) autoInput.disabled = true;
-        if (engineHint) {
-            engineHint.innerHTML = '⚠️ <strong>Free plan hanya bisa Grok</strong>';
-            engineHint.style.color = '#f59e0b';
-        }
-    } else {
-        if (veoInput) veoInput.disabled = false;
-        if (autoInput) autoInput.disabled = false;
-        if (engineHint) {
-            engineHint.textContent = 'VEO 3.1 kualitas lebih bagus, Grok lebih cepat';
-            engineHint.style.color = '';
-        }
-    }
-    
-    // Update generate button
     const generateBtn = document.getElementById('btn-generate');
     if (generateBtn) {
         if (stats.remaining <= 0 && stats.daily_limit !== -1) {
@@ -159,7 +127,6 @@ async function loadJobs() {
         const user = getCurrentUser();
         if (!user) return;
         
-        // RLS akan otomatis filter berdasarkan user
         const { data: jobs, error } = await supabaseClient
             .from('jobs')
             .select('*')
@@ -188,13 +155,11 @@ function renderJobs() {
     const activeJobs = userJobs.filter(j => ['pending', 'processing'].includes(j.status));
     const historyJobs = userJobs.filter(j => ['completed', 'failed'].includes(j.status));
     
-    // Update counts
     const activeCount = document.getElementById('active-count');
     const historyCount = document.getElementById('history-count');
     if (activeCount) activeCount.textContent = activeJobs.length;
     if (historyCount) historyCount.textContent = historyJobs.length;
     
-    // Render active
     const activeContainer = document.getElementById('active-jobs');
     if (activeContainer) {
         if (activeJobs.length === 0) {
@@ -209,7 +174,6 @@ function renderJobs() {
         }
     }
     
-    // Render history
     const historyContainer = document.getElementById('history-jobs');
     if (historyContainer) {
         if (historyJobs.length === 0) {
@@ -265,6 +229,8 @@ function createJobCard(job) {
         `;
     }
     
+    const mode = input.image_base64 || input.image_url ? 'Image→Video' : 'Text→Video';
+    
     return `
         <div class="job-card" onclick="openJobModal('${job.id}')">
             <div class="job-header">
@@ -273,9 +239,9 @@ function createJobCard(job) {
                     <div class="job-meta">
                         <span>${date}</span>
                         <span>•</span>
-                        <span>${input.aspect_ratio || '9:16'}</span>
+                        <span>${results.aspect_ratio || input.aspect_ratio || '9:16'}</span>
                         <span>•</span>
-                        <span>${(input.engine || 'auto').toUpperCase()}</span>
+                        <span>${mode}</span>
                     </div>
                 </div>
                 <span class="status-badge status-${job.status}">${statusLabels[job.status]}</span>
@@ -304,17 +270,37 @@ function switchMode(mode) {
     });
     
     const imageSection = document.getElementById('image-upload-section');
+    const ratioSection = document.getElementById('ratio-section');
+    
     if (mode === 'image-to-video') {
         if (imageSection) imageSection.style.display = 'block';
+        // Hide manual ratio selection for image-to-video (will use auto-detect)
+        if (ratioSection) ratioSection.style.display = 'none';
     } else {
         if (imageSection) imageSection.style.display = 'none';
+        // Show manual ratio selection for text-to-video
+        if (ratioSection) ratioSection.style.display = 'block';
         clearImage();
     }
 }
 
 // ========================================
-// IMAGE HANDLING
+// IMAGE HANDLING WITH AUTO-DETECT RATIO
 // ========================================
+
+function detectAspectRatio(width, height) {
+    if (width === 0 || height === 0) return { ratio: '9:16', label: 'Portrait' };
+    
+    const r = width / height;
+    
+    if (r > 1.2) {
+        return { ratio: '16:9', label: 'Landscape' };
+    } else if (r < 0.8) {
+        return { ratio: '9:16', label: 'Portrait' };
+    } else {
+        return { ratio: '1:1', label: 'Square' };
+    }
+}
 
 function handleImageSelect(file) {
     if (!file || !file.type.startsWith('image/')) {
@@ -330,6 +316,25 @@ function handleImageSelect(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         selectedImageBase64 = e.target.result;
+        
+        // Load image to get dimensions
+        const img = new Image();
+        img.onload = () => {
+            selectedImageDimensions = { width: img.width, height: img.height };
+            
+            // Detect and show aspect ratio
+            const detected = detectAspectRatio(img.width, img.height);
+            const ratioInfo = document.getElementById('detected-ratio-info');
+            const ratioText = document.getElementById('detected-ratio-text');
+            
+            if (ratioInfo && ratioText) {
+                ratioText.textContent = `Rasio terdeteksi: ${detected.ratio} (${detected.label}) - ${img.width}×${img.height}px`;
+                ratioInfo.style.display = 'flex';
+            }
+            
+            console.log(`📐 Image: ${img.width}x${img.height} → Ratio: ${detected.ratio}`);
+        };
+        img.src = selectedImageBase64;
         
         const preview = document.getElementById('preview-image');
         const placeholder = document.getElementById('upload-placeholder');
@@ -347,11 +352,13 @@ function handleImageSelect(file) {
 
 function clearImage() {
     selectedImageBase64 = null;
+    selectedImageDimensions = { width: 0, height: 0 };
     
     const input = document.getElementById('input-image');
     const preview = document.getElementById('preview-image');
     const placeholder = document.getElementById('upload-placeholder');
     const removeBtn = document.getElementById('btn-remove-image');
+    const ratioInfo = document.getElementById('detected-ratio-info');
     
     if (input) input.value = '';
     if (preview) {
@@ -360,6 +367,7 @@ function clearImage() {
     }
     if (placeholder) placeholder.style.display = 'block';
     if (removeBtn) removeBtn.style.display = 'none';
+    if (ratioInfo) ratioInfo.style.display = 'none';
 }
 
 // ========================================
@@ -376,11 +384,6 @@ async function submitVideoJob(event) {
     }
     
     const prompt = document.getElementById('input-prompt')?.value?.trim();
-    const ratioInput = document.querySelector('input[name="ratio"]:checked');
-    const engineInput = document.querySelector('input[name="engine"]:checked');
-    
-    const ratio = ratioInput?.value || '9:16';
-    const engine = engineInput?.value || 'auto';
     
     // Validasi
     if (!prompt) {
@@ -393,6 +396,19 @@ async function submitVideoJob(event) {
         return;
     }
     
+    // Determine aspect ratio
+    let aspectRatio;
+    if (currentMode === 'image-to-video') {
+        // Auto-detect from image
+        const detected = detectAspectRatio(selectedImageDimensions.width, selectedImageDimensions.height);
+        aspectRatio = detected.ratio;
+        console.log(`📐 Using auto-detected ratio: ${aspectRatio}`);
+    } else {
+        // Use selected radio button
+        const ratioInput = document.querySelector('input[name="ratio"]:checked');
+        aspectRatio = ratioInput?.value || '9:16';
+    }
+    
     const submitBtn = document.getElementById('btn-generate');
     const btnText = submitBtn?.querySelector('.btn-text');
     const btnLoading = submitBtn?.querySelector('.btn-loading');
@@ -401,14 +417,13 @@ async function submitVideoJob(event) {
     if (btnText) btnText.style.display = 'none';
     if (btnLoading) btnLoading.style.display = 'inline-flex';
     
-    // Show progress
     hideAllSections();
     const progressSection = document.getElementById('progress-section');
     if (progressSection) progressSection.style.display = 'block';
     updateProgress(0, 'Memvalidasi...');
     
     try {
-        // Check limit dulu
+        // Check limit
         let limitResult = await supabaseClient.rpc('check_service_limit', {
             p_service: 'video'
         });
@@ -429,8 +444,7 @@ async function submitVideoJob(event) {
         // Prepare input data
         const inputData = {
             prompt: prompt.substring(0, 500),
-            aspect_ratio: ratio,
-            engine: engine
+            aspect_ratio: aspectRatio
         };
         
         if (selectedImageBase64) {
@@ -444,7 +458,6 @@ async function submitVideoJob(event) {
             p_total_steps: 4
         });
         
-        // Fallback
         if (jobResult.error && jobResult.error.message.includes('does not exist')) {
             jobResult = await supabaseClient.rpc('create_job_secure', {
                 p_service: 'video',
@@ -463,10 +476,7 @@ async function submitVideoJob(event) {
         console.log('✅ Job created:', result.job_id);
         currentJobId = result.job_id;
         
-        // Start polling this specific job
         startJobPolling(result.job_id);
-        
-        // Update stats
         await loadUserStats();
         
         // Reset form
@@ -512,6 +522,7 @@ function startJobPolling(jobId) {
                 stopPolling();
                 showError(job.error_message || 'Video generation failed');
                 await loadJobs();
+                await loadUserStats(); // Reload to show refunded quota
             }
             
         } catch (error) {
@@ -573,7 +584,7 @@ function showResult(results) {
     
     if (resultInfo) {
         resultInfo.innerHTML = `
-            <span>🎬 Engine: ${(parsedResults?.engine_used || 'AI').toUpperCase()}</span>
+            <span>🎬 Engine: VEO 3.1</span>
             <span>📐 Rasio: ${parsedResults?.aspect_ratio || '9:16'}</span>
             <span>📹 Mode: ${parsedResults?.mode || 'text-to-video'}</span>
         `;
@@ -635,11 +646,9 @@ function openJobModal(jobId) {
         try { results = JSON.parse(results); } catch (e) { results = {}; }
     }
     
-    // Title
     const title = document.getElementById('modal-title');
     if (title) title.textContent = (input.prompt || 'Video').substring(0, 50) + '...';
     
-    // Status
     const statusBadge = document.getElementById('modal-status-badge');
     const statusLabels = { pending: '⏳ Menunggu', processing: '🔄 Diproses', completed: '✅ Selesai', failed: '❌ Gagal' };
     if (statusBadge) {
@@ -647,7 +656,6 @@ function openJobModal(jobId) {
         statusBadge.className = `status-badge status-${job.status}`;
     }
     
-    // Sections
     const progressEl = document.getElementById('modal-progress');
     const resultEl = document.getElementById('modal-result');
     const errorEl = document.getElementById('modal-error');
@@ -685,15 +693,15 @@ function openJobModal(jobId) {
         if (errorMsg) errorMsg.textContent = job.error_message || 'Terjadi kesalahan';
     }
     
-    // Info
     const infoEl = document.getElementById('modal-info');
     if (infoEl) {
         const date = new Date(job.created_at).toLocaleString('id-ID');
+        const mode = input.image_base64 || input.image_url ? 'Image to Video' : 'Text to Video';
         infoEl.innerHTML = `
             <p><strong>Dibuat:</strong> ${date}</p>
-            <p><strong>Rasio:</strong> ${input.aspect_ratio || '9:16'}</p>
-            <p><strong>Engine:</strong> ${(input.engine || 'auto').toUpperCase()}</p>
-            ${results.engine_used ? `<p><strong>Engine digunakan:</strong> ${results.engine_used.toUpperCase()}</p>` : ''}
+            <p><strong>Mode:</strong> ${mode}</p>
+            <p><strong>Rasio:</strong> ${results.aspect_ratio || input.aspect_ratio || '9:16'}</p>
+            <p><strong>Engine:</strong> VEO 3.1</p>
         `;
     }
     
@@ -712,9 +720,8 @@ function closeJobModal() {
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 DOM loaded, initializing Video Generator...');
+    console.log('🚀 DOM loaded, initializing Video Generator (VEO 3.1)...');
     
-    // Initialize
     initVideoGenerator();
     
     // Mode buttons
@@ -738,7 +745,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.files?.[0]) handleImageSelect(e.target.files[0]);
         });
         
-        // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -801,11 +807,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape') closeJobModal();
     });
     
-    // Login button - menggunakan loginWithGoogle() dari supabase-config.js
+    // Login button
     const loginBtn = document.getElementById('btn-login-google');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            // Override redirectTo untuk video-generator
             supabaseClient.auth.signInWithOAuth({
                 provider: 'google',
                 options: {
@@ -815,14 +820,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Logout button - menggunakan logout() dari supabase-config.js
+    // Logout button
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', logout);
     }
 });
 
-// Auth state listener - untuk deteksi login dari halaman lain
+// Auth state listener
 supabaseClient.auth.onAuthStateChange((event, session) => {
     console.log('🔄 Auth state changed:', event);
     
@@ -852,7 +857,6 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-// Cleanup
 window.addEventListener('beforeunload', stopPolling);
 
-console.log('✅ Video Generator.js loaded');
+console.log('✅ Video Generator.js (VEO 3.1 Only) loaded');
