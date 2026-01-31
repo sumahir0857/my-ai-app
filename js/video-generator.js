@@ -1,46 +1,28 @@
 /**
  * VIDEO GENERATOR - Frontend JavaScript
  * =====================================
- * With Shared Authentication Support
+ * Handles UI interactions, Supabase integration, and job polling
  */
 
 // ==============================================================================
-// CONFIGURATION - SAMAKAN DENGAN HALAMAN UGC ANDA
+// CONFIGURATION
 // ==============================================================================
 
 const CONFIG = {
-    SUPABASE_URL: 'https://xhjwmhoxrszzrwsmqhxi.supabase.co',      // GANTI dengan URL yang sama seperti di UGC
-    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM',  // GANTI dengan key yang sama
-    POLL_INTERVAL: 2000,
+    SUPABASE_URL: 'https://xhjwmhoxrszzrwsmqhxi.supabase.co',  // Replace with your Supabase URL
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM',  // Replace with your anon key
+    POLL_INTERVAL: 2000,  // Poll every 2 seconds
     MAX_PROMPT_LENGTH: 500
 };
 
 // ==============================================================================
-// INITIALIZE SUPABASE - Cek apakah sudah ada instance global
+// INITIALIZE SUPABASE
 // ==============================================================================
 
-let supabase;
-
-// Jika sudah ada instance Supabase dari halaman lain, gunakan itu
-if (window.supabaseClient) {
-    supabase = window.supabaseClient;
-    console.log('[Auth] Using existing Supabase instance');
-} else {
-    supabase = window.supabase.createClient(
-        CONFIG.SUPABASE_URL,
-        CONFIG.SUPABASE_ANON_KEY,
-        {
-            auth: {
-                autoRefreshToken: true,
-                persistSession: true,
-                detectSessionInUrl: true,  // PENTING: untuk OAuth callback
-                storage: window.localStorage  // Gunakan localStorage untuk persist
-            }
-        }
-    );
-    window.supabaseClient = supabase;
-    console.log('[Auth] Created new Supabase instance');
-}
+const supabase = window.supabase.createClient(
+    CONFIG.SUPABASE_URL,
+    CONFIG.SUPABASE_ANON_KEY
+);
 
 // ==============================================================================
 // STATE
@@ -106,116 +88,53 @@ const elements = {
 };
 
 // ==============================================================================
-// AUTHENTICATION - IMPROVED
+// AUTHENTICATION
 // ==============================================================================
 
 async function checkAuth() {
-    console.log('[Auth] Checking authentication...');
+    const { data: { session } } = await supabase.auth.getSession();
     
-    try {
-        // Method 1: Check existing session
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-            console.error('[Auth] Session error:', error);
-        }
-        
-        if (session && session.user) {
-            console.log('[Auth] Found existing session:', session.user.email);
-            currentUser = session.user;
-            showApp();
-            await loadUserQuota();
-            await loadHistory();
-            return;
-        }
-        
-        // Method 2: Check if there's a user (for edge cases)
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (user) {
-            console.log('[Auth] Found user:', user.email);
-            currentUser = user;
-            showApp();
-            await loadUserQuota();
-            await loadHistory();
-            return;
-        }
-        
-        // No session found
-        console.log('[Auth] No session found, showing login');
-        showAuth();
-        
-    } catch (error) {
-        console.error('[Auth] Check failed:', error);
+    if (session) {
+        currentUser = session.user;
+        showApp();
+        await loadUserQuota();
+        await loadHistory();
+    } else {
         showAuth();
     }
 }
 
 async function loginWithGoogle() {
-    console.log('[Auth] Starting Google login...');
-    
-    try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin + window.location.pathname,
-                queryParams: {
-                    access_type: 'offline',
-                    prompt: 'consent'
-                }
-            }
-        });
-        
-        if (error) {
-            console.error('[Auth] Login error:', error);
-            alert('Login failed: ' + error.message);
-            return;
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.href
         }
-        
-        console.log('[Auth] OAuth initiated:', data);
-        // User will be redirected to Google
-        
-    } catch (error) {
-        console.error('[Auth] Login exception:', error);
+    });
+    
+    if (error) {
+        console.error('Login error:', error);
         alert('Login failed. Please try again.');
     }
 }
 
 async function logout() {
-    console.log('[Auth] Logging out...');
-    
-    try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        
-        currentUser = null;
-        showAuth();
-        
-    } catch (error) {
-        console.error('[Auth] Logout error:', error);
-    }
+    await supabase.auth.signOut();
+    currentUser = null;
+    showAuth();
 }
 
 function showAuth() {
-    console.log('[Auth] Showing auth section');
-    if (elements.authSection) elements.authSection.classList.remove('hidden');
-    if (elements.mainApp) elements.mainApp.classList.add('hidden');
-    if (elements.userInfo) elements.userInfo.classList.add('hidden');
-    
-    // Pastikan tombol bisa diklik
-    if (elements.googleLoginBtn) {
-        elements.googleLoginBtn.disabled = false;
-        elements.googleLoginBtn.style.pointerEvents = 'auto';
-        elements.googleLoginBtn.style.cursor = 'pointer';
-    }
+    elements.authSection.classList.remove('hidden');
+    elements.mainApp.classList.add('hidden');
+    elements.userInfo.classList.add('hidden');
 }
 
 function showApp() {
-    console.log('[Auth] Showing main app');
-    if (elements.authSection) elements.authSection.classList.add('hidden');
-    if (elements.mainApp) elements.mainApp.classList.remove('hidden');
-    if (elements.userInfo) elements.userInfo.classList.remove('hidden');
-    if (elements.userEmail) elements.userEmail.textContent = currentUser?.email || '';
+    elements.authSection.classList.add('hidden');
+    elements.mainApp.classList.remove('hidden');
+    elements.userInfo.classList.remove('hidden');
+    elements.userEmail.textContent = currentUser.email;
 }
 
 // ==============================================================================
@@ -228,65 +147,44 @@ async function loadUserQuota() {
             p_service: 'video'
         });
         
-        if (error) {
-            console.error('[Quota] Error:', error);
-            // Fallback: coba function check_limit biasa
-            const { data: fallbackData, error: fallbackError } = await supabase.rpc('check_limit');
-            if (!fallbackError && fallbackData && fallbackData.length > 0) {
-                userQuota = {
-                    remaining: fallbackData[0].remaining,
-                    daily_limit: fallbackData[0].daily_limit,
-                    plan_name: fallbackData[0].plan_name
-                };
-                updateQuotaDisplay();
-                return;
-            }
-            return;
-        }
+        if (error) throw error;
         
         if (data && data.length > 0) {
             userQuota = data[0];
             updateQuotaDisplay();
-            updateEngineAvailability();
+            updateGrokAvailability();
         }
     } catch (error) {
-        console.error('[Quota] Exception:', error);
+        console.error('Failed to load quota:', error);
     }
 }
 
 function updateQuotaDisplay() {
-    if (!userQuota || !elements.quotaInfo) return;
+    if (!userQuota) return;
     
     const { remaining, daily_limit, plan_name } = userQuota;
     const displayLimit = daily_limit === -1 ? '∞' : daily_limit;
     const displayRemaining = daily_limit === -1 ? '∞' : remaining;
     
-    elements.quotaInfo.textContent = `${displayRemaining}/${displayLimit} videos • ${plan_name || 'Free'}`;
+    elements.quotaInfo.textContent = `${displayRemaining}/${displayLimit} videos • ${plan_name}`;
     elements.quotaInfo.className = `quota-badge ${remaining <= 0 && daily_limit !== -1 ? 'quota-empty' : ''}`;
     
-    if (elements.generateBtn) {
-        if (remaining <= 0 && daily_limit !== -1) {
-            elements.generateBtn.disabled = true;
-            elements.generateBtn.title = 'Daily limit reached';
-        } else {
-            elements.generateBtn.disabled = false;
-            elements.generateBtn.title = '';
-        }
+    // Disable generate button if no quota
+    if (remaining <= 0 && daily_limit !== -1) {
+        elements.generateBtn.disabled = true;
+        elements.generateBtn.title = 'Daily limit reached';
+    } else {
+        elements.generateBtn.disabled = false;
+        elements.generateBtn.title = '';
     }
 }
 
-function updateEngineAvailability() {
-    // Untuk free users, hanya Grok yang tersedia
-    const planName = userQuota?.plan_name?.toLowerCase() || 'free';
-    
-    if (planName === 'free') {
-        const grokInput = document.querySelector('input[name="engine"][value="grok"]');
-        const veoInput = document.querySelector('input[name="engine"][value="veo"]');
-        const autoInput = document.querySelector('input[name="engine"][value="auto"]');
-        
-        if (grokInput) grokInput.checked = true;
-        if (veoInput) veoInput.disabled = true;
-        if (autoInput) autoInput.disabled = true;
+function updateGrokAvailability() {
+    // For free users, only Grok is available (per your requirements)
+    if (userQuota && userQuota.plan_name === 'Free') {
+        document.querySelector('input[name="engine"][value="grok"]').checked = true;
+        document.querySelector('input[name="engine"][value="veo"]').disabled = true;
+        document.querySelector('input[name="engine"][value="auto"]').disabled = true;
     }
 }
 
@@ -297,14 +195,16 @@ function updateEngineAvailability() {
 function switchMode(mode) {
     currentMode = mode;
     
+    // Update button states
     elements.modeButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.mode === mode);
     });
     
+    // Show/hide image upload
     if (mode === 'image-to-video') {
-        elements.imageUploadSection?.classList.remove('hidden');
+        elements.imageUploadSection.classList.remove('hidden');
     } else {
-        elements.imageUploadSection?.classList.add('hidden');
+        elements.imageUploadSection.classList.add('hidden');
         clearImage();
     }
 }
@@ -319,6 +219,7 @@ function handleImageSelect(file) {
         return;
     }
     
+    // Check file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
         alert('Image too large. Maximum size is 10MB');
         return;
@@ -326,15 +227,14 @@ function handleImageSelect(file) {
     
     selectedImage = file;
     
+    // Convert to base64
     const reader = new FileReader();
     reader.onload = (e) => {
         selectedImageBase64 = e.target.result;
-        if (elements.imagePreview) {
-            elements.imagePreview.src = selectedImageBase64;
-            elements.imagePreview.classList.remove('hidden');
-        }
-        elements.uploadPlaceholder?.classList.add('hidden');
-        elements.removeImage?.classList.remove('hidden');
+        elements.imagePreview.src = selectedImageBase64;
+        elements.imagePreview.classList.remove('hidden');
+        elements.uploadPlaceholder.classList.add('hidden');
+        elements.removeImage.classList.remove('hidden');
     };
     reader.readAsDataURL(file);
 }
@@ -342,13 +242,11 @@ function handleImageSelect(file) {
 function clearImage() {
     selectedImage = null;
     selectedImageBase64 = null;
-    if (elements.imageInput) elements.imageInput.value = '';
-    if (elements.imagePreview) {
-        elements.imagePreview.classList.add('hidden');
-        elements.imagePreview.src = '';
-    }
-    elements.uploadPlaceholder?.classList.remove('hidden');
-    elements.removeImage?.classList.add('hidden');
+    elements.imageInput.value = '';
+    elements.imagePreview.classList.add('hidden');
+    elements.imagePreview.src = '';
+    elements.uploadPlaceholder.classList.remove('hidden');
+    elements.removeImage.classList.add('hidden');
 }
 
 // ==============================================================================
@@ -358,13 +256,11 @@ function clearImage() {
 async function generateVideo(e) {
     e.preventDefault();
     
-    const prompt = elements.prompt?.value?.trim();
-    const ratioInput = document.querySelector('input[name="ratio"]:checked');
-    const engineInput = document.querySelector('input[name="engine"]:checked');
+    const prompt = elements.prompt.value.trim();
+    const ratio = document.querySelector('input[name="ratio"]:checked').value;
+    const engine = document.querySelector('input[name="engine"]:checked').value;
     
-    const ratio = ratioInput?.value || '9:16';
-    const engine = engineInput?.value || 'auto';
-    
+    // Validation
     if (!prompt) {
         alert('Please enter a video description');
         return;
@@ -375,12 +271,14 @@ async function generateVideo(e) {
         return;
     }
     
+    // Show loading state
     setGenerateButtonLoading(true);
     hideAllSections();
-    elements.progressSection?.classList.remove('hidden');
+    elements.progressSection.classList.remove('hidden');
     updateProgress(0, 'Creating job...');
     
     try {
+        // Prepare input data
         const inputData = {
             prompt: prompt,
             aspect_ratio: ratio,
@@ -391,40 +289,29 @@ async function generateVideo(e) {
             inputData.image_base64 = selectedImageBase64;
         }
         
-        // Coba function baru dulu
-        let result = await supabase.rpc('create_service_job', {
+        // Create job via Supabase function
+        const { data, error } = await supabase.rpc('create_service_job', {
             p_service: 'video',
             p_input_data: inputData,
             p_total_steps: 4
         });
         
-        // Fallback ke function lama jika tidak ada
-        if (result.error && result.error.message.includes('does not exist')) {
-            console.log('[Generate] Falling back to create_job_secure');
-            result = await supabase.rpc('create_job_secure', {
-                p_service: 'video',
-                p_input_data: inputData,
-                p_total_steps: 4
-            });
-        }
+        if (error) throw error;
         
-        if (result.error) throw result.error;
-        
-        const data = result.data;
         if (!data || data.length === 0 || !data[0].success) {
-            throw new Error(data?.[0]?.message || 'Failed to create job');
+            const message = data?.[0]?.message || 'Failed to create job';
+            throw new Error(message);
         }
         
         currentJobId = data[0].job_id;
-        if (userQuota) {
-            userQuota.remaining = data[0].remaining_quota;
-            updateQuotaDisplay();
-        }
+        userQuota.remaining = data[0].remaining_quota;
+        updateQuotaDisplay();
         
+        // Start polling for progress
         startPolling();
         
     } catch (error) {
-        console.error('[Generate] Error:', error);
+        console.error('Generate error:', error);
         showError(error.message);
         setGenerateButtonLoading(false);
     }
@@ -435,7 +322,9 @@ async function generateVideo(e) {
 // ==============================================================================
 
 function startPolling() {
-    if (pollInterval) clearInterval(pollInterval);
+    if (pollInterval) {
+        clearInterval(pollInterval);
+    }
     
     pollInterval = setInterval(async () => {
         try {
@@ -446,10 +335,13 @@ function startPolling() {
                 .single();
             
             if (error) throw error;
+            
             if (!data) return;
             
+            // Update progress
             updateProgress(data.progress_percent, data.step_name);
             
+            // Check status
             if (data.status === 'completed') {
                 stopPolling();
                 showResult(data.results);
@@ -459,7 +351,7 @@ function startPolling() {
             }
             
         } catch (error) {
-            console.error('[Polling] Error:', error);
+            console.error('Polling error:', error);
         }
     }, CONFIG.POLL_INTERVAL);
 }
@@ -473,8 +365,8 @@ function stopPolling() {
 }
 
 function updateProgress(percent, text) {
-    if (elements.progressFill) elements.progressFill.style.width = `${percent}%`;
-    if (elements.progressText) elements.progressText.textContent = text || 'Processing...';
+    elements.progressFill.style.width = `${percent}%`;
+    elements.progressText.textContent = text || 'Processing...';
 }
 
 // ==============================================================================
@@ -483,40 +375,40 @@ function updateProgress(percent, text) {
 
 function showResult(results) {
     hideAllSections();
-    elements.resultSection?.classList.remove('hidden');
+    elements.resultSection.classList.remove('hidden');
     
-    const videoUrl = results?.video_url;
-    if (elements.resultVideo) elements.resultVideo.src = videoUrl || '';
-    if (elements.downloadBtn) elements.downloadBtn.href = videoUrl || '#';
+    const videoUrl = results.video_url;
+    elements.resultVideo.src = videoUrl;
+    elements.downloadBtn.href = videoUrl;
     
-    if (elements.resultInfo) {
-        elements.resultInfo.innerHTML = `
-            <span>🎬 Engine: ${results?.engine_used?.toUpperCase() || 'AI'}</span>
-            <span>📐 Ratio: ${results?.aspect_ratio || '9:16'}</span>
-            <span>📹 Mode: ${results?.mode || 'text-to-video'}</span>
-        `;
-    }
+    // Show result info
+    elements.resultInfo.innerHTML = `
+        <span>🎬 Engine: ${results.engine_used?.toUpperCase() || 'AI'}</span>
+        <span>📐 Ratio: ${results.aspect_ratio || '9:16'}</span>
+        <span>📹 Mode: ${results.mode || 'text-to-video'}</span>
+    `;
     
+    // Reload history
     loadHistory();
 }
 
 function showError(message) {
     hideAllSections();
-    elements.errorSection?.classList.remove('hidden');
-    if (elements.errorMessage) elements.errorMessage.textContent = message;
+    elements.errorSection.classList.remove('hidden');
+    elements.errorMessage.textContent = message;
     setGenerateButtonLoading(false);
 }
 
 function hideAllSections() {
-    elements.progressSection?.classList.add('hidden');
-    elements.resultSection?.classList.add('hidden');
-    elements.errorSection?.classList.add('hidden');
+    elements.progressSection.classList.add('hidden');
+    elements.resultSection.classList.add('hidden');
+    elements.errorSection.classList.add('hidden');
 }
 
 function resetForm() {
     hideAllSections();
-    if (elements.prompt) elements.prompt.value = '';
-    if (elements.charCount) elements.charCount.textContent = '0';
+    elements.prompt.value = '';
+    elements.charCount.textContent = '0';
     clearImage();
     currentJobId = null;
     loadUserQuota();
@@ -527,8 +419,6 @@ function resetForm() {
 // ==============================================================================
 
 async function loadHistory() {
-    if (!currentUser) return;
-    
     try {
         const { data, error } = await supabase
             .from('jobs')
@@ -539,16 +429,15 @@ async function loadHistory() {
             .limit(10);
         
         if (error) throw error;
+        
         renderHistory(data || []);
         
     } catch (error) {
-        console.error('[History] Error:', error);
+        console.error('Failed to load history:', error);
     }
 }
 
 function renderHistory(jobs) {
-    if (!elements.historyList) return;
-    
     if (!jobs || jobs.length === 0) {
         elements.historyList.innerHTML = '<p class="no-history">No videos yet. Create your first one!</p>';
         return;
@@ -568,11 +457,13 @@ function renderHistory(jobs) {
                     }
                 </div>
                 <div class="history-info">
-                    <p class="history-prompt">${(job.input_data?.prompt || 'No description').substring(0, 50)}...</p>
+                    <p class="history-prompt">${job.input_data?.prompt?.substring(0, 50) || 'No description'}...</p>
                     <span class="history-date">${date}</span>
                     <span class="history-status ${job.status}">${status}</span>
                 </div>
-                ${videoUrl ? `<a href="${videoUrl}" class="history-download" download title="Download">⬇️</a>` : ''}
+                ${videoUrl ? `
+                    <a href="${videoUrl}" class="history-download" download title="Download">⬇️</a>
+                ` : ''}
             </div>
         `;
     }).join('');
@@ -581,7 +472,13 @@ function renderHistory(jobs) {
 }
 
 function getStatusBadge(status) {
-    return { 'pending': '⏳', 'processing': '🔄', 'completed': '✅', 'failed': '❌' }[status] || '❓';
+    const badges = {
+        'pending': '⏳',
+        'processing': '🔄',
+        'completed': '✅',
+        'failed': '❌'
+    };
+    return badges[status] || '❓';
 }
 
 // ==============================================================================
@@ -589,116 +486,88 @@ function getStatusBadge(status) {
 // ==============================================================================
 
 function setGenerateButtonLoading(loading) {
-    if (!elements.generateBtn) return;
-    
     const btnText = elements.generateBtn.querySelector('.btn-text');
     const btnLoading = elements.generateBtn.querySelector('.btn-loading');
     
     if (loading) {
-        btnText?.classList.add('hidden');
-        btnLoading?.classList.remove('hidden');
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
         elements.generateBtn.disabled = true;
     } else {
-        btnText?.classList.remove('hidden');
-        btnLoading?.classList.add('hidden');
+        btnText.classList.remove('hidden');
+        btnLoading.classList.add('hidden');
         elements.generateBtn.disabled = false;
     }
 }
 
 // ==============================================================================
-// INITIALIZATION
+// EVENT LISTENERS
 // ==============================================================================
 
-function initEventListeners() {
-    // Auth
-    elements.googleLoginBtn?.addEventListener('click', (e) => {
-        e.preventDefault();
-        console.log('[Click] Google login button clicked');
-        loginWithGoogle();
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    // Check authentication
+    checkAuth();
     
-    elements.logoutBtn?.addEventListener('click', logout);
+    // Auth listeners
+    elements.googleLoginBtn.addEventListener('click', loginWithGoogle);
+    elements.logoutBtn.addEventListener('click', logout);
     
-    // Auth state changes
+    // Listen for auth changes
     supabase.auth.onAuthStateChange((event, session) => {
-        console.log('[Auth] State changed:', event, session?.user?.email);
-        
-        if (event === 'SIGNED_IN' && session) {
+        if (session) {
             currentUser = session.user;
             showApp();
             loadUserQuota();
             loadHistory();
-        } else if (event === 'SIGNED_OUT') {
+        } else {
             currentUser = null;
             showAuth();
         }
     });
     
     // Mode switching
-    elements.modeButtons?.forEach(btn => {
+    elements.modeButtons.forEach(btn => {
         btn.addEventListener('click', () => switchMode(btn.dataset.mode));
     });
     
     // Image upload
-    elements.uploadArea?.addEventListener('click', () => elements.imageInput?.click());
-    elements.imageInput?.addEventListener('change', (e) => {
-        if (e.target.files?.[0]) handleImageSelect(e.target.files[0]);
+    elements.uploadArea.addEventListener('click', () => elements.imageInput.click());
+    elements.imageInput.addEventListener('change', (e) => {
+        if (e.target.files[0]) handleImageSelect(e.target.files[0]);
     });
-    elements.removeImage?.addEventListener('click', (e) => {
+    elements.removeImage.addEventListener('click', (e) => {
         e.stopPropagation();
         clearImage();
     });
     
     // Drag and drop
-    elements.uploadArea?.addEventListener('dragover', (e) => {
+    elements.uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         elements.uploadArea.classList.add('dragover');
     });
-    elements.uploadArea?.addEventListener('dragleave', () => {
-        elements.uploadArea?.classList.remove('dragover');
+    elements.uploadArea.addEventListener('dragleave', () => {
+        elements.uploadArea.classList.remove('dragover');
     });
-    elements.uploadArea?.addEventListener('drop', (e) => {
+    elements.uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        elements.uploadArea?.classList.remove('dragover');
-        if (e.dataTransfer?.files?.[0]) handleImageSelect(e.dataTransfer.files[0]);
+        elements.uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files[0]) handleImageSelect(e.dataTransfer.files[0]);
     });
     
     // Prompt character count
-    elements.prompt?.addEventListener('input', () => {
+    elements.prompt.addEventListener('input', () => {
         const length = elements.prompt.value.length;
-        if (elements.charCount) elements.charCount.textContent = length;
+        elements.charCount.textContent = length;
         if (length > CONFIG.MAX_PROMPT_LENGTH) {
             elements.prompt.value = elements.prompt.value.substring(0, CONFIG.MAX_PROMPT_LENGTH);
-            if (elements.charCount) elements.charCount.textContent = CONFIG.MAX_PROMPT_LENGTH;
+            elements.charCount.textContent = CONFIG.MAX_PROMPT_LENGTH;
         }
     });
     
     // Form submission
-    elements.videoForm?.addEventListener('submit', generateVideo);
+    elements.videoForm.addEventListener('submit', generateVideo);
     
     // Result actions
-    elements.newVideoBtn?.addEventListener('click', resetForm);
-    elements.retryBtn?.addEventListener('click', resetForm);
-}
-
-// ==============================================================================
-// START
-// ==============================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('[Init] Video Generator starting...');
-    console.log('[Init] Supabase URL:', CONFIG.SUPABASE_URL ? 'Set' : 'NOT SET!');
-    
-    // Initialize event listeners first
-    initEventListeners();
-    
-    // Then check auth
-    checkAuth();
-});
-
-// Juga cek auth ketika window focus (user kembali dari tab lain)
-window.addEventListener('focus', () => {
-    if (!currentUser) {
-        checkAuth();
-    }
+    elements.newVideoBtn.addEventListener('click', resetForm);
+    elements.retryBtn.addEventListener('click', resetForm);
 });
