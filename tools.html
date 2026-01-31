@@ -105,21 +105,25 @@
                     </a>
                 </div>
 
-                <!-- Tool 1: Video -->
-                <div class="tool-card reveal glass rounded-2xl p-6 opacity-60 group" data-category="video">
+              <!-- Tool 1: Video (Active) -->
+                <div class="tool-card reveal glass rounded-2xl p-6 hover:transform hover:scale-[1.02] transition-all duration-300 group" data-category="video">
                     <div class="flex items-start justify-between mb-4">
                         <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600/30 to-pink-600/30 flex items-center justify-center text-3xl">
                             🎬
                         </div>
                         <div class="flex gap-2">
-                            <span class="px-2 py-1 bg-slate-500/20 text-slate-400 text-xs font-medium rounded-full">Coming Soon</span>
+                            <!-- Mengubah badge menjadi aktif -->
+                            <span class="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs font-medium rounded-full">New</span>
                         </div>
                     </div>
-                    <h3 class="text-xl font-semibold mb-2">Generate Video AI</h3>
-                    <p class="text-slate-400 mb-6 text-sm">Buat video AI dengan VEO 3.1.</p>
-                    <button disabled class="inline-flex items-center px-5 py-2.5 bg-slate-700 rounded-full text-sm font-medium cursor-not-allowed opacity-50">
-                        Coming Soon
-                    </button>
+                    <!-- Menambahkan efek hover pada judul -->
+                    <h3 class="text-xl font-semibold mb-2 group-hover:text-purple-400 transition">Generate Video AI</h3>
+                    <p class="text-slate-400 mb-6 text-sm">Buat video AI dengan VEO 3.1 dan Grok.</p>
+                    
+                    <!-- Mengubah button mati menjadi Link aktif (a href) -->
+                    <a href="video-generator.html" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 rounded-full text-sm font-medium hover:opacity-90 transition">
+                        Launch <span class="ml-2">→</span>
+                    </a>
                 </div>
 
                 <!-- Tool 2: Image Generator -->
