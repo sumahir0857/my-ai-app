@@ -9,8 +9,8 @@
 // ==============================================================================
 
 const CONFIG = {
-    SUPABASE_URL: 'YOUR_SUPABASE_URL',      // GANTI dengan URL yang sama seperti di UGC
-    SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',  // GANTI dengan key yang sama
+    SUPABASE_URL: 'https://xhjwmhoxrszzrwsmqhxi.supabase.co',      // GANTI dengan URL yang sama seperti di UGC
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoandtaG94cnN6enJ3c21xaHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDg1MjUsImV4cCI6MjA4MzAyNDUyNX0.JfMp7BY0PMhTc3xV2CoM6fTLsHSIrLyJyj9WMgeVFDM',  // GANTI dengan key yang sama
     POLL_INTERVAL: 2000,
     MAX_PROMPT_LENGTH: 500
 };
