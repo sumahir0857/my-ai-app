@@ -99,16 +99,13 @@ body {
 }
 
 /* ============================================
-   AUTH SECTION (UPDATED WITH FIX)
+   AUTH SECTION
    ============================================ */
 
 .auth-section {
     display: flex;
     justify-content: center;
     padding: 60px 0;
-    /* Fix: Ensure stacking context */
-    position: relative;
-    z-index: 10;
 }
 
 .auth-box {
@@ -118,9 +115,6 @@ body {
     text-align: center;
     max-width: 400px;
     width: 100%;
-    /* Fix: Ensure box is above section */
-    position: relative;
-    z-index: 50;
 }
 
 .auth-box h2 {
@@ -145,12 +139,6 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    
-    /* FIX: Button Clickability & Layering */
-    position: relative;
-    z-index: 100;
-    pointer-events: auto !important;
-    cursor: pointer !important;
 }
 
 .btn-google:hover {
