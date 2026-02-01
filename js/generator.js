@@ -107,7 +107,7 @@ function updateStatsUI(stats) {
     
     if (animationHint) {
         if (isFree) {
-            animationHint.innerHTML = '⚠️ <strong>Free plan hanya menggunakan Grok</strong> (lebih cepat)';
+            animationHint.innerHTML = '⚠️ <strong>Free plan hanya menggunakan Seedance 1.5 Pro</strong> (lebih cepat)';
             animationHint.style.color = '#d97706';
         } else {
             animationHint.textContent = 'VEO 3.1 menghasilkan kualitas lebih bagus tapi lebih lambat';
