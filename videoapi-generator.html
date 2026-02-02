@@ -3,185 +3,469 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Video Generator</title>
-    <link rel="stylesheet" href="css/video-generator.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Video AI Generator - OrbitBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/videoapi-generator.css">
+    <style>
+        * { font-family: 'Space Grotesk', sans-serif; }
+        body { 
+            background: #050510; 
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+        .generator-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .generator-header, 
+        .stats-bar, 
+        .tabs-container, 
+        .tab-panels {
+            width: 100%;
+            max-width: 1024px;
+            box-sizing: border-box;
+            padding-left: 20px;
+            padding-right: 20px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .generator-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 30px;
+            padding-bottom: 20px;
+        }
+
+        .header-left, .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        @media (max-width: 640px) {
+            .generator-header {
+                flex-direction: row; 
+                flex-wrap: wrap;
+                gap: 10px;
+                padding-top: 20px;
+            }
+            
+            .header-left h1 {
+                font-size: 18px;
+                white-space: nowrap;
+            }
+
+            .back-link {
+                font-size: 14px;
+            }
+
+            .user-name {
+                display: none; 
+            }
+            
+            .tab-panels {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <a href="index.html" class="logo">
-                <i class="fas fa-film"></i>
-                <span>AI Video Generator</span>
-            </a>
+    <!-- Stars Background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Login Section -->
+    <div id="login-section" class="login-section" style="display: none;">
+        <div class="login-container">
+            <div class="login-header">
+                <h1>🎬 Video AI Generator</h1>
+                <p>Generate video profesional dengan berbagai model AI</p>
+            </div>
+            
+            <div class="login-features">
+                <div class="feature-item">🎥 20+ Model Video AI (Kling, MiniMax, WAN, dll)</div>
+                <div class="feature-item">⚡ Sistem Kredit - Bayar sesuai pemakaian</div>
+                <div class="feature-item">🔄 Auto-refund jika gagal</div>
+            </div>
+            
+            <button id="btn-login-google" class="btn-google">
+                <svg viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Masuk dengan Google
+            </button>
+            
+            <p style="margin-top: 24px; font-size: 0.85rem; color: #64748b;">
+                🔒 Aman & gratis untuk memulai
+            </p>
+        </div>
+    </div>
+
+    <!-- Generator Section -->
+    <div id="generator-section" class="generator-section" style="display: none;">
+        <!-- Header -->
+        <header class="generator-header">
+            <div class="header-left">
+                <a href="index.html" class="back-link">← Beranda</a>
+                <h1>🎬 Video AI Generator</h1>
+            </div>
             <div class="header-right">
-                <div class="credits-display" id="creditsDisplay">
-                    <i class="fas fa-coins"></i>
-                    <span id="creditBalance">0</span>
-                    <button class="btn-buy-credits" onclick="showBuyCreditsModal()">
-                        <i class="fas fa-plus"></i>
-                    </button>
+                <div class="credits-display">
+                    <span class="credits-icon">🪙</span>
+                    <span id="user-credits" class="credits-value">0</span>
+                    <button id="btn-buy-credits" class="btn-buy-credits">+ Beli</button>
                 </div>
-                <div class="user-info" id="userInfo" style="display:none">
-                    <span id="userName">User</span>
-                    <button onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+                <div class="user-info">
+                    <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
+                    <span id="user-name" class="user-name"></span>
+                </div>
+                <button id="btn-logout" class="btn-logout">Keluar</button>
+            </div>
+        </header>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-label">Saldo Kredit</span>
+                <span id="stat-credits" class="stat-value credits-glow">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Digunakan</span>
+                <span id="stat-used" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Total Refund</span>
+                <span id="stat-refunded" class="stat-value">0</span>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="create">✨ Buat Video</button>
+            <button class="tab-btn" data-tab="active">
+                ⚡ Sedang Proses <span id="active-count" class="tab-count">0</span>
+            </button>
+            <button class="tab-btn" data-tab="history">
+                📁 Riwayat <span id="history-count" class="tab-count">0</span>
+            </button>
+            <button class="tab-btn" data-tab="pricing">
+                💰 Harga Model
+            </button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="tab-panels">
+            <!-- Tab: Buat Video -->
+            <div id="tab-create" class="tab-panel active">
+                <form id="generator-form" class="generator-form">
+                    <!-- Model Selection -->
+                    <div class="form-section">
+                        <h3>🤖 Pilih Model</h3>
+                        <div class="form-group">
+                            <label for="input-model">Model AI</label>
+                            <select id="input-model">
+                                <optgroup label="⭐ Kling Models">
+                                    <option value="kling-2-5-pro" data-credits-5="15" data-credits-10="28">Kling 2.5 Pro (15-28 kredit)</option>
+                                    <option value="kling-1-6-pro" data-credits-5="10" data-credits-10="18">Kling 1.6 Pro (10-18 kredit)</option>
+                                    <option value="kling-1-6-std" data-credits-5="6" data-credits-10="11">Kling 1.6 Std (6-11 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🎬 MiniMax Models">
+                                    <option value="minimax-live" data-credits-5="18" data-credits-10="18">MiniMax Live (18 kredit)</option>
+                                    <option value="minimax-hailuo-1080p" data-credits-5="20" data-credits-10="20">Hailuo 1080p (20 kredit)</option>
+                                    <option value="minimax-hailuo-768p" data-credits-5="12" data-credits-10="12">Hailuo 768p (12 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🌊 WAN Models">
+                                    <option value="wan-i2v-720p" data-credits-5="8" data-credits-10="15">WAN I2V 720p (8-15 kredit)</option>
+                                    <option value="wan-t2v-720p" data-credits-5="6" data-credits-10="11">WAN T2V 720p (6-11 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🌱 Seedance Models">
+                                    <option value="seedance-720p" data-credits-5="8" data-credits-10="15">Seedance 720p (8-15 kredit)</option>
+                                    <option value="seedance-1080p" data-credits-5="14" data-credits-10="26">Seedance 1080p (14-26 kredit)</option>
+                                </optgroup>
+                                <optgroup label="⚡ Other Models">
+                                    <option value="ltx-t2v" data-credits-5="8" data-credits-10="15">LTX T2V (8-15 kredit)</option>
+                                    <option value="runway-gen4" data-credits-5="20" data-credits-10="35">RunWay Gen4 (20-35 kredit)</option>
+                                    <option value="vfx" data-credits-5="5" data-credits-10="5">VFX Effects (5 kredit)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="model-info-box">
+                            <span class="model-credits">🪙 Estimasi: <strong id="estimated-credits">15</strong> kredit</span>
+                            <span class="model-type" id="model-type-display">Image to Video</span>
+                        </div>
+                    </div>
+
+                    <!-- Prompt -->
+                    <div class="form-section">
+                        <h3>📝 Prompt</h3>
+                        <div class="form-group">
+                            <label for="input-prompt">Deskripsi Video *</label>
+                            <textarea id="input-prompt" rows="4" placeholder="Deskripsikan video yang ingin Anda buat..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-negative">Negative Prompt (Opsional)</label>
+                            <textarea id="input-negative" rows="2" placeholder="Yang ingin dihindari: blur, low quality, watermark..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="form-section" id="section-image">
+                        <h3>🖼️ Upload Gambar (Opsional)</h3>
+                        <div class="upload-row">
+                            <div class="upload-group">
+                                <label>First Frame</label>
+                                <div class="upload-box" onclick="document.getElementById('input-image').click()">
+                                    <input type="file" id="input-image" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">🖼️</span>
+                                        <span>Klik untuk upload</span>
+                                    </div>
+                                    <img id="preview-image" class="upload-preview" style="display:none;">
+                                </div>
+                                <button type="button" class="btn-remove-upload" id="btn-remove-image" style="display:none;">✕ Hapus</button>
+                            </div>
+                            
+                            <div class="upload-group" id="group-image-tail" style="display:none;">
+                                <label>End Frame (Opsional)</label>
+                                <div class="upload-box" onclick="document.getElementById('input-image-tail').click()">
+                                    <input type="file" id="input-image-tail" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">🎬</span>
+                                        <span>Klik untuk upload</span>
+                                    </div>
+                                    <img id="preview-image-tail" class="upload-preview" style="display:none;">
+                                </div>
+                                <button type="button" class="btn-remove-upload" id="btn-remove-image-tail" style="display:none;">✕ Hapus</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="form-section">
+                        <h3>⚙️ Pengaturan</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-duration">Durasi</label>
+                                <select id="input-duration">
+                                    <option value="5">5 detik</option>
+                                    <option value="10">10 detik</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="input-aspect">Aspect Ratio</label>
+                                <select id="input-aspect">
+                                    <option value="16:9">16:9 (Landscape)</option>
+                                    <option value="9:16">9:16 (Portrait)</option>
+                                    <option value="1:1">1:1 (Square)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="input-cfg">CFG Scale: <span id="cfg-value">0.5</span></label>
+                                <input type="range" id="input-cfg" min="0.1" max="1" step="0.1" value="0.5">
+                            </div>
+                            <div class="form-group">
+                                <label for="input-seed">Seed (-1 = random)</label>
+                                <input type="number" id="input-seed" value="-1" min="-1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="form-actions">
+                        <div class="credit-summary">
+                            <span>Total Biaya:</span>
+                            <span class="credit-total">🪙 <strong id="total-credits">15</strong> kredit</span>
+                        </div>
+                        <button type="submit" id="btn-submit" class="btn-primary btn-large">
+                            🚀 Generate Video
+                        </button>
+                    </div>
+                    
+                    <p class="form-note">
+                        Proses generate membutuhkan waktu 5-15 menit.<br>
+                        Kredit akan di-refund otomatis jika gagal.
+                    </p>
+                </form>
+            </div>
+
+            <!-- Tab: Sedang Proses -->
+            <div id="tab-active" class="tab-panel">
+                <div id="active-jobs" class="jobs-grid">
+                    <div class="empty-state">
+                        <span class="empty-icon">🚀</span>
+                        <p>Tidak ada proses berjalan</p>
+                        <p class="empty-sub">Submit job baru untuk memulai</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Riwayat -->
+            <div id="tab-history" class="tab-panel">
+                <div class="history-warning">
+                    <span>⚠️</span>
+                    <span><b>Perhatian:</b> Riwayat akan dihapus otomatis setelah 24 jam.</span>
+                </div>
+                
+                <div id="history-jobs" class="jobs-grid">
+                    <div class="empty-state">
+                        <span class="empty-icon">📁</span>
+                        <p>Belum ada riwayat</p>
+                        <p class="empty-sub">Hasil generate akan muncul di sini</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Harga Model -->
+            <div id="tab-pricing" class="tab-panel">
+                <div class="pricing-grid" id="pricing-grid">
+                    <!-- Will be populated by JS -->
                 </div>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- Auth Overlay -->
-    <div class="auth-overlay" id="authOverlay">
-        <div class="auth-card">
-            <i class="fas fa-lock"></i>
-            <h2>Login Required</h2>
-            <p>Silakan login untuk menggunakan Video Generator</p>
-            <button class="btn-primary" onclick="window.location.href='login.html'">
-                <i class="fas fa-sign-in-alt"></i> Login
+    <!-- Job Modal -->
+    <div id="job-modal" class="modal">
+        <div class="modal-content">
+            <button id="btn-close-modal" class="modal-close">&times;</button>
+            
+            <div class="modal-header">
+                <h2 id="modal-title">Detail Job</h2>
+                <span id="modal-status" class="status-badge">pending</span>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Progress Section -->
+                <div id="modal-progress" class="modal-section">
+                    <div class="progress-container">
+                        <div class="progress-bar-large">
+                            <div id="modal-progress-fill" class="progress-fill"></div>
+                        </div>
+                        <div class="progress-info">
+                            <span id="modal-progress-percent">0%</span>
+                            <span id="modal-credits-used">0 kredit digunakan</span>
+                        </div>
+                        <p id="modal-step" class="progress-step">Menunggu...</p>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div id="modal-results" class="modal-section" style="display: none;">
+                    <div class="result-section">
+                        <h3>🎬 Video Hasil</h3>
+                        <video id="modal-video" controls class="result-video-large"></video>
+                        <div class="result-actions">
+                            <a id="modal-download" class="btn-download" download>⬇️ Download Video</a>
+                        </div>
+                    </div>
+                    <div class="result-info">
+                        <p><strong>Model:</strong> <span id="modal-model"></span></p>
+                        <p><strong>Kredit:</strong> <span id="modal-credits-final"></span></p>
+                    </div>
+                </div>
+                
+                <!-- Error Section -->
+                <div id="modal-error" class="modal-section error-section" style="display: none;">
+                    <p id="modal-error-msg"></p>
+                    <p class="refund-notice">💰 Kredit sudah di-refund otomatis</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buy Credits Modal -->
+    <div id="credits-modal" class="modal">
+        <div class="modal-content modal-credits">
+            <button class="modal-close" onclick="closeCreditsModal()">&times;</button>
+            
+            <div class="modal-header">
+                <h2>🪙 Beli Kredit</h2>
+            </div>
+            
+            <div class="modal-body">
+                <p class="modal-subtitle">Pilih paket kredit yang sesuai kebutuhanmu</p>
+                
+                <div class="packages-grid" id="packages-grid">
+                    <!-- Will be populated by JS -->
+                </div>
+                
+                <div class="current-balance">
+                    <span>Saldo saat ini:</span>
+                    <span id="modal-current-credits">0 kredit</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/videoapi-generator.js"></script>
+    
+    <script>
+        // Generate stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 150; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.width = Math.random() * 2 + 1 + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+    </script>
+
+    <!-- Custom Alert Modal -->
+    <div id="orbit-alert" class="modal" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🛰️</div>
+            <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem;">OrbitBot Notification</h3>
+            <p id="orbit-alert-msg" style="color: #cbd5e1; white-space: pre-line; line-height: 1.6; margin-bottom: 2rem;"></p>
+            <button onclick="closeOrbitAlert()" class="btn-primary" style="padding: 10px 30px; width: auto; min-width: 120px;">
+                Oke, Siap!
             </button>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <main class="main-content" id="mainContent" style="display:none">
-        <div class="generator-grid">
-            <!-- Left Panel -->
-            <div class="control-panel">
-                <!-- Model Selection -->
-                <div class="panel-section">
-                    <h3><i class="fas fa-robot"></i> Model</h3>
-                    <select id="modelSelector" onchange="updateModelUI()">
-                        <optgroup label="⭐ Kling">
-                            <option value="kling-2-5-pro">Kling 2.5 Pro (15 kredit)</option>
-                            <option value="kling-1-6-pro">Kling 1.6 Pro (10 kredit)</option>
-                            <option value="kling-1-6-std">Kling 1.6 Std (6 kredit)</option>
-                        </optgroup>
-                        <optgroup label="🎬 MiniMax">
-                            <option value="minimax-live">MiniMax Live (18 kredit)</option>
-                            <option value="minimax-hailuo-1080p">Hailuo 1080p (20 kredit)</option>
-                        </optgroup>
-                        <optgroup label="🌊 WAN">
-                            <option value="wan-i2v-720p">WAN I2V 720p (8 kredit)</option>
-                            <option value="wan-t2v-720p">WAN T2V 720p (6 kredit)</option>
-                        </optgroup>
-                        <optgroup label="🌱 Seedance">
-                            <option value="seedance-720p">Seedance 720p (8 kredit)</option>
-                        </optgroup>
-                        <optgroup label="⚡ Other">
-                            <option value="runway-gen4">RunWay Gen4 (20 kredit)</option>
-                            <option value="vfx">VFX Effects (5 kredit)</option>
-                        </optgroup>
-                    </select>
-                    <div class="model-info">
-                        <span class="credit-cost"><i class="fas fa-coins"></i> <span id="creditCost">15</span> kredit</span>
-                    </div>
-                </div>
+    <script>
+        const originalAlert = window.alert;
+        window.alert = function(message) {
+            const msgElement = document.getElementById('orbit-alert-msg');
+            if (msgElement) {
+                msgElement.innerText = message;
+                document.getElementById('orbit-alert').style.display = 'flex';
+            } else {
+                originalAlert(message);
+            }
+        };
 
-                <!-- Prompt -->
-                <div class="panel-section">
-                    <h3><i class="fas fa-pen"></i> Prompt</h3>
-                    <textarea id="promptInput" rows="4" placeholder="Describe your video..."></textarea>
-                    <textarea id="negativePrompt" rows="2" placeholder="Negative prompt (optional)" class="input-optional"></textarea>
-                </div>
-
-                <!-- Image Upload -->
-                <div class="panel-section" id="imageSection">
-                    <h3><i class="fas fa-image"></i> Image (Optional)</h3>
-                    <div class="upload-box" onclick="document.getElementById('imageInput').click()">
-                        <input type="file" id="imageInput" accept="image/*" hidden onchange="previewImage(this)">
-                        <div class="upload-placeholder" id="uploadPlaceholder">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <span>Click to upload image</span>
-                        </div>
-                        <img id="imagePreview" style="display:none">
-                    </div>
-                </div>
-
-                <!-- Settings -->
-                <div class="panel-section">
-                    <h3><i class="fas fa-sliders-h"></i> Settings</h3>
-                    <div class="settings-grid">
-                        <div class="control-group">
-                            <label>Duration</label>
-                            <select id="duration" onchange="updateCredits()">
-                                <option value="5">5 seconds</option>
-                                <option value="10">10 seconds</option>
-                            </select>
-                        </div>
-                        <div class="control-group">
-                            <label>Aspect Ratio</label>
-                            <select id="aspectRatio">
-                                <option value="16:9">16:9 Landscape</option>
-                                <option value="9:16">9:16 Portrait</option>
-                                <option value="1:1">1:1 Square</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Generate Button -->
-                <div class="generate-section">
-                    <div class="credit-summary">
-                        <span>Total:</span>
-                        <span class="credit-amount" id="totalCredits">15</span>
-                        <span>kredit</span>
-                    </div>
-                    <button class="btn-generate" id="generateBtn" onclick="generateVideo()">
-                        <i class="fas fa-play"></i> Generate Video
-                    </button>
-                </div>
-            </div>
-
-            <!-- Right Panel -->
-            <div class="output-panel">
-                <div class="panel-section">
-                    <h3><i class="fas fa-video"></i> Result</h3>
-                    <div class="video-container" id="videoContainer">
-                        <div class="placeholder" id="placeholder">
-                            <i class="fas fa-film"></i>
-                            <p>Video akan muncul di sini</p>
-                        </div>
-                        <video id="resultVideo" controls style="display:none"></video>
-                    </div>
-                    <div class="video-actions" id="videoActions" style="display:none">
-                        <a id="downloadBtn" class="btn-action" download>
-                            <i class="fas fa-download"></i> Download
-                        </a>
-                    </div>
-                </div>
-
-                <div class="panel-section">
-                    <h3><i class="fas fa-terminal"></i> Status</h3>
-                    <div class="status-log" id="statusLog">
-                        <p>Ready to generate...</p>
-                    </div>
-                </div>
-
-                <!-- Progress -->
-                <div class="progress-section" id="progressSection" style="display:none">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-text">
-                        <span id="progressText">Processing...</span>
-                        <span id="progressPercent">0%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Buy Credits Modal -->
-    <div class="modal-overlay" id="buyCreditsModal" style="display:none">
-        <div class="modal-content">
-            <button class="modal-close" onclick="closeBuyCreditsModal()">×</button>
-            <h2><i class="fas fa-coins"></i> Buy Credits</h2>
-            <div class="credit-packages" id="creditPackages"></div>
-        </div>
-    </div>
-
-    <script src="js/supabase-config.js"></script>
-    <script src="js/video-generator.js"></script>
+        function closeOrbitAlert() {
+            document.getElementById('orbit-alert').style.display = 'none';
+        }
+        
+        document.getElementById('orbit-alert').addEventListener('click', function(e) {
+            if (e.target === this) closeOrbitAlert();
+        });
+    </script>
 </body>
 </html>
