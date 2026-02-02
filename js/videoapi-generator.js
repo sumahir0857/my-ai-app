@@ -1,8 +1,9 @@
 // ============================================
-// VIDEO API Generator Logic - v1.0
+// VIDEO API Generator Logic - v1.1
 // ============================================
 // Menggunakan sistem kredit (bukan kuota harian)
 // Terintegrasi dengan Space HF sebagai worker
+// Service: 'videoapi'
 // ============================================
 
 let pollingInterval = null;
@@ -32,7 +33,7 @@ const MODEL_CREDITS = {
 // ========================================
 
 async function initGenerator() {
-    console.log('🎬 Initializing Video API Generator v1.0...');
+    console.log('🎬 Initializing Video API Generator v1.1...');
     
     const isLoggedIn = await checkAuth();
     
@@ -238,10 +239,11 @@ async function loadJobs() {
         
         console.log('📥 Loading video jobs...');
         
+        // ✅ UPDATED: Changed from 'video' to 'videoapi'
         const { data: jobs, error } = await supabaseClient
             .from('jobs')
             .select('*')
-            .eq('service', 'video')
+            .eq('service', 'videoapi')  // ← CHANGED FROM 'video' TO 'videoapi'
             .order('created_at', { ascending: false })
             .limit(50);
         
@@ -465,11 +467,12 @@ async function submitJob(event) {
             }
         };
         
+        // ✅ UPDATED: Changed from 'video' to 'videoapi'
         const { data: job, error: jobError } = await supabaseClient
             .from('jobs')
             .insert({
                 user_id: user.id,
-                service: 'video',
+                service: 'videoapi',  // ← CHANGED FROM 'video' TO 'videoapi'!
                 status: 'pending',
                 input_data: inputData,
                 total_steps: 4,
@@ -828,4 +831,4 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-console.log('✅ Video API Generator.js v1.0 loaded');
+console.log('✅ Video API Generator.js v1.1 loaded');
