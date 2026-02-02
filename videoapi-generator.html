@@ -9,79 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/videoapi-generator.css">
-    <style>
-        * { font-family: 'Space Grotesk', sans-serif; }
-        body { 
-            background: #050510; 
-            color: #ffffff;
-            margin: 0;
-            padding: 0;
-        }
-        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
-        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-
-        .generator-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-        }
-
-        .generator-header, 
-        .stats-bar, 
-        .tabs-container, 
-        .tab-panels {
-            width: 100%;
-            max-width: 1024px;
-            box-sizing: border-box;
-            padding-left: 20px;
-            padding-right: 20px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .generator-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 30px;
-            padding-bottom: 20px;
-        }
-
-        .header-left, .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        @media (max-width: 640px) {
-            .generator-header {
-                flex-direction: row; 
-                flex-wrap: wrap;
-                gap: 10px;
-                padding-top: 20px;
-            }
-            
-            .header-left h1 {
-                font-size: 18px;
-                white-space: nowrap;
-            }
-
-            .back-link {
-                font-size: 14px;
-            }
-
-            .user-name {
-                display: none; 
-            }
-            
-            .tab-panels {
-                padding-left: 10px;
-                padding-right: 10px;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Stars Background -->
@@ -92,13 +19,13 @@
         <div class="login-container">
             <div class="login-header">
                 <h1>🎬 Video AI Generator</h1>
-                <p>Generate video profesional dengan berbagai model AI</p>
+                <p>Generate video profesional dengan 28+ model AI</p>
             </div>
             
             <div class="login-features">
-                <div class="feature-item">🎥 20+ Model Video AI (Kling, MiniMax, WAN, dll)</div>
+                <div class="feature-item">🎥 Kling, MiniMax, WAN, Seedance, LTX, RunWay</div>
                 <div class="feature-item">⚡ Sistem Kredit - Bayar sesuai pemakaian</div>
-                <div class="feature-item">🔄 Auto-refund jika gagal</div>
+                <div class="feature-item">🔄 Auto-refund jika gagal generate</div>
             </div>
             
             <button id="btn-login-google" class="btn-google">
@@ -111,9 +38,7 @@
                 Masuk dengan Google
             </button>
             
-            <p style="margin-top: 24px; font-size: 0.85rem; color: #64748b;">
-                🔒 Aman & gratis untuk memulai
-            </p>
+            <p class="login-footer">🔒 Aman & gratis untuk memulai</p>
         </div>
     </div>
 
@@ -164,9 +89,7 @@
             <button class="tab-btn" data-tab="history">
                 📁 Riwayat <span id="history-count" class="tab-count">0</span>
             </button>
-            <button class="tab-btn" data-tab="pricing">
-                💰 Harga Model
-            </button>
+            <button class="tab-btn" data-tab="pricing">💰 Harga</button>
         </div>
 
         <!-- Tab Panels -->
@@ -174,83 +97,83 @@
             <!-- Tab: Buat Video -->
             <div id="tab-create" class="tab-panel active">
                 <form id="generator-form" class="generator-form">
+                    
                     <!-- Model Selection -->
                     <div class="form-section">
                         <h3>🤖 Pilih Model</h3>
                         <div class="form-group">
-                            <label for="input-model">Model AI</label>
-                            <select id="input-model">
-                                 <optgroup label="⭐ Kling Premium">
-                                     <option value="kling-2-5-pro" data-credits-5="15" data-credits-10="28">Kling 2.5 Pro (15-28 kredit)</option>
-                                     <option value="kling-2-6-pro" data-credits-5="18" data-credits-10="32">Kling 2.6 Pro (18-32 kredit)</option>
-                                     <option value="kling-o1-pro-i2v" data-credits-5="20" data-credits-10="35">Kling O1 Pro - I2V (20-35 kredit)</option>
-                                     <option value="kling-2-1-pro" data-credits-5="14" data-credits-10="26">Kling 2.1 Pro (14-26 kredit)</option>
-                                 </optgroup>
-                                 <optgroup label="🎬 Kling Standard">
-                                     <option value="kling-o1-std-i2v" data-credits-5="12" data-credits-10="22">Kling O1 Std - I2V (12-22 kredit)</option>
-                                     <option value="kling-1-6-pro" data-credits-5="10" data-credits-10="18">Kling 1.6 Pro (10-18 kredit)</option>
-                                     <option value="kling-1-6-std" data-credits-5="6" data-credits-10="11">Kling 1.6 Std (6-11 kredit)</option>
-                                 </optgroup>
-                                 <optgroup label="🔄 Kling Motion & Reference">
-                                     <option value="kling-2-6-motion-pro" data-credits-5="25" data-credits-10="25">Kling 2.6 Motion Pro (25 kredit)</option>
-                                     <option value="kling-2-6-motion-std" data-credits-5="16" data-credits-10="16">Kling 2.6 Motion Std (16 kredit)</option>
-                                     <option value="kling-o1-pro-ref" data-credits-5="22" data-credits-10="40">Kling O1 Pro Reference (22-40 kredit)</option>
-                                     <option value="kling-o1-std-ref" data-credits-5="14" data-credits-10="25">Kling O1 Std Reference (14-25 kredit)</option>
-                                 </optgroup>
-                                 <optgroup label="🎥 MiniMax">
-                                     <option value="minimax-live" data-credits-5="18" data-credits-10="18">MiniMax Live (18 kredit)</option>
-                                     <option value="minimax-hailuo-1080p" data-credits-5="20" data-credits-10="20">Hailuo 1080p (20 kredit)</option>
-                                     <option value="minimax-hailuo-1080p-fast" data-credits-5="22" data-credits-10="22">Hailuo 1080p Fast (22 kredit)</option>
-                                     <option value="minimax-hailuo-768p" data-credits-5="12" data-credits-10="12">Hailuo 768p (12 kredit)</option>
-                                     <option value="minimax-hailuo-768p-fast" data-credits-5="14" data-credits-10="14">Hailuo 768p Fast (14 kredit)</option>
-                                 </optgroup>
-                                 <optgroup label="🌊 WAN">
-                                     <option value="wan-i2v-720p" data-credits-5="8" data-credits-10="15">WAN I2V 720p (8-15 kredit)</option>
-                                     <option value="wan-i2v-1080p" data-credits-5="12" data-credits-10="22">WAN I2V 1080p (12-22 kredit)</option>
-                                     <option value="wan-t2v-720p" data-credits-5="6" data-credits-10="11">WAN T2V 720p (6-11 kredit)</option>
-                                     <option value="wan-t2v-1080p" data-credits-5="10" data-credits-10="18">WAN T2V 1080p (10-18 kredit)</option>
-                                 </optgroup>
-                                 <optgroup label="🌱 Seedance">
-                                     <option value="seedance-480p" data-credits-5="5" data-credits-10="9">Seedance 480p (5-9 kredit)</option>
-                                     <option value="seedance-720p" data-credits-5="8" data-credits-10="15">Seedance 720p (8-15 kredit)</option>
-                                     <option value="seedance-1080p" data-credits-5="14" data-credits-10="26">Seedance 1080p (14-26 kredit)</option>
-                                 </optgroup>
-                                 <optgroup label="⚡ LTX & RunWay">
-                                     <option value="ltx-t2v" data-credits-5="8" data-credits-10="15">LTX T2V (8-15 kredit)</option>
-                                     <option value="ltx-i2v" data-credits-5="10" data-credits-10="18">LTX I2V (10-18 kredit)</option>
-                                     <option value="runway-gen4" data-credits-5="20" data-credits-10="35">RunWay Gen4 (20-35 kredit)</option>
-                                 </optgroup>
-                                 <optgroup label="🎭 Special">
-                                     <option value="omnihuman" data-credits-5="25" data-credits-10="25">OmniHuman 1.5 (25 kredit)</option>
-                                     <option value="vfx" data-credits-5="5" data-credits-10="5">VFX Effects (5 kredit)</option>
-                                 </optgroup>
-                             </select>
+                            <select id="input-model" class="model-select">
+                                <optgroup label="⭐ Kling Premium">
+                                    <option value="kling-2-5-pro">Kling 2.5 Pro (15-28 kredit)</option>
+                                    <option value="kling-2-6-pro">Kling 2.6 Pro - Text/Image to Video (18-32 kredit)</option>
+                                    <option value="kling-2-1-pro">Kling 2.1 Pro (14-26 kredit)</option>
+                                    <option value="kling-o1-pro-i2v">Kling O1 Pro - Image to Video (20-35 kredit)</option>
+                                    <option value="kling-o1-pro-ref">Kling O1 Pro - Video Reference (22-40 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🎬 Kling Standard">
+                                    <option value="kling-o1-std-i2v">Kling O1 Std - Image to Video (12-22 kredit)</option>
+                                    <option value="kling-o1-std-ref">Kling O1 Std - Video Reference (14-25 kredit)</option>
+                                    <option value="kling-1-6-pro">Kling 1.6 Pro (10-18 kredit)</option>
+                                    <option value="kling-1-6-std">Kling 1.6 Std (6-11 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🔄 Kling Motion Control">
+                                    <option value="kling-2-6-motion-pro">Kling 2.6 Pro - Motion Control (25 kredit)</option>
+                                    <option value="kling-2-6-motion-std">Kling 2.6 Std - Motion Control (16 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🎥 MiniMax">
+                                    <option value="minimax-live">MiniMax Video 01 Live (18 kredit)</option>
+                                    <option value="minimax-hailuo-1080p">MiniMax Hailuo 2.3 - 1080p (20 kredit)</option>
+                                    <option value="minimax-hailuo-1080p-fast">MiniMax Hailuo 2.3 - 1080p Fast (22 kredit)</option>
+                                    <option value="minimax-hailuo-768p">MiniMax Hailuo 2.3 - 768p (12 kredit)</option>
+                                    <option value="minimax-hailuo-768p-fast">MiniMax Hailuo 2.3 - 768p Fast (14 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🌊 WAN">
+                                    <option value="wan-i2v-720p">WAN 2.6 - Image to Video 720p (8-22 kredit)</option>
+                                    <option value="wan-i2v-1080p">WAN 2.6 - Image to Video 1080p (12-32 kredit)</option>
+                                    <option value="wan-t2v-720p">WAN 2.6 - Text to Video 720p (6-16 kredit)</option>
+                                    <option value="wan-t2v-1080p">WAN 2.6 - Text to Video 1080p (10-26 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🌱 Seedance">
+                                    <option value="seedance-480p">Seedance 1.5 Pro - 480p (5-13 kredit)</option>
+                                    <option value="seedance-720p">Seedance 1.5 Pro - 720p (8-22 kredit)</option>
+                                    <option value="seedance-1080p">Seedance 1.5 Pro - 1080p (14-38 kredit)</option>
+                                </optgroup>
+                                <optgroup label="⚡ LTX">
+                                    <option value="ltx-t2v">LTX 2.0 Pro - Text to Video (8-15 kredit)</option>
+                                    <option value="ltx-i2v">LTX 2.0 Pro - Image to Video (10-18 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🚀 RunWay & Other">
+                                    <option value="runway-gen4">RunWay Gen4 Turbo (20-35 kredit)</option>
+                                    <option value="omnihuman">OmniHuman 1.5 (25 kredit)</option>
+                                    <option value="vfx">VFX - Visual Effects (5 kredit)</option>
+                                </optgroup>
+                            </select>
                         </div>
                         <div class="model-info-box">
                             <span class="model-credits">🪙 Estimasi: <strong id="estimated-credits">15</strong> kredit</span>
-                            <span class="model-type" id="model-type-display">Image to Video</span>
+                            <span class="model-desc" id="model-desc">Image to Video dengan kualitas tinggi</span>
                         </div>
                     </div>
 
-                    <!-- Prompt -->
-                    <div class="form-section">
+                    <!-- Prompt Section -->
+                    <div class="form-section" id="section-prompt">
                         <h3>📝 Prompt</h3>
                         <div class="form-group">
                             <label for="input-prompt">Deskripsi Video *</label>
-                            <textarea id="input-prompt" rows="4" placeholder="Deskripsikan video yang ingin Anda buat..." required></textarea>
+                            <textarea id="input-prompt" rows="4" placeholder="Deskripsikan video yang ingin Anda buat..."></textarea>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="group-negative-prompt">
                             <label for="input-negative">Negative Prompt (Opsional)</label>
                             <textarea id="input-negative" rows="2" placeholder="Yang ingin dihindari: blur, low quality, watermark..."></textarea>
                         </div>
                     </div>
 
-                    <!-- Image Upload -->
-                    <div class="form-section" id="section-image">
-                        <h3>🖼️ Upload Gambar (Opsional)</h3>
+                    <!-- Image Upload Section (for image-to-video models) -->
+                    <div class="form-section" id="section-image" style="display:none;">
+                        <h3>🖼️ Upload Gambar</h3>
                         <div class="upload-row">
-                            <div class="upload-group">
-                                <label>First Frame</label>
+                            <div class="upload-group" id="group-image">
+                                <label>First Frame / Main Image</label>
                                 <div class="upload-box" onclick="document.getElementById('input-image').click()">
                                     <input type="file" id="input-image" accept="image/*" hidden>
                                     <div class="upload-placeholder">
@@ -261,7 +184,6 @@
                                 </div>
                                 <button type="button" class="btn-remove-upload" id="btn-remove-image" style="display:none;">✕ Hapus</button>
                             </div>
-                            
                             <div class="upload-group" id="group-image-tail" style="display:none;">
                                 <label>End Frame (Opsional)</label>
                                 <div class="upload-box" onclick="document.getElementById('input-image-tail').click()">
@@ -277,35 +199,355 @@
                         </div>
                     </div>
 
-                    <!-- Settings -->
-                    <div class="form-section">
-                        <h3>⚙️ Pengaturan</h3>
+                    <!-- First/Last Frame Section (for Kling O1 & Hailuo) -->
+                    <div class="form-section" id="section-frames" style="display:none;">
+                        <h3>🎬 First & Last Frame</h3>
+                        <div class="upload-row">
+                            <div class="upload-group">
+                                <label>First Frame *</label>
+                                <div class="upload-box" onclick="document.getElementById('input-first-frame').click()">
+                                    <input type="file" id="input-first-frame" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">▶️</span>
+                                        <span>Frame Awal</span>
+                                    </div>
+                                    <img id="preview-first-frame" class="upload-preview" style="display:none;">
+                                </div>
+                            </div>
+                            <div class="upload-group">
+                                <label>Last Frame (Opsional)</label>
+                                <div class="upload-box" onclick="document.getElementById('input-last-frame').click()">
+                                    <input type="file" id="input-last-frame" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">⏹️</span>
+                                        <span>Frame Akhir</span>
+                                    </div>
+                                    <img id="preview-last-frame" class="upload-preview" style="display:none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reference Images Section (for Kling O1 Reference) -->
+                    <div class="form-section" id="section-ref-images" style="display:none;">
+                        <h3>🖼️ Reference Images (Max 7)</h3>
+                        <p class="form-hint">Upload 1-7 gambar referensi untuk style/character consistency</p>
+                        <div class="ref-images-grid">
+                            <div class="upload-box small" onclick="document.getElementById('input-ref-1').click()">
+                                <input type="file" id="input-ref-1" accept="image/*" hidden>
+                                <div class="upload-placeholder"><span>1</span></div>
+                                <img id="preview-ref-1" class="upload-preview" style="display:none;">
+                            </div>
+                            <div class="upload-box small" onclick="document.getElementById('input-ref-2').click()">
+                                <input type="file" id="input-ref-2" accept="image/*" hidden>
+                                <div class="upload-placeholder"><span>2</span></div>
+                                <img id="preview-ref-2" class="upload-preview" style="display:none;">
+                            </div>
+                            <div class="upload-box small" onclick="document.getElementById('input-ref-3').click()">
+                                <input type="file" id="input-ref-3" accept="image/*" hidden>
+                                <div class="upload-placeholder"><span>3</span></div>
+                                <img id="preview-ref-3" class="upload-preview" style="display:none;">
+                            </div>
+                            <div class="upload-box small" onclick="document.getElementById('input-ref-4').click()">
+                                <input type="file" id="input-ref-4" accept="image/*" hidden>
+                                <div class="upload-placeholder"><span>4</span></div>
+                                <img id="preview-ref-4" class="upload-preview" style="display:none;">
+                            </div>
+                            <div class="upload-box small" onclick="document.getElementById('input-ref-5').click()">
+                                <input type="file" id="input-ref-5" accept="image/*" hidden>
+                                <div class="upload-placeholder"><span>5</span></div>
+                                <img id="preview-ref-5" class="upload-preview" style="display:none;">
+                            </div>
+                            <div class="upload-box small" onclick="document.getElementById('input-ref-6').click()">
+                                <input type="file" id="input-ref-6" accept="image/*" hidden>
+                                <div class="upload-placeholder"><span>6</span></div>
+                                <img id="preview-ref-6" class="upload-preview" style="display:none;">
+                            </div>
+                            <div class="upload-box small" onclick="document.getElementById('input-ref-7').click()">
+                                <input type="file" id="input-ref-7" accept="image/*" hidden>
+                                <div class="upload-placeholder"><span>7</span></div>
+                                <img id="preview-ref-7" class="upload-preview" style="display:none;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motion Control Section (for Kling 2.6 Motion) -->
+                    <div class="form-section" id="section-motion" style="display:none;">
+                        <h3>🎭 Motion Control</h3>
+                        <p class="form-hint">Upload gambar karakter + video referensi gerakan</p>
+                        <div class="upload-row">
+                            <div class="upload-group">
+                                <label>Character Image * (JPG/PNG, min 300x300px)</label>
+                                <div class="upload-box" onclick="document.getElementById('input-motion-image').click()">
+                                    <input type="file" id="input-motion-image" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">👤</span>
+                                        <span>Gambar Karakter</span>
+                                    </div>
+                                    <img id="preview-motion-image" class="upload-preview" style="display:none;">
+                                </div>
+                            </div>
+                            <div class="upload-group">
+                                <label>Motion Video * (MP4/MOV, 3-30 detik)</label>
+                                <div class="upload-box" onclick="document.getElementById('input-motion-video').click()">
+                                    <input type="file" id="input-motion-video" accept="video/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">🎥</span>
+                                        <span>Video Gerakan</span>
+                                    </div>
+                                    <video id="preview-motion-video" class="upload-preview" style="display:none;" controls></video>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Character Orientation</label>
+                            <select id="input-character-orientation">
+                                <option value="video">Follow Video</option>
+                                <option value="image">Follow Image</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- OmniHuman Section -->
+                    <div class="form-section" id="section-omnihuman" style="display:none;">
+                        <h3>👤 OmniHuman</h3>
+                        <p class="form-hint">Upload foto manusia + audio untuk animasi portrait</p>
+                        <div class="upload-row">
+                            <div class="upload-group">
+                                <label>Human Image * (Portrait foto)</label>
+                                <div class="upload-box" onclick="document.getElementById('input-omni-image').click()">
+                                    <input type="file" id="input-omni-image" accept="image/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">🧑</span>
+                                        <span>Foto Manusia</span>
+                                    </div>
+                                    <img id="preview-omni-image" class="upload-preview" style="display:none;">
+                                </div>
+                            </div>
+                            <div class="upload-group">
+                                <label>Driving Audio * (MP3/WAV)</label>
+                                <div class="upload-box audio-box" onclick="document.getElementById('input-omni-audio').click()">
+                                    <input type="file" id="input-omni-audio" accept="audio/*" hidden>
+                                    <div class="upload-placeholder">
+                                        <span class="upload-icon">🎤</span>
+                                        <span>Audio Driver</span>
+                                    </div>
+                                    <audio id="preview-omni-audio" class="upload-preview-audio" style="display:none;" controls></audio>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="input-duration">Durasi</label>
+                                <label>Resolution</label>
+                                <select id="input-omni-resolution">
+                                    <option value="720p">720p</option>
+                                    <option value="1080p" selected>1080p</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="input-turbo-mode">
+                                    <span>⚡ Turbo Mode (Lebih cepat)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VFX Section -->
+                    <div class="form-section" id="section-vfx" style="display:none;">
+                        <h3>🎨 VFX - Visual Effects</h3>
+                        <p class="form-hint">Apply efek visual ke video yang sudah ada</p>
+                        <div class="upload-group full-width">
+                            <label>Video Input * (MP4/MOV)</label>
+                            <div class="upload-box" onclick="document.getElementById('input-vfx-video').click()">
+                                <input type="file" id="input-vfx-video" accept="video/*" hidden>
+                                <div class="upload-placeholder">
+                                    <span class="upload-icon">🎬</span>
+                                    <span>Video untuk VFX</span>
+                                </div>
+                                <video id="preview-vfx-video" class="upload-preview" style="display:none;" controls></video>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Filter Type</label>
+                                <select id="input-filter-type">
+                                    <option value="1">1: Film Grain</option>
+                                    <option value="2">2: Motion Blur</option>
+                                    <option value="3">3: Fish Eye</option>
+                                    <option value="4">4: VHS</option>
+                                    <option value="5">5: Shake</option>
+                                    <option value="6">6: VGA</option>
+                                    <option value="7">7: Bloom</option>
+                                    <option value="8">8: Anamorphic Lens</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>FPS</label>
+                                <input type="number" id="input-vfx-fps" value="24" min="15" max="60">
+                            </div>
+                        </div>
+                        <div id="vfx-extra-options">
+                            <div class="form-group" id="group-bloom-contrast" style="display:none;">
+                                <label>Bloom Contrast: <span id="bloom-value">1.2</span></label>
+                                <input type="range" id="input-bloom-contrast" min="0.5" max="2" step="0.1" value="1.2">
+                            </div>
+                            <div id="group-motion-blur" style="display:none;">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Kernel Size</label>
+                                        <input type="number" id="input-motion-kernel" value="5" min="3" max="15" step="2">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Decay Factor: <span id="decay-value">0.8</span></label>
+                                        <input type="range" id="input-motion-decay" min="0.5" max="1" step="0.1" value="0.8">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Section -->
+                    <div class="form-section" id="section-settings">
+                        <h3>⚙️ Pengaturan</h3>
+                        <div class="form-row">
+                            <!-- Duration - Different per model -->
+                            <div class="form-group" id="group-duration-std">
+                                <label>Durasi</label>
                                 <select id="input-duration">
                                     <option value="5">5 detik</option>
                                     <option value="10">10 detik</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="input-aspect">Aspect Ratio</label>
-                                <select id="input-aspect">
+                            <div class="form-group" id="group-duration-hailuo" style="display:none;">
+                                <label>Durasi (Hailuo)</label>
+                                <select id="input-duration-hailuo">
+                                    <option value="6">6 detik</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-duration-wan" style="display:none;">
+                                <label>Durasi</label>
+                                <select id="input-duration-wan">
+                                    <option value="5">5 detik</option>
+                                    <option value="10">10 detik</option>
+                                    <option value="15">15 detik</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-duration-seedance" style="display:none;">
+                                <label>Durasi: <span id="seedance-dur-value">5</span>s</label>
+                                <input type="range" id="input-duration-seedance" min="4" max="12" step="1" value="5">
+                            </div>
+                            <div class="form-group" id="group-duration-ltx" style="display:none;">
+                                <label>Durasi</label>
+                                <select id="input-duration-ltx">
+                                    <option value="6">6 detik</option>
+                                    <option value="8">8 detik</option>
+                                    <option value="10">10 detik</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-duration-runway" style="display:none;">
+                                <label>Durasi</label>
+                                <select id="input-duration-runway">
+                                    <option value="5">5 detik</option>
+                                    <option value="10" selected>10 detik</option>
+                                </select>
+                            </div>
+
+                            <!-- Aspect Ratio - Different per model -->
+                            <div class="form-group" id="group-aspect-ratio" style="display:none;">
+                                <label>Aspect Ratio</label>
+                                <select id="input-aspect-ratio">
                                     <option value="16:9">16:9 (Landscape)</option>
                                     <option value="9:16">9:16 (Portrait)</option>
                                     <option value="1:1">1:1 (Square)</option>
                                 </select>
                             </div>
+                            <div class="form-group" id="group-aspect-ratio-kling26" style="display:none;">
+                                <label>Aspect Ratio</label>
+                                <select id="input-aspect-ratio-kling26">
+                                    <option value="widescreen_16_9">16:9 Widescreen</option>
+                                    <option value="social_story_9_16">9:16 Story</option>
+                                    <option value="square_1_1">1:1 Square</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-aspect-ratio-seedance" style="display:none;">
+                                <label>Aspect Ratio</label>
+                                <select id="input-aspect-ratio-seedance">
+                                    <option value="widescreen_16_9">16:9 Widescreen</option>
+                                    <option value="social_story_9_16">9:16 Story</option>
+                                    <option value="square_1_1">1:1 Square</option>
+                                    <option value="traditional_3_4">3:4 Traditional</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-runway-ratio" style="display:none;">
+                                <label>Ratio</label>
+                                <select id="input-runway-ratio">
+                                    <option value="widescreen_16_9">16:9 Widescreen</option>
+                                    <option value="social_story_9_16">9:16 Story</option>
+                                    <option value="square_1_1">1:1 Square</option>
+                                    <option value="traditional_3_4">3:4 Traditional</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-wan-size" style="display:none;">
+                                <label>Size</label>
+                                <select id="input-wan-size">
+                                    <option value="1280*720">1280x720</option>
+                                    <option value="720*1280">720x1280</option>
+                                    <option value="1920*1080">1920x1080</option>
+                                    <option value="1080*1920">1080x1920</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="group-ltx-resolution" style="display:none;">
+                                <label>Resolution</label>
+                                <select id="input-ltx-resolution">
+                                    <option value="1080p" selected>1080p</option>
+                                    <option value="1440p">1440p</option>
+                                    <option value="2160p">4K</option>
+                                </select>
+                            </div>
                         </div>
+
                         <div class="form-row">
-                            <div class="form-group">
-                                <label for="input-cfg">CFG Scale: <span id="cfg-value">0.5</span></label>
+                            <div class="form-group" id="group-cfg-scale">
+                                <label>CFG Scale: <span id="cfg-value">0.5</span></label>
                                 <input type="range" id="input-cfg" min="0.1" max="1" step="0.1" value="0.5">
                             </div>
-                            <div class="form-group">
-                                <label for="input-seed">Seed (-1 = random)</label>
+                            <div class="form-group" id="group-seed" style="display:none;">
+                                <label>Seed (-1 = random)</label>
                                 <input type="number" id="input-seed" value="-1" min="-1">
                             </div>
+                            <div class="form-group" id="group-fps" style="display:none;">
+                                <label>FPS</label>
+                                <input type="number" id="input-fps" value="25" min="15" max="60">
+                            </div>
+                        </div>
+
+                        <!-- Checkboxes -->
+                        <div class="checkbox-row">
+                            <label class="checkbox-item" id="check-generate-audio" style="display:none;">
+                                <input type="checkbox" id="input-generate-audio">
+                                <span>🔊 Generate Audio</span>
+                            </label>
+                            <label class="checkbox-item" id="check-prompt-optimizer" style="display:none;">
+                                <input type="checkbox" id="input-prompt-optimizer" checked>
+                                <span>✨ Prompt Optimizer</span>
+                            </label>
+                            <label class="checkbox-item" id="check-prompt-expansion" style="display:none;">
+                                <input type="checkbox" id="input-prompt-expansion">
+                                <span>📝 Prompt Expansion</span>
+                            </label>
+                            <label class="checkbox-item" id="check-camera-fixed" style="display:none;">
+                                <input type="checkbox" id="input-camera-fixed">
+                                <span>📷 Camera Fixed</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group" id="group-shot-type" style="display:none;">
+                            <label>Shot Type</label>
+                            <select id="input-shot-type">
+                                <option value="single">Single</option>
+                                <option value="multi">Multi</option>
+                            </select>
                         </div>
                     </div>
 
@@ -344,21 +586,17 @@
                     <span>⚠️</span>
                     <span><b>Perhatian:</b> Riwayat akan dihapus otomatis setelah 24 jam.</span>
                 </div>
-                
                 <div id="history-jobs" class="jobs-grid">
                     <div class="empty-state">
                         <span class="empty-icon">📁</span>
                         <p>Belum ada riwayat</p>
-                        <p class="empty-sub">Hasil generate akan muncul di sini</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Tab: Harga Model -->
+            <!-- Tab: Harga -->
             <div id="tab-pricing" class="tab-panel">
-                <div class="pricing-grid" id="pricing-grid">
-                    <!-- Will be populated by JS -->
-                </div>
+                <div class="pricing-grid" id="pricing-grid"></div>
             </div>
         </div>
     </div>
@@ -367,14 +605,11 @@
     <div id="job-modal" class="modal">
         <div class="modal-content">
             <button id="btn-close-modal" class="modal-close">&times;</button>
-            
             <div class="modal-header">
                 <h2 id="modal-title">Detail Job</h2>
                 <span id="modal-status" class="status-badge">pending</span>
             </div>
-            
             <div class="modal-body">
-                <!-- Progress Section -->
                 <div id="modal-progress" class="modal-section">
                     <div class="progress-container">
                         <div class="progress-bar-large">
@@ -382,13 +617,11 @@
                         </div>
                         <div class="progress-info">
                             <span id="modal-progress-percent">0%</span>
-                            <span id="modal-credits-used">0 kredit digunakan</span>
+                            <span id="modal-credits-used">0 kredit</span>
                         </div>
                         <p id="modal-step" class="progress-step">Menunggu...</p>
                     </div>
                 </div>
-                
-                <!-- Results Section -->
                 <div id="modal-results" class="modal-section" style="display: none;">
                     <div class="result-section">
                         <h3>🎬 Video Hasil</h3>
@@ -402,8 +635,6 @@
                         <p><strong>Kredit:</strong> <span id="modal-credits-final"></span></p>
                     </div>
                 </div>
-                
-                <!-- Error Section -->
                 <div id="modal-error" class="modal-section error-section" style="display: none;">
                     <p id="modal-error-msg"></p>
                     <p class="refund-notice">💰 Kredit sudah di-refund otomatis</p>
@@ -416,18 +647,12 @@
     <div id="credits-modal" class="modal">
         <div class="modal-content modal-credits">
             <button class="modal-close" onclick="closeCreditsModal()">&times;</button>
-            
             <div class="modal-header">
                 <h2>🪙 Beli Kredit</h2>
             </div>
-            
             <div class="modal-body">
-                <p class="modal-subtitle">Pilih paket kredit yang sesuai kebutuhanmu</p>
-                
-                <div class="packages-grid" id="packages-grid">
-                    <!-- Will be populated by JS -->
-                </div>
-                
+                <p class="modal-subtitle">Pilih paket kredit yang sesuai</p>
+                <div class="packages-grid" id="packages-grid"></div>
                 <div class="current-balance">
                     <span>Saldo saat ini:</span>
                     <span id="modal-current-credits">0 kredit</span>
@@ -456,18 +681,15 @@
         }
     </script>
 
-    <!-- Custom Alert Modal -->
+    <!-- Custom Alert -->
     <div id="orbit-alert" class="modal" style="z-index: 9999;">
         <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2.5rem;">
             <div style="font-size: 3rem; margin-bottom: 1rem;">🛰️</div>
-            <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem;">OrbitBot Notification</h3>
+            <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem;">OrbitBot</h3>
             <p id="orbit-alert-msg" style="color: #cbd5e1; white-space: pre-line; line-height: 1.6; margin-bottom: 2rem;"></p>
-            <button onclick="closeOrbitAlert()" class="btn-primary" style="padding: 10px 30px; width: auto; min-width: 120px;">
-                Oke, Siap!
-            </button>
+            <button onclick="closeOrbitAlert()" class="btn-primary" style="padding: 10px 30px; width: auto;">OK</button>
         </div>
     </div>
-
     <script>
         const originalAlert = window.alert;
         window.alert = function(message) {
@@ -479,11 +701,9 @@
                 originalAlert(message);
             }
         };
-
         function closeOrbitAlert() {
             document.getElementById('orbit-alert').style.display = 'none';
         }
-        
         document.getElementById('orbit-alert').addEventListener('click', function(e) {
             if (e.target === this) closeOrbitAlert();
         });
