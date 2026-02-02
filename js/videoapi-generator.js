@@ -164,10 +164,10 @@ async function generateVideo() {
             imageBase64 = await fileToBase64(imageInput.files[0]);
         }
         
-        // Deduct credits first
+        // ✅ DEDUCT CREDITS - GUNAKAN deduct_user_credits (bukan deduct_credits)
         addLog('Deducting credits...', 'info');
         const { data: deductResult, error: deductError } = await supabase
-            .rpc('deduct_credits', {
+            .rpc('deduct_user_credits', {
                 p_user_id: currentUser.id,
                 p_amount: requiredCredits,
                 p_model_name: modelId,
