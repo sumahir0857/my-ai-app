@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Generator</title>
+    <link rel="stylesheet" href="css/video-generator.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <i class="fas fa-film"></i>
+                <span>AI Video Generator</span>
+            </a>
+            <div class="header-right">
+                <div class="credits-display" id="creditsDisplay">
+                    <i class="fas fa-coins"></i>
+                    <span id="creditBalance">0</span>
+                    <button class="btn-buy-credits" onclick="showBuyCreditsModal()">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="user-info" id="userInfo" style="display:none">
+                    <span id="userName">User</span>
+                    <button onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Auth Overlay -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <i class="fas fa-lock"></i>
+            <h2>Login Required</h2>
+            <p>Silakan login untuk menggunakan Video Generator</p>
+            <button class="btn-primary" onclick="window.location.href='login.html'">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent" style="display:none">
+        <div class="generator-grid">
+            <!-- Left Panel -->
+            <div class="control-panel">
+                <!-- Model Selection -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-robot"></i> Model</h3>
+                    <select id="modelSelector" onchange="updateModelUI()">
+                        <optgroup label="⭐ Kling">
+                            <option value="kling-2-5-pro">Kling 2.5 Pro (15 kredit)</option>
+                            <option value="kling-1-6-pro">Kling 1.6 Pro (10 kredit)</option>
+                            <option value="kling-1-6-std">Kling 1.6 Std (6 kredit)</option>
+                        </optgroup>
+                        <optgroup label="🎬 MiniMax">
+                            <option value="minimax-live">MiniMax Live (18 kredit)</option>
+                            <option value="minimax-hailuo-1080p">Hailuo 1080p (20 kredit)</option>
+                        </optgroup>
+                        <optgroup label="🌊 WAN">
+                            <option value="wan-i2v-720p">WAN I2V 720p (8 kredit)</option>
+                            <option value="wan-t2v-720p">WAN T2V 720p (6 kredit)</option>
+                        </optgroup>
+                        <optgroup label="🌱 Seedance">
+                            <option value="seedance-720p">Seedance 720p (8 kredit)</option>
+                        </optgroup>
+                        <optgroup label="⚡ Other">
+                            <option value="runway-gen4">RunWay Gen4 (20 kredit)</option>
+                            <option value="vfx">VFX Effects (5 kredit)</option>
+                        </optgroup>
+                    </select>
+                    <div class="model-info">
+                        <span class="credit-cost"><i class="fas fa-coins"></i> <span id="creditCost">15</span> kredit</span>
+                    </div>
+                </div>
+
+                <!-- Prompt -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-pen"></i> Prompt</h3>
+                    <textarea id="promptInput" rows="4" placeholder="Describe your video..."></textarea>
+                    <textarea id="negativePrompt" rows="2" placeholder="Negative prompt (optional)" class="input-optional"></textarea>
+                </div>
+
+                <!-- Image Upload -->
+                <div class="panel-section" id="imageSection">
+                    <h3><i class="fas fa-image"></i> Image (Optional)</h3>
+                    <div class="upload-box" onclick="document.getElementById('imageInput').click()">
+                        <input type="file" id="imageInput" accept="image/*" hidden onchange="previewImage(this)">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Click to upload image</span>
+                        </div>
+                        <img id="imagePreview" style="display:none">
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-sliders-h"></i> Settings</h3>
+                    <div class="settings-grid">
+                        <div class="control-group">
+                            <label>Duration</label>
+                            <select id="duration" onchange="updateCredits()">
+                                <option value="5">5 seconds</option>
+                                <option value="10">10 seconds</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label>Aspect Ratio</label>
+                            <select id="aspectRatio">
+                                <option value="16:9">16:9 Landscape</option>
+                                <option value="9:16">9:16 Portrait</option>
+                                <option value="1:1">1:1 Square</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Generate Button -->
+                <div class="generate-section">
+                    <div class="credit-summary">
+                        <span>Total:</span>
+                        <span class="credit-amount" id="totalCredits">15</span>
+                        <span>kredit</span>
+                    </div>
+                    <button class="btn-generate" id="generateBtn" onclick="generateVideo()">
+                        <i class="fas fa-play"></i> Generate Video
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="output-panel">
+                <div class="panel-section">
+                    <h3><i class="fas fa-video"></i> Result</h3>
+                    <div class="video-container" id="videoContainer">
+                        <div class="placeholder" id="placeholder">
+                            <i class="fas fa-film"></i>
+                            <p>Video akan muncul di sini</p>
+                        </div>
+                        <video id="resultVideo" controls style="display:none"></video>
+                    </div>
+                    <div class="video-actions" id="videoActions" style="display:none">
+                        <a id="downloadBtn" class="btn-action" download>
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3><i class="fas fa-terminal"></i> Status</h3>
+                    <div class="status-log" id="statusLog">
+                        <p>Ready to generate...</p>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div class="progress-section" id="progressSection" style="display:none">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        <span id="progressText">Processing...</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Buy Credits Modal -->
+    <div class="modal-overlay" id="buyCreditsModal" style="display:none">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeBuyCreditsModal()">×</button>
+            <h2><i class="fas fa-coins"></i> Buy Credits</h2>
+            <div class="credit-packages" id="creditPackages"></div>
+        </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/video-generator.js"></script>
+</body>
+</html>
