@@ -1,5 +1,5 @@
 // ============================================
-// VIDEO API GENERATOR v3.2 - ALL FIXES
+// VIDEO API GENERATOR v3.3 - ALL FIXES
 // ============================================
 
 let pollingInterval = null;
@@ -7,6 +7,9 @@ let userJobs = [];
 let userCredits = 0;
 let userStats = {};
 let isNewUser = false;
+
+// Track uploaded video URLs
+let uploadedVideoUrls = {};
 
 // ============================================
 // MODEL PRICING
@@ -55,158 +58,286 @@ const CREDIT_PACKAGES = [
 ];
 
 // ============================================
-// MODEL CONFIGURATIONS
+// MODEL CONFIGURATIONS - UPDATED
 // ============================================
 
 const MODEL_CONFIGS = {
+    // ==========================================
+    // KLING 2.5 PRO - REMOVED END FRAME
+    // ==========================================
     'kling-2-5-pro': {
         type: 'image_to_video',
         desc: 'Model terbaru dengan kualitas tinggi',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true
+        showImage: true, 
+        showImageTail: false, // FIXED: Removed End Frame option
+        showNegative: true, 
+        showCfg: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-2-6-pro': {
         type: 'kling_2_6',
         desc: 'Text/Image to Video dengan audio generation',
         showImage: true, showNegative: true, showCfg: true, 
-        showAspectKling26: true, showGenerateAudio: true
+        showAspectKling26: true, showGenerateAudio: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-2-1-pro': {
         type: 'image_to_video',
         desc: 'Model 2.1 Pro',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true
+        showImage: true, showImageTail: true, showNegative: true, showCfg: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-1-6-pro': {
         type: 'image_to_video',
         desc: 'Model klasik dengan kualitas pro',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true
+        showImage: true, showImageTail: true, showNegative: true, showCfg: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-1-6-std': {
         type: 'image_to_video',
         desc: 'Model hemat biaya',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true
+        showImage: true, showImageTail: true, showNegative: true, showCfg: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-o1-pro-i2v': {
         type: 'kling_o1',
         desc: 'Kling O1 Pro - Image to Video dengan first/last frame',
-        showFrames: true, showAspectRatio: true
+        showFrames: true, showAspectRatio: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-o1-std-i2v': {
         type: 'kling_o1',
         desc: 'Kling O1 Standard - Image to Video',
-        showFrames: true, showAspectRatio: true
+        showFrames: true, showAspectRatio: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-o1-pro-ref': {
         type: 'kling_o1_reference',
         desc: 'Video Reference dengan max 7 gambar referensi',
-        showRefImages: true, showAspectRatio: true
+        showRefImages: true, showAspectRatio: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-o1-std-ref': {
         type: 'kling_o1_reference',
         desc: 'Video Reference Standard',
-        showRefImages: true, showAspectRatio: true
+        showRefImages: true, showAspectRatio: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-2-6-motion-pro': {
         type: 'kling_2_6_motion',
         desc: 'Motion Control - Character Image + Motion Video',
-        showMotion: true, showCfg: true
+        showMotion: true, showCfg: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'kling-2-6-motion-std': {
         type: 'kling_2_6_motion',
         desc: 'Motion Control Standard',
-        showMotion: true, showCfg: true
+        showMotion: true, showCfg: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
+    // ==========================================
+    // MINIMAX LIVE - NO DURATION
+    // ==========================================
     'minimax-live': {
         type: 'minimax_live',
-        desc: 'MiniMax Live Mode',
-        showImage: true, showPromptOptimizer: true
+        desc: 'MiniMax Live Mode - Tanpa opsi durasi',
+        showImage: true, 
+        showPromptOptimizer: true,
+        hideDuration: true // FIXED: Hide duration completely
     },
+    
+    // ==========================================
+    // HAILUO 1080p - ONLY 6 SECONDS
+    // ==========================================
     'minimax-hailuo-1080p': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 1080p - 6 detik',
-        showFrames: true, showPromptOptimizer: true
+        desc: 'Hailuo 1080p - Fixed 6 detik',
+        showFrames: true, 
+        showPromptOptimizer: true,
+        showDuration: true,
+        durationOptions: [6], // FIXED: Only 6 seconds
+        fixedDuration: 6
     },
+    
     'minimax-hailuo-1080p-fast': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 1080p Fast',
-        showFrames: true, showPromptOptimizer: true
+        desc: 'Hailuo 1080p Fast - Fixed 6 detik',
+        showFrames: true, 
+        showPromptOptimizer: true,
+        showDuration: true,
+        durationOptions: [6], // FIXED: Only 6 seconds
+        fixedDuration: 6
     },
+    
+    // ==========================================
+    // HAILUO 768p - 6 OR 10 SECONDS
+    // ==========================================
     'minimax-hailuo-768p': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 768p - 6 detik',
-        showFrames: true, showPromptOptimizer: true
+        desc: 'Hailuo 768p - 6 atau 10 detik',
+        showFrames: true, 
+        showPromptOptimizer: true,
+        showDuration: true,
+        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
     },
+    
     'minimax-hailuo-768p-fast': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 768p Fast',
-        showFrames: true, showPromptOptimizer: true
+        desc: 'Hailuo 768p Fast - 6 atau 10 detik',
+        showFrames: true, 
+        showPromptOptimizer: true,
+        showDuration: true,
+        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
     },
+    
+    // ==========================================
+    // WAN MODELS
+    // ==========================================
     'wan-i2v-720p': {
         type: 'wan_i2v',
         desc: 'WAN Image to Video 720p',
         showImage: true, showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true
+        showPromptExpansion: true, showShotType: true, showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'wan-i2v-1080p': {
         type: 'wan_i2v',
         desc: 'WAN Image to Video 1080p',
         showImage: true, showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true
+        showPromptExpansion: true, showShotType: true, showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'wan-t2v-720p': {
         type: 'wan_t2v',
         desc: 'WAN Text to Video 720p',
         showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true
+        showPromptExpansion: true, showShotType: true, showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'wan-t2v-1080p': {
         type: 'wan_t2v',
         desc: 'WAN Text to Video 1080p',
         showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true
+        showPromptExpansion: true, showShotType: true, showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
+    // ==========================================
+    // SEEDANCE MODELS
+    // ==========================================
     'seedance-480p': {
         type: 'seedance',
         desc: 'Seedance 480p - paling hemat',
         showImage: true, showAspectSeedance: true,
-        showGenerateAudio: true, showCameraFixed: true, showSeed: true
+        showGenerateAudio: true, showCameraFixed: true, showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'seedance-720p': {
         type: 'seedance',
         desc: 'Seedance 720p',
         showImage: true, showAspectSeedance: true,
-        showGenerateAudio: true, showCameraFixed: true, showSeed: true
+        showGenerateAudio: true, showCameraFixed: true, showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
     'seedance-1080p': {
         type: 'seedance',
         desc: 'Seedance 1080p',
         showImage: true, showAspectSeedance: true,
-        showGenerateAudio: true, showCameraFixed: true, showSeed: true
+        showGenerateAudio: true, showCameraFixed: true, showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
+    // ==========================================
+    // LTX MODELS - FIXED WITH 6/10 SECONDS
+    // ==========================================
     'ltx-t2v': {
         type: 'ltx_t2v',
-        desc: 'LTX Text to Video',
-        showLtxResolution: true, showGenerateAudio: true, showFps: true, showSeed: true
+        desc: 'LTX Text to Video - 6 atau 10 detik',
+        showLtxResolution: true, 
+        showGenerateAudio: true, 
+        showFps: true, 
+        showSeed: true,
+        showDuration: true,
+        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
     },
+    
     'ltx-i2v': {
         type: 'ltx_i2v',
-        desc: 'LTX Image to Video',
-        showImage: true, showLtxResolution: true, 
-        showGenerateAudio: true, showFps: true, showSeed: true
+        desc: 'LTX Image to Video - 6 atau 10 detik',
+        showImage: true, 
+        showLtxResolution: true,
+        showGenerateAudio: true, 
+        showFps: true, 
+        showSeed: true,
+        showDuration: true,
+        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
     },
+    
+    // ==========================================
+    // RUNWAY GEN4 - FIXED
+    // ==========================================
     'runway-gen4': {
         type: 'runway',
         desc: 'RunWay Gen4 Turbo',
-        showImage: true, showRunwayRatio: true, showSeed: true
+        showImage: true, 
+        showRunwayRatio: true, 
+        showSeed: true,
+        showDuration: true,
+        durationOptions: [5, 10]
     },
+    
+    // ==========================================
+    // OMNIHUMAN - WITH VIDEO URL INPUT
+    // ==========================================
     'omnihuman': {
         type: 'omnihuman',
         desc: 'OmniHuman - Portrait animation dengan audio',
         showOmnihuman: true
     },
+    
+    // ==========================================
+    // VFX - WITH VIDEO URL INPUT
+    // ==========================================
     'vfx': {
         type: 'vfx',
         desc: 'Apply visual effects ke video',
-        showVfx: true, noPrompt: true
+        showVfx: true, 
+        noPrompt: true,
+        requiresVideoUrl: true // Flag for video URL input
     }
 };
 
@@ -257,7 +388,6 @@ async function uploadToTmpFiles(file) {
         if (response.ok) {
             const data = await response.json();
             if (data.status === 'success' && data.data?.url) {
-                // Convert to direct download link
                 const url = data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
                 console.log('✅ Uploaded to tmpfiles.org:', url);
                 return url;
@@ -300,7 +430,7 @@ async function uploadToLitterbox(file, expiry = '24h') {
     
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 120000); // 120s timeout for video
         
         const response = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
             method: 'POST',
@@ -334,7 +464,7 @@ async function uploadToCatbox(file) {
     
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
         
         const response = await fetch('https://catbox.moe/user/api.php', {
             method: 'POST',
@@ -367,15 +497,21 @@ async function uploadFile(file, progressCallback = null) {
     
     if (progressCallback) progressCallback(5, `Uploading ${file.name}...`);
     
-    // Check file size limit (50MB for most services)
-    if (file.size > 50 * 1024 * 1024) {
-        throw new Error(`File terlalu besar (${sizeMB} MB). Maksimal 50 MB.`);
+    // Check file size limit (100MB for video)
+    if (file.size > 100 * 1024 * 1024) {
+        throw new Error(`File terlalu besar (${sizeMB} MB). Maksimal 100 MB.`);
     }
     
     let url = null;
     
-    // Try multiple services in order
-    const services = [
+    // Try multiple services in order - Catbox/Litterbox first for video
+    const isVideo = file.type.startsWith('video/');
+    
+    const services = isVideo ? [
+        { name: 'Litterbox', fn: () => uploadToLitterbox(file, '24h') },
+        { name: 'Catbox', fn: () => uploadToCatbox(file) },
+        { name: '0x0.st', fn: () => uploadTo0x0(file) },
+    ] : [
         { name: 'file.io', fn: () => uploadToFileIO(file) },
         { name: 'tmpfiles', fn: () => uploadToTmpFiles(file) },
         { name: '0x0.st', fn: () => uploadTo0x0(file) },
@@ -386,7 +522,7 @@ async function uploadFile(file, progressCallback = null) {
     for (let i = 0; i < services.length; i++) {
         const service = services[i];
         if (progressCallback) {
-            progressCallback(10 + (i * 18), `Trying ${service.name}...`);
+            progressCallback(10 + (i * 20), `Trying ${service.name}...`);
         }
         
         try {
@@ -404,11 +540,45 @@ async function uploadFile(file, progressCallback = null) {
 }
 
 // ============================================
+// VIDEO URL VALIDATION
+// ============================================
+
+function isValidUrl(string) {
+    try {
+        const url = new URL(string);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch (_) {
+        return false;
+    }
+}
+
+function isValidVideoUrl(url) {
+    if (!isValidUrl(url)) return false;
+    
+    // Check for common video hosting patterns
+    const videoPatterns = [
+        /\.(mp4|mov|avi|webm|mkv)$/i,
+        /catbox\.moe/i,
+        /litterbox\.catbox\.moe/i,
+        /file\.io/i,
+        /tmpfiles\.org/i,
+        /0x0\.st/i,
+        /drive\.google\.com/i,
+        /dropbox\.com/i,
+        /streamable\.com/i,
+        /streamja\.com/i,
+        /streamwo\.com/i,
+    ];
+    
+    return videoPatterns.some(pattern => pattern.test(url));
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🎬 Video API Generator v3.2 loading...');
+    console.log('🎬 Video API Generator v3.3 loading...');
     
     const isLoggedIn = await checkAuth();
     
@@ -580,7 +750,7 @@ async function loadUserCredits() {
 }
 
 // ============================================
-// MODEL UI UPDATE
+// MODEL UI UPDATE - UPDATED FOR DURATION
 // ============================================
 
 function updateModelUI() {
@@ -594,12 +764,15 @@ function updateModelUI() {
     document.getElementById('total-credits').textContent = credits;
     document.getElementById('model-desc').textContent = config.desc || '';
     
+    // Hide all optional sections first
     const sections = [
         'section-image', 'section-frames', 'section-ref-images', 
         'section-motion', 'section-omnihuman', 'section-vfx',
+        'section-video-url', // NEW: Video URL section
         'group-image-tail', 'group-negative-prompt', 'group-cfg-scale',
         'group-aspect-ratio', 'group-aspect-ratio-kling26', 'group-aspect-ratio-seedance',
         'group-runway-ratio', 'group-wan-size', 'group-ltx-resolution',
+        'group-duration', // Duration group
         'group-seed', 'group-fps',
         'check-generate-audio', 'check-prompt-optimizer', 'check-prompt-expansion',
         'check-camera-fixed', 'group-shot-type'
@@ -610,11 +783,13 @@ function updateModelUI() {
         if (el) el.style.display = 'none';
     });
     
+    // Prompt section
     const promptSection = document.getElementById('section-prompt');
     if (promptSection) {
         promptSection.style.display = config.noPrompt ? 'none' : 'block';
     }
     
+    // Show relevant sections based on config
     if (config.showImage) {
         const sectionImage = document.getElementById('section-image');
         const groupImage = document.getElementById('group-image');
@@ -705,6 +880,75 @@ function updateModelUI() {
         const el = document.getElementById('group-shot-type');
         if (el) el.style.display = 'block';
     }
+    
+    // ==========================================
+    // DURATION HANDLING - NEW LOGIC
+    // ==========================================
+    const durationGroup = document.getElementById('group-duration');
+    const durationSelect = document.getElementById('input-duration');
+    
+    if (config.hideDuration) {
+        // Hide duration for models like MiniMax Live
+        if (durationGroup) durationGroup.style.display = 'none';
+    } else if (config.showDuration && config.durationOptions) {
+        // Show duration with specific options
+        if (durationGroup) durationGroup.style.display = 'block';
+        
+        if (durationSelect) {
+            // Clear existing options
+            durationSelect.innerHTML = '';
+            
+            // Add duration options based on model config
+            config.durationOptions.forEach((duration, index) => {
+                const option = document.createElement('option');
+                option.value = duration;
+                option.textContent = `${duration} detik`;
+                if (index === 0) option.selected = true;
+                durationSelect.appendChild(option);
+            });
+            
+            // Disable select if only one option (fixed duration)
+            durationSelect.disabled = config.durationOptions.length === 1;
+        }
+    } else {
+        // Default: hide duration
+        if (durationGroup) durationGroup.style.display = 'none';
+    }
+    
+    // Reset uploaded video URLs when model changes
+    uploadedVideoUrls = {};
+    updateVideoUploadStatus();
+}
+
+// ============================================
+// VIDEO UPLOAD STATUS UPDATE
+// ============================================
+
+function updateVideoUploadStatus() {
+    const modelId = document.getElementById('input-model').value;
+    const config = MODEL_CONFIGS[modelId];
+    
+    // Update Motion Video status
+    const motionVideoStatus = document.getElementById('motion-video-status');
+    if (motionVideoStatus) {
+        if (uploadedVideoUrls.motion_video) {
+            motionVideoStatus.innerHTML = `<span class="upload-success">✅ Video terupload</span>`;
+            motionVideoStatus.dataset.url = uploadedVideoUrls.motion_video;
+        } else {
+            motionVideoStatus.innerHTML = '';
+        }
+    }
+    
+    // Update VFX Video status
+    const vfxVideoStatus = document.getElementById('vfx-video-status');
+    if (vfxVideoStatus) {
+        if (uploadedVideoUrls.vfx_video) {
+            vfxVideoStatus.innerHTML = `<span class="upload-success">✅ Video terupload</span>`;
+            vfxVideoStatus.dataset.url = uploadedVideoUrls.vfx_video;
+        } else {
+            vfxVideoStatus.innerHTML = '';
+        }
+    }
 }
 
 // ============================================
@@ -727,15 +971,22 @@ function setupEventListeners() {
         });
     }
     
+    // Standard file uploads
     setupFileUpload('input-image', 'preview-image', 'btn-remove-image');
     setupFileUpload('input-image-tail', 'preview-image-tail', 'btn-remove-image-tail');
     setupFileUpload('input-first-frame', 'preview-first-frame');
     setupFileUpload('input-last-frame', 'preview-last-frame');
     setupFileUpload('input-motion-image', 'preview-motion-image');
-    setupFileUpload('input-motion-video', 'preview-motion-video', null, true);
     setupFileUpload('input-omni-image', 'preview-omni-image');
     setupFileUpload('input-omni-audio', 'preview-omni-audio', null, false, true);
-    setupFileUpload('input-vfx-video', 'preview-vfx-video', null, true);
+    
+    // Video uploads with pre-upload
+    setupVideoUpload('input-motion-video', 'preview-motion-video', 'btn-upload-motion-video', 'motion-video-status', 'motion_video');
+    setupVideoUpload('input-vfx-video', 'preview-vfx-video', 'btn-upload-vfx-video', 'vfx-video-status', 'vfx_video');
+    
+    // Video URL inputs
+    setupVideoUrlInput('input-motion-video-url', 'motion_video');
+    setupVideoUrlInput('input-vfx-video-url', 'vfx_video');
     
     for (let i = 1; i <= 7; i++) {
         setupFileUpload(`input-ref-${i}`, `preview-ref-${i}`);
@@ -848,7 +1099,135 @@ function setupFileUpload(inputId, previewId, removeId = null, isVideo = false, i
 }
 
 // ============================================
-// SUBMIT JOB
+// VIDEO UPLOAD WITH PRE-UPLOAD - NEW
+// ============================================
+
+function setupVideoUpload(inputId, previewId, uploadBtnId, statusId, urlKey) {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const uploadBtn = document.getElementById(uploadBtnId);
+    const statusEl = document.getElementById(statusId);
+    
+    if (!input) return;
+    
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // Show preview
+        if (preview) {
+            const url = URL.createObjectURL(file);
+            preview.src = url;
+            preview.style.display = 'block';
+            
+            const placeholder = preview.parentElement?.querySelector('.upload-placeholder');
+            if (placeholder) placeholder.style.display = 'none';
+            
+            preview.parentElement?.classList.add('has-preview');
+        }
+        
+        // Clear previous upload
+        delete uploadedVideoUrls[urlKey];
+        if (statusEl) {
+            statusEl.innerHTML = `<span class="upload-pending">⚠️ Klik "Upload Video" untuk mengupload</span>`;
+        }
+        
+        // Enable upload button
+        if (uploadBtn) {
+            uploadBtn.disabled = false;
+            uploadBtn.style.display = 'block';
+        }
+    });
+    
+    // Upload button handler
+    if (uploadBtn) {
+        uploadBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const file = input.files[0];
+            if (!file) {
+                alert('Pilih video terlebih dahulu!');
+                return;
+            }
+            
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = '⏳ Mengupload...';
+            
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="upload-progress">📤 Mengupload video...</span>';
+            }
+            
+            try {
+                const uploadedUrl = await uploadFile(file, (percent, msg) => {
+                    if (statusEl) {
+                        statusEl.innerHTML = `<span class="upload-progress">📤 ${msg} (${percent}%)</span>`;
+                    }
+                });
+                
+                if (uploadedUrl) {
+                    uploadedVideoUrls[urlKey] = uploadedUrl;
+                    
+                    if (statusEl) {
+                        statusEl.innerHTML = `
+                            <span class="upload-success">✅ Video berhasil diupload!</span>
+                            <br><small class="upload-url">${uploadedUrl.substring(0, 50)}...</small>
+                        `;
+                    }
+                    
+                    uploadBtn.innerHTML = '✅ Terupload';
+                    uploadBtn.disabled = true;
+                } else {
+                    throw new Error('Upload gagal');
+                }
+            } catch (error) {
+                console.error('Video upload error:', error);
+                
+                if (statusEl) {
+                    statusEl.innerHTML = `<span class="upload-error">❌ Upload gagal: ${error.message}</span>`;
+                }
+                
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '📤 Coba Upload Lagi';
+            }
+        });
+    }
+}
+
+// ============================================
+// VIDEO URL INPUT - NEW
+// ============================================
+
+function setupVideoUrlInput(inputId, urlKey) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    input.addEventListener('input', (e) => {
+        const url = e.target.value.trim();
+        const statusEl = input.parentElement?.querySelector('.url-status');
+        
+        if (url === '') {
+            delete uploadedVideoUrls[urlKey];
+            if (statusEl) statusEl.innerHTML = '';
+            return;
+        }
+        
+        if (isValidVideoUrl(url)) {
+            uploadedVideoUrls[urlKey] = url;
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="url-valid">✅ URL valid</span>';
+            }
+        } else {
+            delete uploadedVideoUrls[urlKey];
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="url-invalid">⚠️ URL tidak valid</span>';
+            }
+        }
+    });
+}
+
+// ============================================
+// SUBMIT JOB - UPDATED
 // ============================================
 
 async function submitJob(event) {
@@ -880,6 +1259,21 @@ async function submitJob(event) {
     if (!prompt && !config.noPrompt) {
         alert('Prompt wajib diisi!');
         return;
+    }
+    
+    // Check for required video uploads
+    if (config.showMotion) {
+        if (!uploadedVideoUrls.motion_video) {
+            alert('Video Motion belum diupload!\n\nSilakan upload video terlebih dahulu atau masukkan URL video.');
+            return;
+        }
+    }
+    
+    if (config.showVfx) {
+        if (!uploadedVideoUrls.vfx_video) {
+            alert('Video VFX belum diupload!\n\nSilakan upload video terlebih dahulu atau masukkan URL video.');
+            return;
+        }
     }
     
     if (userCredits < requiredCredits) {
@@ -976,6 +1370,10 @@ async function submitJob(event) {
     }
 }
 
+// ============================================
+// COLLECT INPUT DATA - UPDATED
+// ============================================
+
 async function collectInputData(modelId, config, prompt, credits, userId) {
     const data = {
         model_id: modelId,
@@ -992,6 +1390,19 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
     const updateStatus = (text) => {
         if (submitBtn) submitBtn.innerHTML = text;
     };
+    
+    // ==========================================
+    // DURATION HANDLING - UPDATED
+    // ==========================================
+    if (config.showDuration && !config.hideDuration) {
+        const durationSelect = document.getElementById('input-duration');
+        if (durationSelect) {
+            settings.duration = parseInt(durationSelect.value);
+        } else if (config.fixedDuration) {
+            settings.duration = config.fixedDuration;
+        }
+    }
+    // For MiniMax Live - NO duration in payload
     
     if (config.showCfg) {
         settings.cfg_scale = parseFloat(document.getElementById('input-cfg')?.value || 0.5);
@@ -1012,10 +1423,10 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         settings.aspect_ratio = document.getElementById('input-aspect-ratio-seedance')?.value;
     }
     if (config.showRunwayRatio) {
-        settings.runway_ratio = document.getElementById('input-runway-ratio')?.value;
+        settings.ratio = document.getElementById('input-runway-ratio')?.value;
     }
     if (config.showWanSize) {
-        settings.wan_size = document.getElementById('input-wan-size')?.value;
+        settings.size = document.getElementById('input-wan-size')?.value;
     }
     if (config.showLtxResolution) {
         settings.resolution = document.getElementById('input-ltx-resolution')?.value;
@@ -1073,25 +1484,32 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         if (refImages.length > 0) settings.reference_images = refImages;
     }
     
-    // Motion Control - pre-upload
+    // ==========================================
+    // MOTION CONTROL - USE PRE-UPLOADED URL
+    // ==========================================
     if (config.showMotion) {
         const motionImg = document.getElementById('input-motion-image')?.files[0];
-        const motionVid = document.getElementById('input-motion-video')?.files[0];
         
-        if (!motionImg || !motionVid) {
-            throw new Error('Motion Control membutuhkan gambar karakter DAN video gerakan!');
+        if (!motionImg) {
+            throw new Error('Motion Control membutuhkan gambar karakter!');
+        }
+        
+        if (!uploadedVideoUrls.motion_video) {
+            throw new Error('Motion Control membutuhkan video gerakan yang sudah diupload!');
         }
         
         updateStatus('⏳ Uploading character image...');
         settings.image_url = await uploadFile(motionImg);
         
-        updateStatus('⏳ Uploading motion video...');
-        settings.video_url = await uploadFile(motionVid);
+        // Use pre-uploaded video URL
+        settings.video_url = uploadedVideoUrls.motion_video;
         
         settings.character_orientation = document.getElementById('input-character-orientation')?.value || 'video';
     }
     
-    // OmniHuman - pre-upload
+    // ==========================================
+    // OMNIHUMAN - PRE-UPLOAD
+    // ==========================================
     if (config.showOmnihuman) {
         const omniImg = document.getElementById('input-omni-image')?.files[0];
         const omniAudio = document.getElementById('input-omni-audio')?.files[0];
@@ -1110,15 +1528,16 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         settings.turbo_mode = document.getElementById('input-turbo-mode')?.checked || false;
     }
     
-    // VFX - pre-upload
+    // ==========================================
+    // VFX - USE PRE-UPLOADED URL
+    // ==========================================
     if (config.showVfx) {
-        const vfxVid = document.getElementById('input-vfx-video')?.files[0];
-        if (!vfxVid) {
-            throw new Error('VFX membutuhkan video input!');
+        if (!uploadedVideoUrls.vfx_video) {
+            throw new Error('VFX membutuhkan video input yang sudah diupload!');
         }
         
-        updateStatus('⏳ Uploading video...');
-        settings.video_url = await uploadFile(vfxVid);
+        // Use pre-uploaded video URL
+        settings.video_url = uploadedVideoUrls.vfx_video;
         
         settings.filter_type = parseInt(document.getElementById('input-filter-type')?.value || 1);
         settings.fps = parseInt(document.getElementById('input-vfx-fps')?.value || 24);
@@ -1158,11 +1577,28 @@ function resetForm() {
     document.querySelectorAll('.btn-remove-upload').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.upload-placeholder').forEach(el => el.style.display = 'flex');
     
+    // Reset video upload states
+    uploadedVideoUrls = {};
+    
+    document.querySelectorAll('.video-upload-status').forEach(el => {
+        el.innerHTML = '';
+    });
+    
+    document.querySelectorAll('.btn-upload-video').forEach(btn => {
+        btn.innerHTML = '📤 Upload Video';
+        btn.disabled = true;
+        btn.style.display = 'none';
+    });
+    
+    document.querySelectorAll('.video-url-input').forEach(el => {
+        el.value = '';
+    });
+    
     updateModelUI();
 }
 
 // ============================================
-// LOAD & RENDER JOBS (tanpa tombol batalkan)
+// LOAD & RENDER JOBS
 // ============================================
 
 async function loadJobs() {
@@ -1261,12 +1697,11 @@ function renderJobCard(job, isActive) {
         }
     }
     
-    // Hitung waktu tersisa (max 45 menit)
     let timeInfo = '';
     if (isActive) {
         const createdTime = new Date(job.created_at).getTime();
         const now = Date.now();
-        const elapsed = Math.floor((now - createdTime) / 1000 / 60); // menit
+        const elapsed = Math.floor((now - createdTime) / 1000 / 60);
         const remaining = 45 - elapsed;
         
         if (remaining > 0) {
@@ -1441,12 +1876,10 @@ async function purchaseCredits(packageId, buttonElement) {
             throw new Error('Paket tidak ditemukan');
         }
         
-        // Generate short order ID
         const timestamp = Date.now().toString(36).toUpperCase();
         const random = Math.random().toString(36).substr(2, 4).toUpperCase();
         const orderId = `VC${timestamp}${random}`;
         
-        // Save to database
         try {
             await supabaseClient
                 .from('credit_purchases')
@@ -1469,7 +1902,6 @@ async function purchaseCredits(packageId, buttonElement) {
             return;
         }
         
-        // Short item name (max 50 chars)
         const itemName = `${pkg.credits} Credits`;
         
         const response = await fetch(`${SUPABASE_URL}/functions/v1/create-payment`, {
@@ -1621,6 +2053,14 @@ function startPolling() {
 }
 
 // ============================================
+// TUTORIAL LINK
+// ============================================
+
+function openVideoTutorial() {
+    window.open('video-upload-tutorial.html', '_blank');
+}
+
+// ============================================
 // GLOBAL
 // ============================================
 
@@ -1628,5 +2068,6 @@ window.openJobModal = openJobModal;
 window.closeJobModal = closeJobModal;
 window.openCreditsModal = openCreditsModal;
 window.closeCreditsModal = closeCreditsModal;
+window.openVideoTutorial = openVideoTutorial;
 
-console.log('✅ Video API Generator v3.2 loaded');
+console.log('✅ Video API Generator v3.3 loaded');
