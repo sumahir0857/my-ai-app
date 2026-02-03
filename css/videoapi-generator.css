@@ -849,3 +849,55 @@ select optgroup {
 .job-note {
     color: #22c55e;
 }
+
+/* Duration badge */
+.job-duration {
+    color: #8b5cf6;
+    font-size: 0.8rem;
+}
+
+/* Job footer */
+.job-footer {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    font-size: 0.75rem;
+}
+
+.job-time {
+    color: #94a3b8;
+}
+
+.job-time.warning {
+    color: #f59e0b;
+}
+
+.job-note {
+    color: #22c55e;
+}
+
+/* Pricing items with duration */
+.pricing-item {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.pricing-credits {
+    color: #f59e0b;
+    font-weight: 600;
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+    .pricing-item {
+        grid-template-columns: 1fr;
+    }
+}
