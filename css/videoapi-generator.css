@@ -1,5 +1,5 @@
 /* ============================================
-   VIDEO API GENERATOR STYLES v3.0
+   VIDEO API GENERATOR STYLES v3.2 (Final)
    ============================================ */
 
 * { font-family: 'Space Grotesk', sans-serif; box-sizing: border-box; }
@@ -384,6 +384,147 @@ select optgroup {
 }
 @media (max-width: 768px) { .ref-images-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 480px) { .ref-images-grid { grid-template-columns: repeat(3, 1fr); } }
+
+/* ============================================
+   VIDEO UPLOAD NEW STYLES (Requested Update)
+   ============================================ */
+
+.btn-upload-video {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-upload-video:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+}
+
+.btn-upload-video:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.video-upload-status {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.upload-success {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.upload-pending {
+    color: #f59e0b;
+}
+
+.upload-progress {
+    color: #6366f1;
+}
+
+.upload-error {
+    color: #ef4444;
+}
+
+.upload-url {
+    color: #64748b;
+    word-break: break-all;
+}
+
+/* Video URL Section */
+.video-url-section {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px dashed rgba(99, 102, 241, 0.3);
+    border-radius: 10px;
+}
+
+.video-url-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.video-url-input {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.video-url-input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.url-status {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.8rem;
+}
+
+.url-valid {
+    color: #10b981;
+}
+
+.url-invalid {
+    color: #f59e0b;
+}
+
+/* Tutorial Button */
+.btn-tutorial {
+    width: 100%;
+    padding: 10px;
+    margin-top: 12px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    color: #a78bfa;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-tutorial:hover {
+    background: rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* Duration Select Disabled State */
+#input-duration:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Fixed Duration Notice */
+.duration-fixed-notice {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+/* VFX Extra Options */
+#vfx-extra-options {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
 
 /* Checkboxes */
 .checkbox-row { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
@@ -854,28 +995,6 @@ select optgroup {
 .job-duration {
     color: #8b5cf6;
     font-size: 0.8rem;
-}
-
-/* Job footer */
-.job-footer {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: space-between;
-    font-size: 0.75rem;
-}
-
-.job-time {
-    color: #94a3b8;
-}
-
-.job-time.warning {
-    color: #f59e0b;
-}
-
-.job-note {
-    color: #22c55e;
 }
 
 /* Pricing items with duration */
