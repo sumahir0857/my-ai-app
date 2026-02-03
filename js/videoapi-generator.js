@@ -1,5 +1,5 @@
 // ============================================
-// VIDEO API GENERATOR v3.0 - FULL REWRITE
+// VIDEO API GENERATOR v3.1 - FIXED
 // ============================================
 
 let pollingInterval = null;
@@ -237,14 +237,13 @@ const MODEL_CONFIGS = {
 
 const MAX_JOBS_PER_USER = 5;
 const POLLING_INTERVAL_MS = 5000;
-const JOB_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
 
 // ============================================
 // INITIALIZATION
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🎬 Video API Generator v3.0 loading...');
+    console.log('🎬 Video API Generator v3.1 loading...');
     
     const isLoggedIn = await checkAuth();
     
@@ -289,8 +288,13 @@ function showGeneratorUI() {
     document.getElementById('generator-section').style.display = 'block';
 }
 
-function getCurrentUser() {
-    return supabaseClient.auth.getUser().then(({ data }) => data.user).catch(() => null);
+async function getCurrentUser() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        return user;
+    } catch (error) {
+        return null;
+    }
 }
 
 // ============================================
@@ -299,33 +303,84 @@ function getCurrentUser() {
 
 async function initializeUser() {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await getCurrentUser();
         if (!user) return;
         
         // Update UI with user info
         document.getElementById('user-name').textContent = user.user_metadata?.full_name || user.email;
-        document.getElementById('user-avatar').src = user.user_metadata?.avatar_url || '';
-        
-        // Get or create user credits (includes free trial for new users)
-        const { data: creditData, error } = await supabaseClient
-            .rpc('get_or_create_user_credits', { p_user_id: user.id });
-        
-        if (error) {
-            console.error('Credit init error:', error);
-            return;
+        const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+        if (avatarUrl) {
+            document.getElementById('user-avatar').src = avatarUrl;
         }
         
-        userCredits = creditData.balance || 0;
-        userStats = creditData;
-        isNewUser = creditData.is_new_user || false;
+        // Try to get or create user credits
+        let creditData = null;
         
-        updateCreditsUI();
+        // First, try the new function
+        try {
+            const { data, error } = await supabaseClient
+                .rpc('get_or_create_user_credits', { p_user_id: user.id });
+            
+            if (!error && data) {
+                creditData = data;
+            }
+        } catch (e) {
+            console.log('get_or_create_user_credits not available, falling back...');
+        }
         
-        // Show welcome message for new users
-        if (isNewUser) {
-            setTimeout(() => {
-                alert(`🎉 Selamat datang!\n\nAnda mendapat 50 kredit GRATIS untuk mencoba layanan kami.\n\nCobalah model Seedance 480p (13 kredit) atau VFX (9 kredit) untuk memulai!`);
-            }, 1000);
+        // Fallback: directly query user_credits
+        if (!creditData) {
+            const { data: credits, error } = await supabaseClient
+                .from('user_credits')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+            
+            if (error && error.code === 'PGRST116') {
+                // No credits found, create new with free trial
+                const { data: newCredits, error: insertError } = await supabaseClient
+                    .from('user_credits')
+                    .insert({
+                        user_id: user.id,
+                        balance: 50, // Free trial
+                        total_purchased: 0,
+                        total_used: 0,
+                        total_refunded: 0
+                    })
+                    .select()
+                    .single();
+                
+                if (!insertError && newCredits) {
+                    creditData = {
+                        balance: newCredits.balance,
+                        total_used: 0,
+                        total_refunded: 0,
+                        is_new_user: true
+                    };
+                }
+            } else if (credits) {
+                creditData = {
+                    balance: credits.balance,
+                    total_used: credits.total_used || 0,
+                    total_refunded: credits.total_refunded || 0,
+                    is_new_user: false
+                };
+            }
+        }
+        
+        if (creditData) {
+            userCredits = creditData.balance || 0;
+            userStats = creditData;
+            isNewUser = creditData.is_new_user || false;
+            
+            updateCreditsUI();
+            
+            // Show welcome message for new users
+            if (isNewUser) {
+                setTimeout(() => {
+                    alert(`🎉 Selamat datang!\n\nAnda mendapat 50 kredit GRATIS untuk mencoba layanan kami.\n\nCobalah model Seedance 480p (13 kredit) atau VFX (9 kredit) untuk memulai!`);
+                }, 1000);
+            }
         }
         
         // Load jobs
@@ -341,27 +396,37 @@ async function initializeUser() {
 // ============================================
 
 function updateCreditsUI() {
-    document.getElementById('user-credits').textContent = userCredits.toLocaleString();
-    document.getElementById('stat-credits').textContent = userCredits.toLocaleString();
-    document.getElementById('stat-used').textContent = (userStats.total_used || 0).toLocaleString();
-    document.getElementById('stat-refunded').textContent = (userStats.total_refunded || 0).toLocaleString();
+    const creditsFormatted = userCredits.toLocaleString('id-ID');
     
-    if (document.getElementById('modal-current-credits')) {
-        document.getElementById('modal-current-credits').textContent = userCredits.toLocaleString() + ' kredit';
+    document.getElementById('user-credits').textContent = creditsFormatted;
+    document.getElementById('stat-credits').textContent = creditsFormatted;
+    document.getElementById('stat-used').textContent = (userStats.total_used || 0).toLocaleString('id-ID');
+    document.getElementById('stat-refunded').textContent = (userStats.total_refunded || 0).toLocaleString('id-ID');
+    
+    const modalCredits = document.getElementById('modal-current-credits');
+    if (modalCredits) {
+        modalCredits.textContent = creditsFormatted + ' kredit';
     }
 }
 
 async function loadUserCredits() {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await getCurrentUser();
         if (!user) return;
         
-        const { data } = await supabaseClient
-            .rpc('get_videoapi_user_stats', { p_user_id: user.id });
+        const { data, error } = await supabaseClient
+            .from('user_credits')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
         
-        if (data) {
+        if (!error && data) {
             userCredits = data.balance || 0;
-            userStats = data;
+            userStats = {
+                balance: data.balance,
+                total_used: data.total_used || 0,
+                total_refunded: data.total_refunded || 0
+            };
             updateCreditsUI();
         }
     } catch (error) {
@@ -403,75 +468,101 @@ function updateModelUI() {
     });
     
     // Show prompt section unless noPrompt
-    document.getElementById('section-prompt').style.display = config.noPrompt ? 'none' : 'block';
+    const promptSection = document.getElementById('section-prompt');
+    if (promptSection) {
+        promptSection.style.display = config.noPrompt ? 'none' : 'block';
+    }
     
     // Show relevant sections based on config
     if (config.showImage) {
-        document.getElementById('section-image').style.display = 'block';
-        document.getElementById('group-image').style.display = 'block';
+        const sectionImage = document.getElementById('section-image');
+        const groupImage = document.getElementById('group-image');
+        if (sectionImage) sectionImage.style.display = 'block';
+        if (groupImage) groupImage.style.display = 'block';
     }
     if (config.showImageTail) {
-        document.getElementById('group-image-tail').style.display = 'block';
+        const el = document.getElementById('group-image-tail');
+        if (el) el.style.display = 'block';
     }
     if (config.showNegative) {
-        document.getElementById('group-negative-prompt').style.display = 'block';
+        const el = document.getElementById('group-negative-prompt');
+        if (el) el.style.display = 'block';
     }
     if (config.showCfg) {
-        document.getElementById('group-cfg-scale').style.display = 'block';
+        const el = document.getElementById('group-cfg-scale');
+        if (el) el.style.display = 'block';
     }
     if (config.showFrames) {
-        document.getElementById('section-frames').style.display = 'block';
+        const el = document.getElementById('section-frames');
+        if (el) el.style.display = 'block';
     }
     if (config.showRefImages) {
-        document.getElementById('section-ref-images').style.display = 'block';
+        const el = document.getElementById('section-ref-images');
+        if (el) el.style.display = 'block';
     }
     if (config.showMotion) {
-        document.getElementById('section-motion').style.display = 'block';
+        const el = document.getElementById('section-motion');
+        if (el) el.style.display = 'block';
     }
     if (config.showOmnihuman) {
-        document.getElementById('section-omnihuman').style.display = 'block';
+        const el = document.getElementById('section-omnihuman');
+        if (el) el.style.display = 'block';
     }
     if (config.showVfx) {
-        document.getElementById('section-vfx').style.display = 'block';
+        const el = document.getElementById('section-vfx');
+        if (el) el.style.display = 'block';
     }
     if (config.showAspectRatio) {
-        document.getElementById('group-aspect-ratio').style.display = 'block';
+        const el = document.getElementById('group-aspect-ratio');
+        if (el) el.style.display = 'block';
     }
     if (config.showAspectKling26) {
-        document.getElementById('group-aspect-ratio-kling26').style.display = 'block';
+        const el = document.getElementById('group-aspect-ratio-kling26');
+        if (el) el.style.display = 'block';
     }
     if (config.showAspectSeedance) {
-        document.getElementById('group-aspect-ratio-seedance').style.display = 'block';
+        const el = document.getElementById('group-aspect-ratio-seedance');
+        if (el) el.style.display = 'block';
     }
     if (config.showRunwayRatio) {
-        document.getElementById('group-runway-ratio').style.display = 'block';
+        const el = document.getElementById('group-runway-ratio');
+        if (el) el.style.display = 'block';
     }
     if (config.showWanSize) {
-        document.getElementById('group-wan-size').style.display = 'block';
+        const el = document.getElementById('group-wan-size');
+        if (el) el.style.display = 'block';
     }
     if (config.showLtxResolution) {
-        document.getElementById('group-ltx-resolution').style.display = 'block';
+        const el = document.getElementById('group-ltx-resolution');
+        if (el) el.style.display = 'block';
     }
     if (config.showSeed) {
-        document.getElementById('group-seed').style.display = 'block';
+        const el = document.getElementById('group-seed');
+        if (el) el.style.display = 'block';
     }
     if (config.showFps) {
-        document.getElementById('group-fps').style.display = 'block';
+        const el = document.getElementById('group-fps');
+        if (el) el.style.display = 'block';
     }
     if (config.showGenerateAudio) {
-        document.getElementById('check-generate-audio').style.display = 'flex';
+        const el = document.getElementById('check-generate-audio');
+        if (el) el.style.display = 'flex';
     }
     if (config.showPromptOptimizer) {
-        document.getElementById('check-prompt-optimizer').style.display = 'flex';
+        const el = document.getElementById('check-prompt-optimizer');
+        if (el) el.style.display = 'flex';
     }
     if (config.showPromptExpansion) {
-        document.getElementById('check-prompt-expansion').style.display = 'flex';
+        const el = document.getElementById('check-prompt-expansion');
+        if (el) el.style.display = 'flex';
     }
     if (config.showCameraFixed) {
-        document.getElementById('check-camera-fixed').style.display = 'flex';
+        const el = document.getElementById('check-camera-fixed');
+        if (el) el.style.display = 'flex';
     }
     if (config.showShotType) {
-        document.getElementById('group-shot-type').style.display = 'block';
+        const el = document.getElementById('group-shot-type');
+        if (el) el.style.display = 'block';
     }
 }
 
@@ -481,7 +572,10 @@ function updateModelUI() {
 
 function setupEventListeners() {
     // Model change
-    document.getElementById('input-model').addEventListener('change', updateModelUI);
+    const modelSelect = document.getElementById('input-model');
+    if (modelSelect) {
+        modelSelect.addEventListener('change', updateModelUI);
+    }
     
     // Initialize model UI
     updateModelUI();
@@ -490,7 +584,8 @@ function setupEventListeners() {
     const cfgSlider = document.getElementById('input-cfg');
     if (cfgSlider) {
         cfgSlider.addEventListener('input', () => {
-            document.getElementById('cfg-value').textContent = cfgSlider.value;
+            const cfgValue = document.getElementById('cfg-value');
+            if (cfgValue) cfgValue.textContent = cfgSlider.value;
         });
     }
     
@@ -516,30 +611,48 @@ function setupEventListeners() {
     });
     
     // Form submit
-    document.getElementById('generator-form').addEventListener('submit', submitJob);
+    const form = document.getElementById('generator-form');
+    if (form) {
+        form.addEventListener('submit', submitJob);
+    }
     
     // Buy credits button
-    document.getElementById('btn-buy-credits').addEventListener('click', openCreditsModal);
+    const buyBtn = document.getElementById('btn-buy-credits');
+    if (buyBtn) {
+        buyBtn.addEventListener('click', openCreditsModal);
+    }
     
     // Logout
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-        await supabaseClient.auth.signOut();
-        window.location.reload();
-    });
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            window.location.reload();
+        });
+    }
     
     // Modal close
-    document.getElementById('btn-close-modal').addEventListener('click', closeJobModal);
-    document.getElementById('job-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'job-modal') closeJobModal();
-    });
+    const closeModalBtn = document.getElementById('btn-close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeJobModal);
+    }
+    
+    const jobModal = document.getElementById('job-modal');
+    if (jobModal) {
+        jobModal.addEventListener('click', (e) => {
+            if (e.target.id === 'job-modal') closeJobModal();
+        });
+    }
     
     // VFX filter change
     const filterSelect = document.getElementById('input-filter-type');
     if (filterSelect) {
         filterSelect.addEventListener('change', () => {
             const filterType = parseInt(filterSelect.value);
-            document.getElementById('group-bloom-contrast').style.display = filterType === 7 ? 'block' : 'none';
-            document.getElementById('group-motion-blur').style.display = filterType === 2 ? 'block' : 'none';
+            const bloomGroup = document.getElementById('group-bloom-contrast');
+            const motionGroup = document.getElementById('group-motion-blur');
+            if (bloomGroup) bloomGroup.style.display = filterType === 7 ? 'block' : 'none';
+            if (motionGroup) motionGroup.style.display = filterType === 2 ? 'block' : 'none';
         });
     }
     
@@ -547,7 +660,8 @@ function setupEventListeners() {
     const bloomSlider = document.getElementById('input-bloom-contrast');
     if (bloomSlider) {
         bloomSlider.addEventListener('input', () => {
-            document.getElementById('bloom-value').textContent = bloomSlider.value;
+            const bloomValue = document.getElementById('bloom-value');
+            if (bloomValue) bloomValue.textContent = bloomSlider.value;
         });
     }
     
@@ -555,7 +669,8 @@ function setupEventListeners() {
     const decaySlider = document.getElementById('input-motion-decay');
     if (decaySlider) {
         decaySlider.addEventListener('input', () => {
-            document.getElementById('decay-value').textContent = decaySlider.value;
+            const decayValue = document.getElementById('decay-value');
+            if (decayValue) decayValue.textContent = decaySlider.value;
         });
     }
 }
@@ -571,32 +686,32 @@ function setupFileUpload(inputId, previewId, removeId = null, isVideo = false, i
         if (!file) return;
         
         const url = URL.createObjectURL(file);
-        
-        if (isVideo) {
-            preview.src = url;
-        } else if (isAudio) {
-            preview.src = url;
-        } else {
-            preview.src = url;
-        }
-        
+        preview.src = url;
         preview.style.display = 'block';
-        preview.parentElement.querySelector('.upload-placeholder').style.display = 'none';
+        
+        const placeholder = preview.parentElement.querySelector('.upload-placeholder');
+        if (placeholder) placeholder.style.display = 'none';
+        
         preview.parentElement.classList.add('has-preview');
         
         if (removeId) {
-            document.getElementById(removeId).style.display = 'block';
+            const removeBtn = document.getElementById(removeId);
+            if (removeBtn) removeBtn.style.display = 'block';
         }
     });
     
     if (removeId) {
         const removeBtn = document.getElementById(removeId);
         if (removeBtn) {
-            removeBtn.addEventListener('click', () => {
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 input.value = '';
                 preview.src = '';
                 preview.style.display = 'none';
-                preview.parentElement.querySelector('.upload-placeholder').style.display = 'flex';
+                
+                const placeholder = preview.parentElement.querySelector('.upload-placeholder');
+                if (placeholder) placeholder.style.display = 'flex';
+                
                 preview.parentElement.classList.remove('has-preview');
                 removeBtn.style.display = 'none';
             });
@@ -605,13 +720,13 @@ function setupFileUpload(inputId, previewId, removeId = null, isVideo = false, i
 }
 
 // ============================================
-// SUBMIT JOB
+// SUBMIT JOB - FIXED
 // ============================================
 
 async function submitJob(event) {
     event.preventDefault();
     
-    const { data: { user } } = await supabaseClient.auth.getUser();
+    const user = await getCurrentUser();
     if (!user) {
         alert('Silakan login terlebih dahulu');
         return;
@@ -634,7 +749,8 @@ async function submitJob(event) {
     }
     
     // Get prompt
-    const prompt = document.getElementById('input-prompt')?.value?.trim() || '';
+    const promptEl = document.getElementById('input-prompt');
+    const prompt = promptEl?.value?.trim() || '';
     if (!prompt && !config.noPrompt) {
         alert('Prompt wajib diisi!');
         return;
@@ -652,23 +768,51 @@ async function submitJob(event) {
     submitBtn.innerHTML = '⏳ Memproses...';
     
     try {
-        // Collect input data
+        // Collect input data first
         const inputData = await collectInputData(modelId, config, prompt, requiredCredits, user.id);
         
-        // Deduct credits
-        const { data: deductResult, error: deductError } = await supabaseClient
-            .rpc('deduct_user_credits', {
-                p_user_id: user.id,
-                p_amount: requiredCredits,
-                p_model_name: modelId,
-                p_description: `Video: ${modelId}`
-            });
+        // Deduct credits directly from user_credits table
+        const { data: currentCredits, error: fetchError } = await supabaseClient
+            .from('user_credits')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single();
         
-        if (deductError || !deductResult?.success) {
-            throw new Error(deductResult?.error || 'Gagal memotong kredit');
+        if (fetchError || !currentCredits) {
+            throw new Error('Gagal mengambil data kredit');
         }
         
-        userCredits = deductResult.balance_after;
+        if (currentCredits.balance < requiredCredits) {
+            throw new Error('Kredit tidak mencukupi');
+        }
+        
+        const newBalance = currentCredits.balance - requiredCredits;
+        
+        const { error: updateError } = await supabaseClient
+            .from('user_credits')
+            .update({ 
+                balance: newBalance,
+                total_used: supabaseClient.sql`COALESCE(total_used, 0) + ${requiredCredits}`,
+                updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
+        
+        if (updateError) {
+            // Try simpler update
+            const { error: simpleUpdateError } = await supabaseClient
+                .from('user_credits')
+                .update({ 
+                    balance: newBalance,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', user.id);
+            
+            if (simpleUpdateError) {
+                throw new Error('Gagal memotong kredit: ' + simpleUpdateError.message);
+            }
+        }
+        
+        userCredits = newBalance;
         updateCreditsUI();
         
         // Create job
@@ -689,8 +833,15 @@ async function submitJob(event) {
         
         if (jobError) {
             // Refund on failure
-            await supabaseClient.rpc('cancel_videoapi_job', { p_job_id: job?.id, p_user_id: user.id });
-            throw new Error('Gagal membuat job');
+            await supabaseClient
+                .from('user_credits')
+                .update({ balance: currentCredits.balance })
+                .eq('user_id', user.id);
+            
+            userCredits = currentCredits.balance;
+            updateCreditsUI();
+            
+            throw new Error('Gagal membuat job: ' + jobError.message);
         }
         
         alert(`✅ Job berhasil dibuat!\n\nModel: ${modelId}\nKredit: ${requiredCredits}\nSisa: ${userCredits}\n\nProses akan memakan waktu 5-15 menit.`);
@@ -864,7 +1015,8 @@ async function fileToBase64(file) {
 }
 
 function resetForm() {
-    document.getElementById('generator-form').reset();
+    const form = document.getElementById('generator-form');
+    if (form) form.reset();
     
     document.querySelectorAll('.upload-preview').forEach(el => {
         el.style.display = 'none';
@@ -883,7 +1035,7 @@ function resetForm() {
 
 async function loadJobs() {
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await getCurrentUser();
         if (!user) return;
         
         const { data: jobs, error } = await supabaseClient
@@ -909,34 +1061,40 @@ function renderJobs() {
     const historyJobs = userJobs.filter(j => ['completed', 'failed', 'cancelled'].includes(j.status));
     
     // Update counts
-    document.getElementById('active-count').textContent = activeJobs.length;
-    document.getElementById('history-count').textContent = historyJobs.length;
+    const activeCount = document.getElementById('active-count');
+    const historyCount = document.getElementById('history-count');
+    if (activeCount) activeCount.textContent = activeJobs.length;
+    if (historyCount) historyCount.textContent = historyJobs.length;
     
     // Render active jobs
     const activeContainer = document.getElementById('active-jobs');
-    if (activeJobs.length === 0) {
-        activeContainer.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">🚀</span>
-                <p>Tidak ada proses berjalan</p>
-                <p class="empty-sub">Submit job baru untuk memulai</p>
-            </div>
-        `;
-    } else {
-        activeContainer.innerHTML = activeJobs.map(job => renderJobCard(job, true)).join('');
+    if (activeContainer) {
+        if (activeJobs.length === 0) {
+            activeContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">🚀</span>
+                    <p>Tidak ada proses berjalan</p>
+                    <p class="empty-sub">Submit job baru untuk memulai</p>
+                </div>
+            `;
+        } else {
+            activeContainer.innerHTML = activeJobs.map(job => renderJobCard(job, true)).join('');
+        }
     }
     
     // Render history
     const historyContainer = document.getElementById('history-jobs');
-    if (historyJobs.length === 0) {
-        historyContainer.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">📁</span>
-                <p>Belum ada riwayat</p>
-            </div>
-        `;
-    } else {
-        historyContainer.innerHTML = historyJobs.map(job => renderJobCard(job, false)).join('');
+    if (historyContainer) {
+        if (historyJobs.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="empty-state">
+                    <span class="empty-icon">📁</span>
+                    <p>Belum ada riwayat</p>
+                </div>
+            `;
+        } else {
+            historyContainer.innerHTML = historyJobs.map(job => renderJobCard(job, false)).join('');
+        }
     }
 }
 
@@ -976,7 +1134,7 @@ function renderJobCard(job, isActive) {
     
     let cancelButton = '';
     if (isActive) {
-        cancelButton = `<button class="btn-cancel-job" onclick="cancelJob('${job.id}')">🛑 Batalkan</button>`;
+        cancelButton = `<button class="btn-cancel-job" onclick="event.stopPropagation(); cancelJob('${job.id}')">🛑 Batalkan</button>`;
     }
     
     return `
@@ -1015,24 +1173,67 @@ async function cancelJob(jobId) {
     }
     
     try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
+        const user = await getCurrentUser();
         if (!user) return;
         
-        const { data, error } = await supabaseClient
-            .rpc('cancel_videoapi_job', {
-                p_job_id: jobId,
-                p_user_id: user.id
-            });
+        // Get job details
+        const { data: job, error: jobError } = await supabaseClient
+            .from('jobs')
+            .select('*')
+            .eq('id', jobId)
+            .eq('user_id', user.id)
+            .single();
         
-        if (error) throw error;
-        
-        if (data?.success) {
-            alert('✅ Job dibatalkan dan kredit dikembalikan');
-            await loadJobs();
-            await loadUserCredits();
-        } else {
-            alert('Gagal: ' + (data?.error || 'Unknown error'));
+        if (jobError || !job) {
+            alert('Job tidak ditemukan');
+            return;
         }
+        
+        if (!['pending', 'processing'].includes(job.status)) {
+            alert('Job ini tidak dapat dibatalkan');
+            return;
+        }
+        
+        const creditsToRefund = job.input_data?.credits_used || 0;
+        
+        // Update job status
+        const { error: updateError } = await supabaseClient
+            .from('jobs')
+            .update({
+                status: 'cancelled',
+                error_message: 'Dibatalkan oleh user',
+                completed_at: new Date().toISOString()
+            })
+            .eq('id', jobId);
+        
+        if (updateError) {
+            throw new Error('Gagal membatalkan job');
+        }
+        
+        // Refund credits
+        if (creditsToRefund > 0) {
+            const { data: currentCredits } = await supabaseClient
+                .from('user_credits')
+                .select('balance, total_refunded')
+                .eq('user_id', user.id)
+                .single();
+            
+            if (currentCredits) {
+                await supabaseClient
+                    .from('user_credits')
+                    .update({
+                        balance: currentCredits.balance + creditsToRefund,
+                        total_refunded: (currentCredits.total_refunded || 0) + creditsToRefund,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('user_id', user.id);
+            }
+        }
+        
+        alert(`✅ Job dibatalkan.\n\n${creditsToRefund} kredit dikembalikan.`);
+        
+        await loadJobs();
+        await loadUserCredits();
         
     } catch (error) {
         console.error('Cancel job error:', error);
@@ -1051,11 +1252,14 @@ function openJobModal(jobId) {
     const input = job.input_data || {};
     const results = typeof job.results === 'string' ? JSON.parse(job.results || '{}') : (job.results || {});
     
-    document.getElementById('modal-title').textContent = input.model_id || 'Job Details';
+    const modalTitle = document.getElementById('modal-title');
+    if (modalTitle) modalTitle.textContent = input.model_id || 'Job Details';
     
     const statusEl = document.getElementById('modal-status');
-    statusEl.textContent = job.status;
-    statusEl.className = 'status-badge status-' + job.status;
+    if (statusEl) {
+        statusEl.textContent = job.status;
+        statusEl.className = 'status-badge status-' + job.status;
+    }
     
     // Progress section
     const progressSection = document.getElementById('modal-progress');
@@ -1063,72 +1267,104 @@ function openJobModal(jobId) {
     const errorSection = document.getElementById('modal-error');
     
     if (job.status === 'completed') {
-        progressSection.style.display = 'none';
-        errorSection.style.display = 'none';
-        resultsSection.style.display = 'block';
+        if (progressSection) progressSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'block';
         
         if (results.video_url) {
-            document.getElementById('modal-video').src = results.video_url;
-            document.getElementById('modal-download').href = results.video_url;
+            const modalVideo = document.getElementById('modal-video');
+            const modalDownload = document.getElementById('modal-download');
+            if (modalVideo) modalVideo.src = results.video_url;
+            if (modalDownload) modalDownload.href = results.video_url;
         }
         
-        document.getElementById('modal-model').textContent = input.model_id || '-';
-        document.getElementById('modal-credits-final').textContent = (input.credits_used || 0) + ' kredit';
+        const modalModel = document.getElementById('modal-model');
+        const modalCreditsFinal = document.getElementById('modal-credits-final');
+        if (modalModel) modalModel.textContent = input.model_id || '-';
+        if (modalCreditsFinal) modalCreditsFinal.textContent = (input.credits_used || 0) + ' kredit';
         
     } else if (job.status === 'failed' || job.status === 'cancelled') {
-        progressSection.style.display = 'none';
-        resultsSection.style.display = 'none';
-        errorSection.style.display = 'block';
+        if (progressSection) progressSection.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'block';
         
-        document.getElementById('modal-error-msg').textContent = job.error_message || 'Unknown error';
+        const modalErrorMsg = document.getElementById('modal-error-msg');
+        if (modalErrorMsg) modalErrorMsg.textContent = job.error_message || 'Unknown error';
         
     } else {
-        progressSection.style.display = 'block';
-        resultsSection.style.display = 'none';
-        errorSection.style.display = 'none';
+        if (progressSection) progressSection.style.display = 'block';
+        if (resultsSection) resultsSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'none';
         
         const progress = job.progress_percent || 0;
-        document.getElementById('modal-progress-fill').style.width = progress + '%';
-        document.getElementById('modal-progress-percent').textContent = progress + '%';
-        document.getElementById('modal-credits-used').textContent = (input.credits_used || 0) + ' kredit';
-        document.getElementById('modal-step').textContent = job.step_name || 'Waiting...';
+        const modalProgressFill = document.getElementById('modal-progress-fill');
+        const modalProgressPercent = document.getElementById('modal-progress-percent');
+        const modalCreditsUsed = document.getElementById('modal-credits-used');
+        const modalStep = document.getElementById('modal-step');
+        
+        if (modalProgressFill) modalProgressFill.style.width = progress + '%';
+        if (modalProgressPercent) modalProgressPercent.textContent = progress + '%';
+        if (modalCreditsUsed) modalCreditsUsed.textContent = (input.credits_used || 0) + ' kredit';
+        if (modalStep) modalStep.textContent = job.step_name || 'Waiting...';
     }
     
-    document.getElementById('job-modal').style.display = 'flex';
+    const jobModal = document.getElementById('job-modal');
+    if (jobModal) jobModal.style.display = 'flex';
 }
 
 function closeJobModal() {
-    document.getElementById('job-modal').style.display = 'none';
-    document.getElementById('modal-video').pause();
+    const jobModal = document.getElementById('job-modal');
+    if (jobModal) jobModal.style.display = 'none';
+    
+    const modalVideo = document.getElementById('modal-video');
+    if (modalVideo) modalVideo.pause();
 }
 
 // ============================================
-// CREDITS MODAL & PURCHASE
+// CREDITS MODAL & PURCHASE - FIXED
 // ============================================
 
 function openCreditsModal() {
     const grid = document.getElementById('packages-grid');
-    grid.innerHTML = CREDIT_PACKAGES.map(pkg => `
-        <div class="package-card ${pkg.popular ? 'popular' : ''} ${pkg.bestValue ? 'best-value' : ''}">
-            ${pkg.popular ? '<span class="package-badge">⭐ Recommended</span>' : ''}
-            ${pkg.bestValue ? '<span class="package-badge best">💎 Best Value</span>' : ''}
-            <h3 class="package-name">${pkg.name}</h3>
-            <div class="package-credits">${pkg.credits.toLocaleString()} Kredit</div>
-            <div class="package-price">Rp ${pkg.price.toLocaleString()}</div>
-            <div class="package-per-credit">Rp ${pkg.pricePerCredit}/kredit</div>
-            <button class="btn-buy-package" onclick="purchaseCredits('${pkg.id}')">Beli Sekarang</button>
-        </div>
-    `).join('');
+    if (grid) {
+        grid.innerHTML = CREDIT_PACKAGES.map(pkg => `
+            <div class="package-card ${pkg.popular ? 'popular' : ''} ${pkg.bestValue ? 'best-value' : ''}">
+                ${pkg.popular ? '<span class="package-badge">⭐ Recommended</span>' : ''}
+                ${pkg.bestValue ? '<span class="package-badge best">💎 Best Value</span>' : ''}
+                <h3 class="package-name">${pkg.name}</h3>
+                <div class="package-credits">${pkg.credits.toLocaleString('id-ID')} Kredit</div>
+                <div class="package-price">Rp ${pkg.price.toLocaleString('id-ID')}</div>
+                <div class="package-per-credit">Rp ${pkg.pricePerCredit}/kredit</div>
+                <button class="btn-buy-package" data-package-id="${pkg.id}">Beli Sekarang</button>
+            </div>
+        `).join('');
+        
+        // Add click handlers to buttons
+        grid.querySelectorAll('.btn-buy-package').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const packageId = btn.dataset.packageId;
+                purchaseCredits(packageId, btn);
+            });
+        });
+    }
     
-    document.getElementById('modal-current-credits').textContent = userCredits.toLocaleString() + ' kredit';
-    document.getElementById('credits-modal').style.display = 'flex';
+    const modalCredits = document.getElementById('modal-current-credits');
+    if (modalCredits) {
+        modalCredits.textContent = userCredits.toLocaleString('id-ID') + ' kredit';
+    }
+    
+    const creditsModal = document.getElementById('credits-modal');
+    if (creditsModal) creditsModal.style.display = 'flex';
 }
 
 function closeCreditsModal() {
-    document.getElementById('credits-modal').style.display = 'none';
+    const creditsModal = document.getElementById('credits-modal');
+    if (creditsModal) creditsModal.style.display = 'none';
 }
 
-async function purchaseCredits(packageId) {
+// FIXED: purchaseCredits now receives button element directly
+async function purchaseCredits(packageId, buttonElement) {
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
@@ -1136,28 +1372,44 @@ async function purchaseCredits(packageId) {
             return;
         }
         
-        const btn = event.target;
+        const btn = buttonElement;
+        const originalText = btn.textContent;
         btn.disabled = true;
         btn.textContent = 'Memproses...';
         
-        // Call edge function to create payment
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-video-credit-payment`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`
-            },
-            body: JSON.stringify({ package_id: packageId })
-        });
-        
-        const result = await response.json();
-        
-        if (!result.success) {
-            throw new Error(result.message || 'Failed to create payment');
+        // Get package info
+        const pkg = CREDIT_PACKAGES.find(p => p.id === packageId);
+        if (!pkg) {
+            throw new Error('Paket tidak ditemukan');
         }
         
-        // Open Midtrans Snap
-        if (window.snap && result.snap_token) {
+        // Check if Midtrans Snap is available
+        if (typeof window.snap === 'undefined') {
+            // Fallback: Manual payment info
+            alert(`💳 Pembayaran Manual\n\nPaket: ${pkg.name}\nKredit: ${pkg.credits}\nHarga: Rp ${pkg.price.toLocaleString('id-ID')}\n\nSilakan hubungi admin untuk menyelesaikan pembayaran.`);
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
+        // Try to call edge function
+        try {
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/create-video-credit-payment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ package_id: packageId })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Gagal membuat pembayaran');
+            }
+            
+            // Open Midtrans Snap
             window.snap.pay(result.snap_token, {
                 onSuccess: async function(result) {
                     alert('🎉 Pembayaran berhasil! Kredit akan ditambahkan.');
@@ -1173,19 +1425,28 @@ async function purchaseCredits(packageId) {
                 },
                 onClose: function() {
                     console.log('Payment popup closed');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
                 }
             });
-        } else if (result.redirect_url) {
-            window.open(result.redirect_url, '_blank');
+            
+        } catch (fetchError) {
+            console.error('Edge function error:', fetchError);
+            // Fallback: Show manual payment info
+            alert(`⚠️ Sistem pembayaran sedang dalam maintenance.\n\nPaket: ${pkg.name}\nKredit: ${pkg.credits}\nHarga: Rp ${pkg.price.toLocaleString('id-ID')}\n\nSilakan hubungi admin untuk menyelesaikan pembayaran.`);
         }
+        
+        btn.disabled = false;
+        btn.textContent = originalText;
         
     } catch (error) {
         console.error('Purchase error:', error);
         alert('Gagal: ' + error.message);
-    } finally {
-        const btn = event.target;
-        btn.disabled = false;
-        btn.textContent = 'Beli Sekarang';
+        
+        if (buttonElement) {
+            buttonElement.disabled = false;
+            buttonElement.textContent = 'Beli Sekarang';
+        }
     }
 }
 
@@ -1208,12 +1469,14 @@ function switchTab(tabName) {
 
 function loadPricingTable() {
     const grid = document.getElementById('pricing-grid');
+    if (!grid) return;
     
     const categories = {
-        'Kling': ['kling-2-5-pro', 'kling-o1-pro-i2v', 'kling-o1-std-i2v', 'kling-o1-pro-ref', 'kling-o1-std-ref', 'kling-2-6-pro', 'kling-2-6-motion-pro', 'kling-2-6-motion-std', 'kling-2-1-pro', 'kling-1-6-pro', 'kling-1-6-std'],
-        'MiniMax': ['minimax-live', 'minimax-hailuo-1080p', 'minimax-hailuo-1080p-fast', 'minimax-hailuo-768p', 'minimax-hailuo-768p-fast'],
+        'Kling Premium': ['kling-2-5-pro', 'kling-o1-pro-i2v', 'kling-o1-pro-ref', 'kling-2-6-pro', 'kling-2-6-motion-pro', 'kling-2-1-pro'],
+        'Kling Standard': ['kling-o1-std-i2v', 'kling-o1-std-ref', 'kling-2-6-motion-std', 'kling-1-6-pro', 'kling-1-6-std'],
+        'MiniMax / Hailuo': ['minimax-live', 'minimax-hailuo-1080p', 'minimax-hailuo-1080p-fast', 'minimax-hailuo-768p', 'minimax-hailuo-768p-fast'],
         'WAN': ['wan-i2v-720p', 'wan-i2v-1080p', 'wan-t2v-720p', 'wan-t2v-1080p'],
-        'Seedance': ['seedance-480p', 'seedance-720p', 'seedance-1080p'],
+        'Seedance (Hemat)': ['seedance-480p', 'seedance-720p', 'seedance-1080p'],
         'LTX': ['ltx-t2v', 'ltx-i2v'],
         'Lainnya': ['runway-gen4', 'omnihuman', 'vfx']
     };
@@ -1277,6 +1540,5 @@ window.closeJobModal = closeJobModal;
 window.cancelJob = cancelJob;
 window.openCreditsModal = openCreditsModal;
 window.closeCreditsModal = closeCreditsModal;
-window.purchaseCredits = purchaseCredits;
 
-console.log('✅ Video API Generator v3.0 loaded');
+console.log('✅ Video API Generator v3.1 loaded');
