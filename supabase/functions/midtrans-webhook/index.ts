@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const MIDTRANS_SERVER_KEY = Deno.env.get("MIDTRANS_SERVER_KEY") || "Mid-server-miTgH21efvE9ucKHvbauulFW";
+const MIDTRANS_SERVER_KEY = Deno.env.get("MIDTRANS_SERVER_KEY") || "Mid-server-7xgnPcTTB7beSXoPywrEHkaV";
 
 async function verifySignature(
   orderId: string,
@@ -73,46 +73,124 @@ serve(async (req) => {
     } else if (transaction_status === "settlement") {
       shouldActivate = true;
     } else if (["deny", "cancel", "expire"].includes(transaction_status)) {
-      await supabase
-        .from("payments")
-        .update({
-          status: "failed",
-          status_message: transaction_status,
-          midtrans_response: body,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("order_id", order_id);
-
-      const { data: payment } = await supabase
-        .from("payments")
-        .select("subscription_id")
-        .eq("order_id", order_id)
-        .single();
-
-      if (payment?.subscription_id) {
+      // Handle failed payment for both subscription and video credits
+      
+      // Check if it's a video credit order
+      if (order_id.startsWith("VCRED-")) {
         await supabase
-          .from("subscriptions")
-          .update({ status: "cancelled", updated_at: new Date().toISOString() })
-          .eq("id", payment.subscription_id);
-      }
+          .from("credit_purchases")
+          .update({
+            status: "failed",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("order_id", order_id);
+        
+        console.log("❌ Video credit payment failed:", order_id);
+      } else {
+        // Original subscription logic
+        await supabase
+          .from("payments")
+          .update({
+            status: "failed",
+            status_message: transaction_status,
+            midtrans_response: body,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("order_id", order_id);
 
-      console.log("❌ Payment failed/cancelled:", order_id);
+        const { data: payment } = await supabase
+          .from("payments")
+          .select("subscription_id")
+          .eq("order_id", order_id)
+          .single();
+
+        if (payment?.subscription_id) {
+          await supabase
+            .from("subscriptions")
+            .update({ status: "cancelled", updated_at: new Date().toISOString() })
+            .eq("id", payment.subscription_id);
+        }
+
+        console.log("❌ Subscription payment failed/cancelled:", order_id);
+      }
     }
 
     if (shouldActivate) {
-      console.log("🎉 Activating subscription for order:", order_id);
-
-      const { error } = await supabase.rpc("activate_subscription", {
-        p_order_id: order_id,
-        p_transaction_id: transaction_id || null,
-        p_payment_type: payment_type || null,
-        p_midtrans_response: body,
-      });
-
-      if (error) {
-        console.error("❌ Failed to activate:", error);
+      // Check if it's a video credit order
+      if (order_id.startsWith("VCRED-")) {
+        console.log("🎉 Processing video credit payment:", order_id);
+        
+        // Get purchase details
+        const { data: purchase, error: purchaseError } = await supabase
+          .from("credit_purchases")
+          .select("*")
+          .eq("order_id", order_id)
+          .single();
+        
+        if (purchaseError || !purchase) {
+          console.error("❌ Purchase not found:", order_id);
+        } else if (purchase.status === "paid") {
+          console.log("⏭️ Already processed:", order_id);
+        } else {
+          // Update purchase status
+          await supabase
+            .from("credit_purchases")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("order_id", order_id);
+          
+          // Add credits to user
+          const { data: currentCredits } = await supabase
+            .from("user_credits")
+            .select("balance, total_purchased")
+            .eq("user_id", purchase.user_id)
+            .single();
+          
+          if (currentCredits) {
+            await supabase
+              .from("user_credits")
+              .update({
+                balance: currentCredits.balance + purchase.credits,
+                total_purchased: (currentCredits.total_purchased || 0) + purchase.credits,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("user_id", purchase.user_id);
+            
+            console.log(`✅ Added ${purchase.credits} credits to user ${purchase.user_id}`);
+          } else {
+            // Create new credit record
+            await supabase
+              .from("user_credits")
+              .insert({
+                user_id: purchase.user_id,
+                balance: purchase.credits,
+                total_purchased: purchase.credits,
+                total_used: 0,
+                total_refunded: 0,
+              });
+            
+            console.log(`✅ Created credits for user ${purchase.user_id} with ${purchase.credits} credits`);
+          }
+        }
       } else {
-        console.log("✅ Subscription activated!");
+        // Original subscription activation logic
+        console.log("🎉 Activating subscription for order:", order_id);
+
+        const { error } = await supabase.rpc("activate_subscription", {
+          p_order_id: order_id,
+          p_transaction_id: transaction_id || null,
+          p_payment_type: payment_type || null,
+          p_midtrans_response: body,
+        });
+
+        if (error) {
+          console.error("❌ Failed to activate subscription:", error);
+        } else {
+          console.log("✅ Subscription activated!");
+        }
       }
     }
 
