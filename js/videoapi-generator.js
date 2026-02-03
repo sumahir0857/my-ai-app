@@ -239,6 +239,82 @@ const MAX_JOBS_PER_USER = 5;
 const POLLING_INTERVAL_MS = 5000;
 
 // ============================================
+// FILE UPLOAD HELPERS
+// ============================================
+
+async function uploadToLitterbox(file, expiry = '24h') {
+    const formData = new FormData();
+    formData.append('reqtype', 'fileupload');
+    formData.append('time', expiry);
+    formData.append('fileToUpload', file);
+    
+    try {
+        const response = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const url = await response.text();
+            if (url.startsWith('http')) {
+                console.log('✅ Uploaded to Litterbox:', url);
+                return url.trim();
+            }
+        }
+    } catch (error) {
+        console.error('Litterbox upload error:', error);
+    }
+    return null;
+}
+
+async function uploadToCatbox(file) {
+    const formData = new FormData();
+    formData.append('reqtype', 'fileupload');
+    formData.append('fileToUpload', file);
+    
+    try {
+        const response = await fetch('https://catbox.moe/user/api.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const url = await response.text();
+            if (url.startsWith('http')) {
+                console.log('✅ Uploaded to Catbox:', url);
+                return url.trim();
+            }
+        }
+    } catch (error) {
+        console.error('Catbox upload error:', error);
+    }
+    return null;
+}
+
+async function uploadFile(file, progressCallback = null) {
+    console.log(`📤 Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)...`);
+    
+    if (progressCallback) progressCallback(10, 'Uploading file...');
+    
+    // Try Litterbox first (24h expiry, good for large files)
+    let url = await uploadToLitterbox(file, '24h');
+    
+    if (!url) {
+        if (progressCallback) progressCallback(50, 'Trying alternate upload...');
+        // Try Catbox as fallback (permanent)
+        url = await uploadToCatbox(file);
+    }
+    
+    if (progressCallback) progressCallback(100, 'Upload complete');
+    
+    if (!url) {
+        throw new Error('Gagal mengupload file. Coba file yang lebih kecil atau format berbeda.');
+    }
+    
+    return url;
+}
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
