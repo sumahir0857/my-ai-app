@@ -1360,6 +1360,7 @@ function closeCreditsModal() {
 }
 
 // FIXED: purchaseCredits now receives button element directly
+// FIXED: purchaseCredits menggunakan create-payment yang sudah ada
 async function purchaseCredits(packageId, buttonElement) {
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1379,61 +1380,126 @@ async function purchaseCredits(packageId, buttonElement) {
             throw new Error('Paket tidak ditemukan');
         }
         
+        // Generate order ID
+        const orderId = 'VCRED-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        
+        // Create pending purchase record first
+        const { error: insertError } = await supabaseClient
+            .from('credit_purchases')
+            .insert({
+                user_id: session.user.id,
+                order_id: orderId,
+                package_id: packageId,
+                amount_idr: pkg.price,
+                credits: pkg.credits,
+                status: 'pending'
+            });
+        
+        if (insertError) {
+            console.warn('Could not save purchase record:', insertError);
+            // Continue anyway - we can still process payment
+        }
+        
         // Check if Midtrans Snap is available
         if (typeof window.snap === 'undefined') {
-            // Fallback: Manual payment info
-            alert(`💳 Pembayaran Manual\n\nPaket: ${pkg.name}\nKredit: ${pkg.credits}\nHarga: Rp ${pkg.price.toLocaleString('id-ID')}\n\nSilakan hubungi admin untuk menyelesaikan pembayaran.`);
+            alert(`💳 Midtrans belum dimuat.\n\nSilakan refresh halaman dan coba lagi.`);
             btn.disabled = false;
             btn.textContent = originalText;
             return;
         }
         
-        // Try to call edge function
-        try {
-            const response = await fetch(`${SUPABASE_URL}/functions/v1/create-video-credit-payment`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({ package_id: packageId })
-            });
-            
-            const result = await response.json();
-            
-            if (!result.success) {
-                throw new Error(result.message || 'Gagal membuat pembayaran');
-            }
-            
-            // Open Midtrans Snap
-            window.snap.pay(result.snap_token, {
-                onSuccess: async function(result) {
-                    alert('🎉 Pembayaran berhasil! Kredit akan ditambahkan.');
-                    closeCreditsModal();
-                    await loadUserCredits();
-                },
-                onPending: function(result) {
-                    alert('⏳ Menunggu pembayaran...\nSilakan selesaikan pembayaran Anda.');
-                    closeCreditsModal();
-                },
-                onError: function(result) {
-                    alert('❌ Pembayaran gagal. Silakan coba lagi.');
-                },
-                onClose: function() {
-                    console.log('Payment popup closed');
-                    btn.disabled = false;
-                    btn.textContent = originalText;
-                }
-            });
-            
-        } catch (fetchError) {
-            console.error('Edge function error:', fetchError);
-            // Fallback: Show manual payment info
-            alert(`⚠️ Sistem pembayaran sedang dalam maintenance.\n\nPaket: ${pkg.name}\nKredit: ${pkg.credits}\nHarga: Rp ${pkg.price.toLocaleString('id-ID')}\n\nSilakan hubungi admin untuk menyelesaikan pembayaran.`);
+        // Use existing create-payment edge function
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+                'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ 
+                plan_id: 'video-credit-' + packageId,
+                order_id: orderId,
+                amount: pkg.price,
+                plan_name: `Video Credits ${pkg.name} (${pkg.credits} kredit)`
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Payment API error:', response.status, errorText);
+            throw new Error('Gagal membuat pembayaran');
         }
         
-        btn.disabled = false;
-        btn.textContent = originalText;
+        const result = await response.json();
+        
+        if (!result.success || !result.snap_token) {
+            throw new Error(result.message || 'Gagal mendapatkan token pembayaran');
+        }
+        
+        // Update purchase with snap token
+        await supabaseClient
+            .from('credit_purchases')
+            .update({ snap_token: result.snap_token })
+            .eq('order_id', orderId);
+        
+        // Open Midtrans Snap
+        window.snap.pay(result.snap_token, {
+            onSuccess: async function(paymentResult) {
+                console.log('Payment success:', paymentResult);
+                
+                // Add credits to user
+                const { data: currentCredits } = await supabaseClient
+                    .from('user_credits')
+                    .select('balance, total_purchased')
+                    .eq('user_id', session.user.id)
+                    .single();
+                
+                if (currentCredits) {
+                    await supabaseClient
+                        .from('user_credits')
+                        .update({
+                            balance: currentCredits.balance + pkg.credits,
+                            total_purchased: (currentCredits.total_purchased || 0) + pkg.credits,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('user_id', session.user.id);
+                }
+                
+                // Update purchase status
+                await supabaseClient
+                    .from('credit_purchases')
+                    .update({ 
+                        status: 'paid',
+                        paid_at: new Date().toISOString()
+                    })
+                    .eq('order_id', orderId);
+                
+                alert(`🎉 Pembayaran berhasil!\n\n+${pkg.credits} kredit telah ditambahkan ke akun Anda.`);
+                closeCreditsModal();
+                await loadUserCredits();
+            },
+            onPending: function(pendingResult) {
+                console.log('Payment pending:', pendingResult);
+                alert('⏳ Menunggu pembayaran...\n\nSilakan selesaikan pembayaran Anda.\nKredit akan ditambahkan otomatis setelah pembayaran dikonfirmasi.');
+                closeCreditsModal();
+            },
+            onError: function(errorResult) {
+                console.error('Payment error:', errorResult);
+                
+                // Update purchase status
+                supabaseClient
+                    .from('credit_purchases')
+                    .update({ status: 'failed' })
+                    .eq('order_id', orderId);
+                
+                alert('❌ Pembayaran gagal.\n\nSilakan coba lagi.');
+            },
+            onClose: function() {
+                console.log('Payment popup closed');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
         
     } catch (error) {
         console.error('Purchase error:', error);
