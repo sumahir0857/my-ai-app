@@ -827,3 +827,25 @@ select optgroup {
     .stats-bar { justify-content: space-between; }
     .stat-item { flex: 1; min-width: 80px; }
 }
+
+/* Job Footer */
+.job-footer {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    font-size: 0.75rem;
+}
+
+.job-time {
+    color: #94a3b8;
+}
+
+.job-time.warning {
+    color: #f59e0b;
+}
+
+.job-note {
+    color: #22c55e;
+}
