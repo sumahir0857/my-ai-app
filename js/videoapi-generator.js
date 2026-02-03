@@ -1,283 +1,372 @@
 // ============================================
-// VIDEO API GENERATOR v2.0 - FULL MODELS
+// VIDEO API GENERATOR v3.0 - FULL REWRITE
 // ============================================
 
 let pollingInterval = null;
 let userJobs = [];
 let userCredits = 0;
+let userStats = {};
+let isNewUser = false;
 
 // ============================================
-// MODEL CONFIGURATIONS - SEMUA MODEL!
+// MODEL PRICING (Updated)
+// ============================================
+
+const MODEL_PRICING = {
+    // Kling
+    "kling-2-5-pro": 38,
+    "kling-o1-pro-i2v": 56,
+    "kling-o1-std-i2v": 42,
+    "kling-o1-pro-ref": 84,
+    "kling-o1-std-ref": 63,
+    "kling-2-6-pro": 35,
+    "kling-2-6-motion-pro": 70,
+    "kling-2-6-motion-std": 35,
+    "kling-2-1-pro": 50,
+    "kling-1-6-pro": 51,
+    "kling-1-6-std": 30,
+    // MiniMax
+    "minimax-live": 50,
+    "minimax-hailuo-1080p": 49,
+    "minimax-hailuo-1080p-fast": 33,
+    "minimax-hailuo-768p": 28,
+    "minimax-hailuo-768p-fast": 19,
+    // WAN
+    "wan-i2v-720p": 50,
+    "wan-i2v-1080p": 75,
+    "wan-t2v-720p": 50,
+    "wan-t2v-1080p": 75,
+    // Seedance
+    "seedance-480p": 13,
+    "seedance-720p": 28,
+    "seedance-1080p": 31,
+    // LTX
+    "ltx-t2v": 30,
+    "ltx-i2v": 30,
+    // Others
+    "runway-gen4": 75,
+    "omnihuman": 81,
+    "vfx": 9,
+};
+
+// ============================================
+// CREDIT PACKAGES
+// ============================================
+
+const CREDIT_PACKAGES = [
+    { id: 'starter', name: 'Starter', credits: 500, price: 25000, pricePerCredit: 50 },
+    { id: 'creator', name: 'Creator', credits: 1000, price: 45000, pricePerCredit: 45 },
+    { id: 'pro', name: 'Pro', credits: 2500, price: 100000, pricePerCredit: 40, popular: true },
+    { id: 'studio', name: 'Studio', credits: 5000, price: 180000, pricePerCredit: 36, bestValue: true },
+];
+
+// ============================================
+// MODEL CONFIGURATIONS
 // ============================================
 
 const MODEL_CONFIGS = {
-    // ==================== KLING ====================
+    // Kling Models
     'kling-2-5-pro': {
         type: 'image_to_video',
-        credits: { 5: 15, 10: 28 },
         desc: 'Model terbaru dengan kualitas tinggi',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true, showDurationStd: true
+        showImage: true, showImageTail: true, showNegative: true, showCfg: true
     },
     'kling-2-6-pro': {
         type: 'kling_2_6',
-        credits: { 5: 18, 10: 32 },
         desc: 'Text/Image to Video dengan audio generation',
-        showImage: true, showNegative: true, showCfg: true, showDurationStd: true, 
+        showImage: true, showNegative: true, showCfg: true, 
         showAspectKling26: true, showGenerateAudio: true
     },
     'kling-2-1-pro': {
         type: 'image_to_video',
-        credits: { 5: 14, 10: 26 },
         desc: 'Model 2.1 Pro',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true, showDurationStd: true
+        showImage: true, showImageTail: true, showNegative: true, showCfg: true
     },
     'kling-1-6-pro': {
         type: 'image_to_video',
-        credits: { 5: 10, 10: 18 },
         desc: 'Model klasik dengan kualitas pro',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true, showDurationStd: true
+        showImage: true, showImageTail: true, showNegative: true, showCfg: true
     },
     'kling-1-6-std': {
         type: 'image_to_video',
-        credits: { 5: 6, 10: 11 },
         desc: 'Model hemat biaya',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true, showDurationStd: true
+        showImage: true, showImageTail: true, showNegative: true, showCfg: true
     },
     'kling-o1-pro-i2v': {
         type: 'kling_o1',
-        credits: { 5: 20, 10: 35 },
         desc: 'Kling O1 Pro - Image to Video dengan first/last frame',
-        showFrames: true, showDurationStd: true, showAspectRatio: true
+        showFrames: true, showAspectRatio: true
     },
     'kling-o1-std-i2v': {
         type: 'kling_o1',
-        credits: { 5: 12, 10: 22 },
         desc: 'Kling O1 Standard - Image to Video',
-        showFrames: true, showDurationStd: true, showAspectRatio: true
+        showFrames: true, showAspectRatio: true
     },
     'kling-o1-pro-ref': {
         type: 'kling_o1_reference',
-        credits: { 5: 22, 10: 40 },
         desc: 'Video Reference dengan max 7 gambar referensi',
-        showRefImages: true, showDurationStd: true, showAspectRatio: true
+        showRefImages: true, showAspectRatio: true
     },
     'kling-o1-std-ref': {
         type: 'kling_o1_reference',
-        credits: { 5: 14, 10: 25 },
         desc: 'Video Reference Standard',
-        showRefImages: true, showDurationStd: true, showAspectRatio: true
+        showRefImages: true, showAspectRatio: true
     },
     'kling-2-6-motion-pro': {
         type: 'kling_2_6_motion',
-        credits: { 5: 25, 10: 25 },
         desc: 'Motion Control - Character Image + Motion Video',
         showMotion: true, showCfg: true
     },
     'kling-2-6-motion-std': {
         type: 'kling_2_6_motion',
-        credits: { 5: 16, 10: 16 },
         desc: 'Motion Control Standard',
         showMotion: true, showCfg: true
     },
     
-    // ==================== MINIMAX ====================
+    // MiniMax Models
     'minimax-live': {
         type: 'minimax_live',
-        credits: { 5: 18, 10: 18 },
         desc: 'MiniMax Live Mode',
         showImage: true, showPromptOptimizer: true
     },
     'minimax-hailuo-1080p': {
         type: 'minimax_hailuo',
-        credits: { 6: 20 },
         desc: 'Hailuo 1080p - 6 detik',
-        showFrames: true, showDurationHailuo: true, showPromptOptimizer: true
+        showFrames: true, showPromptOptimizer: true
     },
     'minimax-hailuo-1080p-fast': {
         type: 'minimax_hailuo',
-        credits: { 6: 22 },
         desc: 'Hailuo 1080p Fast',
-        showFrames: true, showDurationHailuo: true, showPromptOptimizer: true
+        showFrames: true, showPromptOptimizer: true
     },
     'minimax-hailuo-768p': {
         type: 'minimax_hailuo',
-        credits: { 6: 12 },
         desc: 'Hailuo 768p - 6 detik',
-        showFrames: true, showDurationHailuo: true, showPromptOptimizer: true
+        showFrames: true, showPromptOptimizer: true
     },
     'minimax-hailuo-768p-fast': {
         type: 'minimax_hailuo',
-        credits: { 6: 14 },
         desc: 'Hailuo 768p Fast',
-        showFrames: true, showDurationHailuo: true, showPromptOptimizer: true
+        showFrames: true, showPromptOptimizer: true
     },
     
-    // ==================== WAN ====================
+    // WAN Models
     'wan-i2v-720p': {
         type: 'wan_i2v',
-        credits: { 5: 8, 10: 15, 15: 22 },
         desc: 'WAN Image to Video 720p',
-        showImage: true, showNegative: true, showDurationWan: true, showWanSize: true,
+        showImage: true, showNegative: true, showWanSize: true,
         showPromptExpansion: true, showShotType: true, showSeed: true
     },
     'wan-i2v-1080p': {
         type: 'wan_i2v',
-        credits: { 5: 12, 10: 22, 15: 32 },
         desc: 'WAN Image to Video 1080p',
-        showImage: true, showNegative: true, showDurationWan: true, showWanSize: true,
+        showImage: true, showNegative: true, showWanSize: true,
         showPromptExpansion: true, showShotType: true, showSeed: true
     },
     'wan-t2v-720p': {
         type: 'wan_t2v',
-        credits: { 5: 6, 10: 11, 15: 16 },
         desc: 'WAN Text to Video 720p',
-        showNegative: true, showDurationWan: true, showWanSize: true,
+        showNegative: true, showWanSize: true,
         showPromptExpansion: true, showShotType: true, showSeed: true
     },
     'wan-t2v-1080p': {
         type: 'wan_t2v',
-        credits: { 5: 10, 10: 18, 15: 26 },
         desc: 'WAN Text to Video 1080p',
-        showNegative: true, showDurationWan: true, showWanSize: true,
+        showNegative: true, showWanSize: true,
         showPromptExpansion: true, showShotType: true, showSeed: true
     },
     
-    // ==================== SEEDANCE ====================
+    // Seedance Models
     'seedance-480p': {
         type: 'seedance',
-        credits: { 5: 5, 10: 9, 12: 13 },
-        desc: 'Seedance 480p (4-12 detik)',
-        showImage: true, showDurationSeedance: true, showAspectSeedance: true,
+        desc: 'Seedance 480p - paling hemat',
+        showImage: true, showAspectSeedance: true,
         showGenerateAudio: true, showCameraFixed: true, showSeed: true
     },
     'seedance-720p': {
         type: 'seedance',
-        credits: { 5: 8, 10: 15, 12: 22 },
         desc: 'Seedance 720p',
-        showImage: true, showDurationSeedance: true, showAspectSeedance: true,
+        showImage: true, showAspectSeedance: true,
         showGenerateAudio: true, showCameraFixed: true, showSeed: true
     },
     'seedance-1080p': {
         type: 'seedance',
-        credits: { 5: 14, 10: 26, 12: 38 },
         desc: 'Seedance 1080p',
-        showImage: true, showDurationSeedance: true, showAspectSeedance: true,
+        showImage: true, showAspectSeedance: true,
         showGenerateAudio: true, showCameraFixed: true, showSeed: true
     },
     
-    // ==================== LTX ====================
+    // LTX Models
     'ltx-t2v': {
         type: 'ltx_t2v',
-        credits: { 6: 8, 10: 15 },
         desc: 'LTX Text to Video',
-        showDurationLtx: true, showLtxResolution: true, showGenerateAudio: true, showFps: true, showSeed: true
+        showLtxResolution: true, showGenerateAudio: true, showFps: true, showSeed: true
     },
     'ltx-i2v': {
         type: 'ltx_i2v',
-        credits: { 6: 10, 10: 18 },
         desc: 'LTX Image to Video',
-        showImage: true, showDurationLtx: true, showLtxResolution: true, 
+        showImage: true, showLtxResolution: true, 
         showGenerateAudio: true, showFps: true, showSeed: true
     },
     
-    // ==================== RUNWAY ====================
+    // RunWay
     'runway-gen4': {
         type: 'runway',
-        credits: { 5: 20, 10: 35 },
         desc: 'RunWay Gen4 Turbo',
-        showImage: true, showDurationRunway: true, showRunwayRatio: true, showSeed: true
+        showImage: true, showRunwayRatio: true, showSeed: true
     },
     
-    // ==================== OMNIHUMAN ====================
+    // OmniHuman
     'omnihuman': {
         type: 'omnihuman',
-        credits: { 5: 25 },
         desc: 'OmniHuman - Portrait animation dengan audio',
         showOmnihuman: true
     },
     
-    // ==================== VFX ====================
+    // VFX
     'vfx': {
         type: 'vfx',
-        credits: { 5: 5 },
         desc: 'Apply visual effects ke video',
         showVfx: true, noPrompt: true
     }
 };
 
 // ============================================
+// CONSTANTS
+// ============================================
+
+const MAX_JOBS_PER_USER = 5;
+const POLLING_INTERVAL_MS = 5000;
+const JOB_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+// ============================================
 // INITIALIZATION
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🎬 Video API Generator v2.0 loading...');
+    console.log('🎬 Video API Generator v3.0 loading...');
     
     const isLoggedIn = await checkAuth();
     
     if (isLoggedIn) {
         showGeneratorUI();
-        await loadUserCredits();
-        await loadJobs();
+        await initializeUser();
+        setupEventListeners();
         startPolling();
     } else {
         showLoginUI();
     }
-    
-    setupEventListeners();
-    updateModelUI();
 });
+
+async function checkAuth() {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        return !!session;
+    } catch (error) {
+        console.error('Auth check error:', error);
+        return false;
+    }
+}
 
 function showLoginUI() {
     document.getElementById('login-section').style.display = 'flex';
     document.getElementById('generator-section').style.display = 'none';
+    
+    document.getElementById('btn-login-google').addEventListener('click', async () => {
+        try {
+            await supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: { redirectTo: window.location.href }
+            });
+        } catch (error) {
+            alert('Login gagal: ' + error.message);
+        }
+    });
 }
 
 function showGeneratorUI() {
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('generator-section').style.display = 'block';
-    
-    const user = getCurrentUser();
-    if (user) {
-        document.getElementById('user-avatar').src = user.user_metadata?.avatar_url || 
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email)}&background=6366f1&color=fff`;
-        document.getElementById('user-name').textContent = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+}
+
+function getCurrentUser() {
+    return supabaseClient.auth.getUser().then(({ data }) => data.user).catch(() => null);
+}
+
+// ============================================
+// INITIALIZE USER (with free trial check)
+// ============================================
+
+async function initializeUser() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        
+        // Update UI with user info
+        document.getElementById('user-name').textContent = user.user_metadata?.full_name || user.email;
+        document.getElementById('user-avatar').src = user.user_metadata?.avatar_url || '';
+        
+        // Get or create user credits (includes free trial for new users)
+        const { data: creditData, error } = await supabaseClient
+            .rpc('get_or_create_user_credits', { p_user_id: user.id });
+        
+        if (error) {
+            console.error('Credit init error:', error);
+            return;
+        }
+        
+        userCredits = creditData.balance || 0;
+        userStats = creditData;
+        isNewUser = creditData.is_new_user || false;
+        
+        updateCreditsUI();
+        
+        // Show welcome message for new users
+        if (isNewUser) {
+            setTimeout(() => {
+                alert(`🎉 Selamat datang!\n\nAnda mendapat 50 kredit GRATIS untuk mencoba layanan kami.\n\nCobalah model Seedance 480p (13 kredit) atau VFX (9 kredit) untuk memulai!`);
+            }, 1000);
+        }
+        
+        // Load jobs
+        await loadJobs();
+        
+    } catch (error) {
+        console.error('Initialize user error:', error);
     }
 }
 
 // ============================================
-// LOAD USER CREDITS
+// CREDITS UI
 // ============================================
+
+function updateCreditsUI() {
+    document.getElementById('user-credits').textContent = userCredits.toLocaleString();
+    document.getElementById('stat-credits').textContent = userCredits.toLocaleString();
+    document.getElementById('stat-used').textContent = (userStats.total_used || 0).toLocaleString();
+    document.getElementById('stat-refunded').textContent = (userStats.total_refunded || 0).toLocaleString();
+    
+    if (document.getElementById('modal-current-credits')) {
+        document.getElementById('modal-current-credits').textContent = userCredits.toLocaleString() + ' kredit';
+    }
+}
 
 async function loadUserCredits() {
     try {
-        const user = getCurrentUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
-        const { data, error } = await supabaseClient
-            .from('user_credits')
-            .select('*')
-            .eq('user_id', user.id)
-            .single();
+        const { data } = await supabaseClient
+            .rpc('get_videoapi_user_stats', { p_user_id: user.id });
         
-        if (error && error.code === 'PGRST116') {
-            await supabaseClient.from('user_credits').insert({ user_id: user.id, balance: 0 });
-            userCredits = 0;
-        } else if (data) {
+        if (data) {
             userCredits = data.balance || 0;
-            updateCreditsUI(data);
+            userStats = data;
+            updateCreditsUI();
         }
     } catch (error) {
-        console.error('❌ Load credits error:', error);
+        console.error('Load credits error:', error);
     }
-}
-
-function updateCreditsUI(data) {
-    document.getElementById('user-credits').textContent = data?.balance || 0;
-    document.getElementById('stat-credits').textContent = data?.balance || 0;
-    document.getElementById('stat-used').textContent = data?.total_used || 0;
-    document.getElementById('stat-refunded').textContent = data?.total_refunded || 0;
-    document.getElementById('modal-current-credits').textContent = `${data?.balance || 0} kredit`;
-    userCredits = data?.balance || 0;
 }
 
 // ============================================
@@ -287,119 +376,103 @@ function updateCreditsUI(data) {
 function updateModelUI() {
     const modelId = document.getElementById('input-model').value;
     const config = MODEL_CONFIGS[modelId];
+    const credits = MODEL_PRICING[modelId] || 30;
     
     if (!config) return;
     
-    // Update description
-    document.getElementById('model-desc').textContent = config.desc || '';
-    
-    // Calculate credits
-    const duration = getCurrentDuration(modelId);
-    const credits = getCreditsForDuration(modelId, duration);
+    // Update credits display
     document.getElementById('estimated-credits').textContent = credits;
     document.getElementById('total-credits').textContent = credits;
+    document.getElementById('model-desc').textContent = config.desc || '';
     
     // Hide all optional sections
-    hideAllOptionalSections();
-    
-    // Show sections based on config
-    if (config.showImage) show('section-image');
-    if (config.showImageTail) show('group-image-tail');
-    if (config.showFrames) show('section-frames');
-    if (config.showRefImages) show('section-ref-images');
-    if (config.showMotion) show('section-motion');
-    if (config.showOmnihuman) show('section-omnihuman');
-    if (config.showVfx) show('section-vfx');
-    
-    // Prompt section
-    if (config.noPrompt) {
-        hide('section-prompt');
-    } else {
-        show('section-prompt');
-    }
-    
-    if (config.showNegative) show('group-negative-prompt');
-    
-    // Duration controls
-    if (config.showDurationStd) show('group-duration-std');
-    if (config.showDurationHailuo) show('group-duration-hailuo');
-    if (config.showDurationWan) show('group-duration-wan');
-    if (config.showDurationSeedance) show('group-duration-seedance');
-    if (config.showDurationLtx) show('group-duration-ltx');
-    if (config.showDurationRunway) show('group-duration-runway');
-    
-    // Aspect ratio controls
-    if (config.showAspectRatio) show('group-aspect-ratio');
-    if (config.showAspectKling26) show('group-aspect-ratio-kling26');
-    if (config.showAspectSeedance) show('group-aspect-ratio-seedance');
-    if (config.showRunwayRatio) show('group-runway-ratio');
-    if (config.showWanSize) show('group-wan-size');
-    if (config.showLtxResolution) show('group-ltx-resolution');
-    
-    // Other controls
-    if (config.showCfg) show('group-cfg-scale');
-    if (config.showSeed) show('group-seed');
-    if (config.showFps) show('group-fps');
-    
-    // Checkboxes
-    if (config.showGenerateAudio) show('check-generate-audio');
-    if (config.showPromptOptimizer) show('check-prompt-optimizer');
-    if (config.showPromptExpansion) show('check-prompt-expansion');
-    if (config.showCameraFixed) show('check-camera-fixed');
-    if (config.showShotType) show('group-shot-type');
-}
-
-function hideAllOptionalSections() {
     const sections = [
-        'section-image', 'group-image-tail', 'section-frames', 'section-ref-images',
+        'section-image', 'section-frames', 'section-ref-images', 
         'section-motion', 'section-omnihuman', 'section-vfx',
-        'group-negative-prompt', 'group-duration-std', 'group-duration-hailuo',
-        'group-duration-wan', 'group-duration-seedance', 'group-duration-ltx',
-        'group-duration-runway', 'group-aspect-ratio', 'group-aspect-ratio-kling26',
-        'group-aspect-ratio-seedance', 'group-runway-ratio', 'group-wan-size',
-        'group-ltx-resolution', 'group-cfg-scale', 'group-seed', 'group-fps',
+        'group-image-tail', 'group-negative-prompt', 'group-cfg-scale',
+        'group-aspect-ratio', 'group-aspect-ratio-kling26', 'group-aspect-ratio-seedance',
+        'group-runway-ratio', 'group-wan-size', 'group-ltx-resolution',
+        'group-seed', 'group-fps',
         'check-generate-audio', 'check-prompt-optimizer', 'check-prompt-expansion',
         'check-camera-fixed', 'group-shot-type'
     ];
-    sections.forEach(id => hide(id));
-}
-
-function show(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = '';
-}
-
-function hide(id) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'none';
-}
-
-function getCurrentDuration(modelId) {
-    const config = MODEL_CONFIGS[modelId];
-    if (!config) return 5;
     
-    if (config.showDurationHailuo) return 6;
-    if (config.showDurationWan) return parseInt(document.getElementById('input-duration-wan').value) || 5;
-    if (config.showDurationSeedance) return parseInt(document.getElementById('input-duration-seedance').value) || 5;
-    if (config.showDurationLtx) return parseInt(document.getElementById('input-duration-ltx').value) || 6;
-    if (config.showDurationRunway) return parseInt(document.getElementById('input-duration-runway').value) || 10;
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
     
-    return parseInt(document.getElementById('input-duration').value) || 5;
-}
-
-function getCreditsForDuration(modelId, duration) {
-    const config = MODEL_CONFIGS[modelId];
-    if (!config || !config.credits) return 10;
+    // Show prompt section unless noPrompt
+    document.getElementById('section-prompt').style.display = config.noPrompt ? 'none' : 'block';
     
-    // Find closest duration
-    const durations = Object.keys(config.credits).map(Number).sort((a, b) => a - b);
-    let selectedDur = durations[0];
-    
-    for (const dur of durations) {
-        if (duration >= dur) selectedDur = dur;
+    // Show relevant sections based on config
+    if (config.showImage) {
+        document.getElementById('section-image').style.display = 'block';
+        document.getElementById('group-image').style.display = 'block';
     }
-    
-    return config.credits[selectedDur] || 10;
+    if (config.showImageTail) {
+        document.getElementById('group-image-tail').style.display = 'block';
+    }
+    if (config.showNegative) {
+        document.getElementById('group-negative-prompt').style.display = 'block';
+    }
+    if (config.showCfg) {
+        document.getElementById('group-cfg-scale').style.display = 'block';
+    }
+    if (config.showFrames) {
+        document.getElementById('section-frames').style.display = 'block';
+    }
+    if (config.showRefImages) {
+        document.getElementById('section-ref-images').style.display = 'block';
+    }
+    if (config.showMotion) {
+        document.getElementById('section-motion').style.display = 'block';
+    }
+    if (config.showOmnihuman) {
+        document.getElementById('section-omnihuman').style.display = 'block';
+    }
+    if (config.showVfx) {
+        document.getElementById('section-vfx').style.display = 'block';
+    }
+    if (config.showAspectRatio) {
+        document.getElementById('group-aspect-ratio').style.display = 'block';
+    }
+    if (config.showAspectKling26) {
+        document.getElementById('group-aspect-ratio-kling26').style.display = 'block';
+    }
+    if (config.showAspectSeedance) {
+        document.getElementById('group-aspect-ratio-seedance').style.display = 'block';
+    }
+    if (config.showRunwayRatio) {
+        document.getElementById('group-runway-ratio').style.display = 'block';
+    }
+    if (config.showWanSize) {
+        document.getElementById('group-wan-size').style.display = 'block';
+    }
+    if (config.showLtxResolution) {
+        document.getElementById('group-ltx-resolution').style.display = 'block';
+    }
+    if (config.showSeed) {
+        document.getElementById('group-seed').style.display = 'block';
+    }
+    if (config.showFps) {
+        document.getElementById('group-fps').style.display = 'block';
+    }
+    if (config.showGenerateAudio) {
+        document.getElementById('check-generate-audio').style.display = 'flex';
+    }
+    if (config.showPromptOptimizer) {
+        document.getElementById('check-prompt-optimizer').style.display = 'flex';
+    }
+    if (config.showPromptExpansion) {
+        document.getElementById('check-prompt-expansion').style.display = 'flex';
+    }
+    if (config.showCameraFixed) {
+        document.getElementById('check-camera-fixed').style.display = 'flex';
+    }
+    if (config.showShotType) {
+        document.getElementById('group-shot-type').style.display = 'block';
+    }
 }
 
 // ============================================
@@ -410,170 +483,125 @@ function setupEventListeners() {
     // Model change
     document.getElementById('input-model').addEventListener('change', updateModelUI);
     
-    // Duration changes
-    ['input-duration', 'input-duration-wan', 'input-duration-seedance', 
-     'input-duration-ltx', 'input-duration-runway'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener('change', updateModelUI);
-    });
-    
-    // Seedance duration slider
-    const seedanceDur = document.getElementById('input-duration-seedance');
-    if (seedanceDur) {
-        seedanceDur.addEventListener('input', (e) => {
-            document.getElementById('seedance-dur-value').textContent = e.target.value;
-            updateModelUI();
-        });
-    }
+    // Initialize model UI
+    updateModelUI();
     
     // CFG slider
     const cfgSlider = document.getElementById('input-cfg');
     if (cfgSlider) {
-        cfgSlider.addEventListener('input', (e) => {
-            document.getElementById('cfg-value').textContent = e.target.value;
+        cfgSlider.addEventListener('input', () => {
+            document.getElementById('cfg-value').textContent = cfgSlider.value;
         });
     }
     
-    // Bloom contrast
-    const bloomSlider = document.getElementById('input-bloom-contrast');
-    if (bloomSlider) {
-        bloomSlider.addEventListener('input', (e) => {
-            document.getElementById('bloom-value').textContent = e.target.value;
-        });
-    }
-    
-    // Motion decay
-    const decaySlider = document.getElementById('input-motion-decay');
-    if (decaySlider) {
-        decaySlider.addEventListener('input', (e) => {
-            document.getElementById('decay-value').textContent = e.target.value;
-        });
-    }
-    
-    // VFX filter type change
-    const filterType = document.getElementById('input-filter-type');
-    if (filterType) {
-        filterType.addEventListener('change', (e) => {
-            const val = parseInt(e.target.value);
-            document.getElementById('group-bloom-contrast').style.display = val === 7 ? '' : 'none';
-            document.getElementById('group-motion-blur').style.display = val === 2 ? '' : 'none';
-        });
-    }
-    
-    // File inputs
-    setupFileInput('input-image', 'preview-image', 'btn-remove-image');
-    setupFileInput('input-image-tail', 'preview-image-tail', 'btn-remove-image-tail');
-    setupFileInput('input-first-frame', 'preview-first-frame');
-    setupFileInput('input-last-frame', 'preview-last-frame');
-    setupFileInput('input-motion-image', 'preview-motion-image');
-    setupFileInput('input-omni-image', 'preview-omni-image');
-    
-    // Video inputs
-    setupVideoInput('input-motion-video', 'preview-motion-video');
-    setupVideoInput('input-vfx-video', 'preview-vfx-video');
-    
-    // Audio input
-    setupAudioInput('input-omni-audio', 'preview-omni-audio');
+    // File uploads with preview
+    setupFileUpload('input-image', 'preview-image', 'btn-remove-image');
+    setupFileUpload('input-image-tail', 'preview-image-tail', 'btn-remove-image-tail');
+    setupFileUpload('input-first-frame', 'preview-first-frame');
+    setupFileUpload('input-last-frame', 'preview-last-frame');
+    setupFileUpload('input-motion-image', 'preview-motion-image');
+    setupFileUpload('input-motion-video', 'preview-motion-video', null, true);
+    setupFileUpload('input-omni-image', 'preview-omni-image');
+    setupFileUpload('input-omni-audio', 'preview-omni-audio', null, false, true);
+    setupFileUpload('input-vfx-video', 'preview-vfx-video', null, true);
     
     // Reference images
     for (let i = 1; i <= 7; i++) {
-        setupFileInput(`input-ref-${i}`, `preview-ref-${i}`);
+        setupFileUpload(`input-ref-${i}`, `preview-ref-${i}`);
     }
     
-    // Form submit
-    document.getElementById('generator-form').addEventListener('submit', submitJob);
-    
-    // Tabs
+    // Tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
     
-    // Modals
+    // Form submit
+    document.getElementById('generator-form').addEventListener('submit', submitJob);
+    
+    // Buy credits button
+    document.getElementById('btn-buy-credits').addEventListener('click', openCreditsModal);
+    
+    // Logout
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        window.location.reload();
+    });
+    
+    // Modal close
     document.getElementById('btn-close-modal').addEventListener('click', closeJobModal);
     document.getElementById('job-modal').addEventListener('click', (e) => {
         if (e.target.id === 'job-modal') closeJobModal();
     });
-    document.getElementById('credits-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'credits-modal') closeCreditsModal();
-    });
     
-    // Buy credits
-    document.getElementById('btn-buy-credits').addEventListener('click', openCreditsModal);
+    // VFX filter change
+    const filterSelect = document.getElementById('input-filter-type');
+    if (filterSelect) {
+        filterSelect.addEventListener('change', () => {
+            const filterType = parseInt(filterSelect.value);
+            document.getElementById('group-bloom-contrast').style.display = filterType === 7 ? 'block' : 'none';
+            document.getElementById('group-motion-blur').style.display = filterType === 2 ? 'block' : 'none';
+        });
+    }
     
-    // Auth buttons
-    document.getElementById('btn-logout').addEventListener('click', logout);
-    document.getElementById('btn-login-google').addEventListener('click', loginWithGoogle);
+    // Bloom slider
+    const bloomSlider = document.getElementById('input-bloom-contrast');
+    if (bloomSlider) {
+        bloomSlider.addEventListener('input', () => {
+            document.getElementById('bloom-value').textContent = bloomSlider.value;
+        });
+    }
     
-    // ESC key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            closeJobModal();
-            closeCreditsModal();
-        }
-    });
-}
-
-function setupFileInput(inputId, previewId, removeBtnId) {
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-    if (!input || !preview) return;
-    
-    const uploadBox = input.closest('.upload-box');
-    const removeBtn = removeBtnId ? document.getElementById(removeBtnId) : null;
-    
-    input.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                preview.src = ev.target.result;
-                preview.style.display = 'block';
-                if (uploadBox) uploadBox.classList.add('has-preview');
-                if (removeBtn) removeBtn.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-    
-    if (removeBtn) {
-        removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            input.value = '';
-            preview.src = '';
-            preview.style.display = 'none';
-            if (uploadBox) uploadBox.classList.remove('has-preview');
-            removeBtn.style.display = 'none';
+    // Motion decay slider
+    const decaySlider = document.getElementById('input-motion-decay');
+    if (decaySlider) {
+        decaySlider.addEventListener('input', () => {
+            document.getElementById('decay-value').textContent = decaySlider.value;
         });
     }
 }
 
-function setupVideoInput(inputId, previewId) {
+function setupFileUpload(inputId, previewId, removeId = null, isVideo = false, isAudio = false) {
     const input = document.getElementById(inputId);
     const preview = document.getElementById(previewId);
+    
     if (!input || !preview) return;
     
     input.addEventListener('change', (e) => {
         const file = e.target.files[0];
-        if (file) {
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = 'block';
-            input.closest('.upload-box').classList.add('has-preview');
+        if (!file) return;
+        
+        const url = URL.createObjectURL(file);
+        
+        if (isVideo) {
+            preview.src = url;
+        } else if (isAudio) {
+            preview.src = url;
+        } else {
+            preview.src = url;
+        }
+        
+        preview.style.display = 'block';
+        preview.parentElement.querySelector('.upload-placeholder').style.display = 'none';
+        preview.parentElement.classList.add('has-preview');
+        
+        if (removeId) {
+            document.getElementById(removeId).style.display = 'block';
         }
     });
-}
-
-function setupAudioInput(inputId, previewId) {
-    const input = document.getElementById(inputId);
-    const preview = document.getElementById(previewId);
-    if (!input || !preview) return;
     
-    input.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = 'block';
+    if (removeId) {
+        const removeBtn = document.getElementById(removeId);
+        if (removeBtn) {
+            removeBtn.addEventListener('click', () => {
+                input.value = '';
+                preview.src = '';
+                preview.style.display = 'none';
+                preview.parentElement.querySelector('.upload-placeholder').style.display = 'flex';
+                preview.parentElement.classList.remove('has-preview');
+                removeBtn.style.display = 'none';
+            });
         }
-    });
+    }
 }
 
 // ============================================
@@ -583,7 +611,7 @@ function setupAudioInput(inputId, previewId) {
 async function submitJob(event) {
     event.preventDefault();
     
-    const user = getCurrentUser();
+    const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
         alert('Silakan login terlebih dahulu');
         return;
@@ -591,9 +619,17 @@ async function submitJob(event) {
     
     const modelId = document.getElementById('input-model').value;
     const config = MODEL_CONFIGS[modelId];
+    const requiredCredits = MODEL_PRICING[modelId] || 30;
     
     if (!config) {
         alert('Model tidak valid');
+        return;
+    }
+    
+    // Check active jobs limit
+    const activeJobsCount = userJobs.filter(j => ['pending', 'processing'].includes(j.status)).length;
+    if (activeJobsCount >= MAX_JOBS_PER_USER) {
+        alert(`Anda sudah memiliki ${activeJobsCount} job yang sedang berjalan.\n\nMaksimal ${MAX_JOBS_PER_USER} job bersamaan.\nTunggu job selesai atau batalkan yang tidak perlu.`);
         return;
     }
     
@@ -604,10 +640,7 @@ async function submitJob(event) {
         return;
     }
     
-    // Calculate credits
-    const duration = getCurrentDuration(modelId);
-    const requiredCredits = getCreditsForDuration(modelId, duration);
-    
+    // Check credits
     if (userCredits < requiredCredits) {
         alert(`Kredit tidak mencukupi!\n\nDibutuhkan: ${requiredCredits} kredit\nSaldo: ${userCredits} kredit`);
         openCreditsModal();
@@ -616,9 +649,12 @@ async function submitJob(event) {
     
     const submitBtn = document.getElementById('btn-submit');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '⏳ Processing...';
+    submitBtn.innerHTML = '⏳ Memproses...';
     
     try {
+        // Collect input data
+        const inputData = await collectInputData(modelId, config, prompt, requiredCredits, user.id);
+        
         // Deduct credits
         const { data: deductResult, error: deductError } = await supabaseClient
             .rpc('deduct_user_credits', {
@@ -633,10 +669,7 @@ async function submitJob(event) {
         }
         
         userCredits = deductResult.balance_after;
-        updateCreditsUI({ balance: userCredits });
-        
-        // Collect input data
-        const inputData = await collectInputData(modelId, config, prompt, duration, requiredCredits, user.id);
+        updateCreditsUI();
         
         // Create job
         const { data: job, error: jobError } = await supabaseClient
@@ -655,22 +688,19 @@ async function submitJob(event) {
             .single();
         
         if (jobError) {
-            await supabaseClient.rpc('refund_user_credits', {
-                p_user_id: user.id,
-                p_amount: requiredCredits,
-                p_reason: 'Job creation failed'
-            });
+            // Refund on failure
+            await supabaseClient.rpc('cancel_videoapi_job', { p_job_id: job?.id, p_user_id: user.id });
             throw new Error('Gagal membuat job');
         }
         
-        alert(`✅ Job berhasil dibuat!\n\nModel: ${modelId}\nKredit: ${requiredCredits}\nSisa: ${userCredits}`);
+        alert(`✅ Job berhasil dibuat!\n\nModel: ${modelId}\nKredit: ${requiredCredits}\nSisa: ${userCredits}\n\nProses akan memakan waktu 5-15 menit.`);
         
         resetForm();
         switchTab('active');
         await loadJobs();
         
     } catch (error) {
-        console.error('❌ Submit error:', error);
+        console.error('Submit error:', error);
         alert('Gagal: ' + error.message);
         await loadUserCredits();
     } finally {
@@ -679,12 +709,11 @@ async function submitJob(event) {
     }
 }
 
-async function collectInputData(modelId, config, prompt, duration, credits, userId) {
+async function collectInputData(modelId, config, prompt, credits, userId) {
     const data = {
         model_id: modelId,
         prompt: prompt,
         negative_prompt: document.getElementById('input-negative')?.value || '',
-        duration: duration,
         credits_used: credits,
         user_id: userId,
         settings: {}
@@ -732,7 +761,7 @@ async function collectInputData(modelId, config, prompt, duration, credits, user
         settings.generate_audio = document.getElementById('input-generate-audio')?.checked || false;
     }
     if (config.showPromptOptimizer) {
-        settings.prompt_optimizer = document.getElementById('input-prompt-optimizer')?.checked || true;
+        settings.prompt_optimizer = document.getElementById('input-prompt-optimizer')?.checked ?? true;
     }
     if (config.showPromptExpansion) {
         settings.enable_prompt_expansion = document.getElementById('input-prompt-expansion')?.checked || false;
@@ -782,8 +811,6 @@ async function collectInputData(modelId, config, prompt, duration, credits, user
             throw new Error('Motion Control membutuhkan gambar karakter DAN video gerakan!');
         }
         
-        // For motion control, we need to upload to public URL
-        // Here we'll send as base64 and let worker handle the upload
         settings.motion_image = await fileToBase64(motionImg);
         settings.motion_video = await fileToBase64(motionVid);
         settings.character_orientation = document.getElementById('input-character-orientation')?.value || 'video';
@@ -839,13 +866,13 @@ async function fileToBase64(file) {
 function resetForm() {
     document.getElementById('generator-form').reset();
     
-    // Reset all previews
     document.querySelectorAll('.upload-preview').forEach(el => {
         el.style.display = 'none';
         el.src = '';
     });
     document.querySelectorAll('.upload-box').forEach(el => el.classList.remove('has-preview'));
     document.querySelectorAll('.btn-remove-upload').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.upload-placeholder').forEach(el => el.style.display = 'flex');
     
     updateModelUI();
 }
@@ -856,90 +883,165 @@ function resetForm() {
 
 async function loadJobs() {
     try {
-        const user = getCurrentUser();
+        const { data: { user } } = await supabaseClient.auth.getUser();
         if (!user) return;
         
-        const { data: jobs } = await supabaseClient
+        const { data: jobs, error } = await supabaseClient
             .from('jobs')
             .select('*')
             .eq('service', 'videoapi')
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(50);
         
+        if (error) throw error;
+        
         userJobs = jobs || [];
         renderJobs();
+        
     } catch (error) {
-        console.error('❌ Load jobs error:', error);
+        console.error('Load jobs error:', error);
     }
 }
 
 function renderJobs() {
     const activeJobs = userJobs.filter(j => ['pending', 'processing'].includes(j.status));
-    const historyJobs = userJobs.filter(j => ['completed', 'failed'].includes(j.status));
+    const historyJobs = userJobs.filter(j => ['completed', 'failed', 'cancelled'].includes(j.status));
     
+    // Update counts
     document.getElementById('active-count').textContent = activeJobs.length;
     document.getElementById('history-count').textContent = historyJobs.length;
     
+    // Render active jobs
     const activeContainer = document.getElementById('active-jobs');
     if (activeJobs.length === 0) {
-        activeContainer.innerHTML = '<div class="empty-state"><span class="empty-icon">🚀</span><p>Tidak ada proses berjalan</p></div>';
+        activeContainer.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">🚀</span>
+                <p>Tidak ada proses berjalan</p>
+                <p class="empty-sub">Submit job baru untuk memulai</p>
+            </div>
+        `;
     } else {
-        activeContainer.innerHTML = activeJobs.map(createJobCard).join('');
+        activeContainer.innerHTML = activeJobs.map(job => renderJobCard(job, true)).join('');
     }
     
+    // Render history
     const historyContainer = document.getElementById('history-jobs');
     if (historyJobs.length === 0) {
-        historyContainer.innerHTML = '<div class="empty-state"><span class="empty-icon">📁</span><p>Belum ada riwayat</p></div>';
+        historyContainer.innerHTML = `
+            <div class="empty-state">
+                <span class="empty-icon">📁</span>
+                <p>Belum ada riwayat</p>
+            </div>
+        `;
     } else {
-        historyContainer.innerHTML = historyJobs.map(createJobCard).join('');
+        historyContainer.innerHTML = historyJobs.map(job => renderJobCard(job, false)).join('');
     }
 }
 
-function createJobCard(job) {
+function renderJobCard(job, isActive) {
     const input = job.input_data || {};
-    const results = typeof job.results === 'string' ? JSON.parse(job.results || '{}') : (job.results || {});
-    const date = new Date(job.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const modelId = input.model_id || 'Unknown';
+    const credits = input.credits_used || 0;
+    const progress = job.progress_percent || 0;
+    const stepName = job.step_name || 'Waiting...';
+    const createdAt = new Date(job.created_at).toLocaleString('id-ID');
     
-    let progressHtml = '';
-    if (['pending', 'processing'].includes(job.status)) {
-        progressHtml = `
-            <div class="job-progress">
-                <div class="progress-bar"><div class="progress-fill" style="width: ${job.progress_percent || 0}%"></div></div>
-                <p class="progress-step">${job.step_name || 'Menunggu...'} (${job.progress_percent || 0}%)</p>
-            </div>
-        `;
+    const statusClasses = {
+        'pending': 'status-pending',
+        'processing': 'status-processing',
+        'completed': 'status-completed',
+        'failed': 'status-failed',
+        'cancelled': 'status-cancelled'
+    };
+    
+    const statusLabels = {
+        'pending': '⏳ Menunggu',
+        'processing': '⚙️ Memproses',
+        'completed': '✅ Selesai',
+        'failed': '❌ Gagal',
+        'cancelled': '🚫 Dibatalkan'
+    };
+    
+    let resultPreview = '';
+    if (job.status === 'completed' && job.results) {
+        const results = typeof job.results === 'string' ? JSON.parse(job.results) : job.results;
+        if (results.video_url) {
+            resultPreview = `
+                <video src="${results.video_url}" class="job-preview-video" muted loop onmouseover="this.play()" onmouseout="this.pause()"></video>
+            `;
+        }
     }
     
-    let previewHtml = '';
-    if (results.video_url) {
-        previewHtml = `<div class="job-preview"><video src="${results.video_url}" muted></video></div>`;
+    let cancelButton = '';
+    if (isActive) {
+        cancelButton = `<button class="btn-cancel-job" onclick="cancelJob('${job.id}')">🛑 Batalkan</button>`;
     }
-    
-    const statusLabels = { pending: 'Menunggu', processing: 'Diproses', completed: 'Selesai', failed: 'Gagal' };
     
     return `
-        <div class="job-card" onclick="openJobModal('${job.id}')">
+        <div class="job-card ${statusClasses[job.status]}" onclick="openJobModal('${job.id}')">
             <div class="job-header">
-                <div class="job-info">
-                    <div class="job-title">${escapeHtml(input.model_id || 'Video')}</div>
-                    <div class="job-meta"><span class="job-credits">🪙 ${input.credits_used || 0}</span><span class="job-date">${date}</span></div>
-                </div>
-                <span class="status-badge status-${job.status}">${statusLabels[job.status]}</span>
+                <span class="job-model">${modelId}</span>
+                <span class="job-status ${statusClasses[job.status]}">${statusLabels[job.status]}</span>
             </div>
-            ${progressHtml}
-            ${previewHtml}
+            ${resultPreview}
+            <div class="job-info">
+                <span class="job-credits">🪙 ${credits} kredit</span>
+                <span class="job-date">${createdAt}</span>
+            </div>
+            ${isActive ? `
+                <div class="job-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%"></div>
+                    </div>
+                    <span class="progress-text">${progress}% - ${stepName}</span>
+                </div>
+                <div class="job-actions">
+                    ${cancelButton}
+                </div>
+            ` : ''}
         </div>
     `;
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text || '';
-    return div.innerHTML;
+// ============================================
+// CANCEL JOB
+// ============================================
+
+async function cancelJob(jobId) {
+    if (!confirm('Apakah Anda yakin ingin membatalkan job ini?\n\nKredit akan dikembalikan.')) {
+        return;
+    }
+    
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+        
+        const { data, error } = await supabaseClient
+            .rpc('cancel_videoapi_job', {
+                p_job_id: jobId,
+                p_user_id: user.id
+            });
+        
+        if (error) throw error;
+        
+        if (data?.success) {
+            alert('✅ Job dibatalkan dan kredit dikembalikan');
+            await loadJobs();
+            await loadUserCredits();
+        } else {
+            alert('Gagal: ' + (data?.error || 'Unknown error'));
+        }
+        
+    } catch (error) {
+        console.error('Cancel job error:', error);
+        alert('Gagal membatalkan job: ' + error.message);
+    }
 }
 
 // ============================================
-// MODALS
+// JOB MODAL
 // ============================================
 
 function openJobModal(jobId) {
@@ -949,134 +1051,232 @@ function openJobModal(jobId) {
     const input = job.input_data || {};
     const results = typeof job.results === 'string' ? JSON.parse(job.results || '{}') : (job.results || {});
     
-    document.getElementById('modal-title').textContent = input.model_id || 'Detail Job';
+    document.getElementById('modal-title').textContent = input.model_id || 'Job Details';
     
     const statusEl = document.getElementById('modal-status');
-    const statusLabels = { pending: 'Menunggu', processing: 'Diproses', completed: 'Selesai', failed: 'Gagal' };
-    statusEl.textContent = statusLabels[job.status];
-    statusEl.className = `status-badge status-${job.status}`;
+    statusEl.textContent = job.status;
+    statusEl.className = 'status-badge status-' + job.status;
     
+    // Progress section
     const progressSection = document.getElementById('modal-progress');
     const resultsSection = document.getElementById('modal-results');
     const errorSection = document.getElementById('modal-error');
     
-    if (['pending', 'processing'].includes(job.status)) {
-        progressSection.style.display = 'block';
-        resultsSection.style.display = 'none';
-        errorSection.style.display = 'none';
-        
-        document.getElementById('modal-progress-fill').style.width = `${job.progress_percent || 0}%`;
-        document.getElementById('modal-progress-percent').textContent = `${job.progress_percent || 0}%`;
-        document.getElementById('modal-step').textContent = job.step_name || 'Menunggu...';
-        document.getElementById('modal-credits-used').textContent = `${input.credits_used || 0} kredit`;
-        
-    } else if (job.status === 'completed') {
+    if (job.status === 'completed') {
         progressSection.style.display = 'none';
-        resultsSection.style.display = 'block';
         errorSection.style.display = 'none';
+        resultsSection.style.display = 'block';
         
         if (results.video_url) {
             document.getElementById('modal-video').src = results.video_url;
             document.getElementById('modal-download').href = results.video_url;
         }
-        document.getElementById('modal-model').textContent = input.model_id;
-        document.getElementById('modal-credits-final').textContent = `${input.credits_used || 0} kredit`;
         
-    } else if (job.status === 'failed') {
+        document.getElementById('modal-model').textContent = input.model_id || '-';
+        document.getElementById('modal-credits-final').textContent = (input.credits_used || 0) + ' kredit';
+        
+    } else if (job.status === 'failed' || job.status === 'cancelled') {
         progressSection.style.display = 'none';
         resultsSection.style.display = 'none';
         errorSection.style.display = 'block';
         
-        document.getElementById('modal-error-msg').textContent = job.error_message || 'Terjadi kesalahan';
+        document.getElementById('modal-error-msg').textContent = job.error_message || 'Unknown error';
+        
+    } else {
+        progressSection.style.display = 'block';
+        resultsSection.style.display = 'none';
+        errorSection.style.display = 'none';
+        
+        const progress = job.progress_percent || 0;
+        document.getElementById('modal-progress-fill').style.width = progress + '%';
+        document.getElementById('modal-progress-percent').textContent = progress + '%';
+        document.getElementById('modal-credits-used').textContent = (input.credits_used || 0) + ' kredit';
+        document.getElementById('modal-step').textContent = job.step_name || 'Waiting...';
     }
     
-    document.getElementById('job-modal').classList.add('active');
-    document.body.style.overflow = 'hidden';
+    document.getElementById('job-modal').style.display = 'flex';
 }
 
 function closeJobModal() {
-    document.getElementById('job-modal').classList.remove('active');
-    document.body.style.overflow = '';
+    document.getElementById('job-modal').style.display = 'none';
+    document.getElementById('modal-video').pause();
 }
 
-async function openCreditsModal() {
-    document.getElementById('credits-modal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-    
-    const { data: packages } = await supabaseClient
-        .from('credit_packages')
-        .select('*')
-        .eq('is_active', true)
-        .order('display_order');
-    
-    const container = document.getElementById('packages-grid');
-    container.innerHTML = (packages || []).map(pkg => `
-        <div class="package-card ${pkg.is_popular ? 'popular' : ''}" onclick="buyPackage('${pkg.id}')">
-            ${pkg.is_popular ? '<span class="popular-badge">POPULAR</span>' : ''}
-            <h4>${pkg.name}</h4>
-            <div class="package-credits">${pkg.credits} kredit</div>
-            ${pkg.bonus_credits > 0 ? `<div class="package-bonus">+${pkg.bonus_credits} bonus</div>` : ''}
-            <div class="package-price">Rp ${pkg.price.toLocaleString('id-ID')}</div>
+// ============================================
+// CREDITS MODAL & PURCHASE
+// ============================================
+
+function openCreditsModal() {
+    const grid = document.getElementById('packages-grid');
+    grid.innerHTML = CREDIT_PACKAGES.map(pkg => `
+        <div class="package-card ${pkg.popular ? 'popular' : ''} ${pkg.bestValue ? 'best-value' : ''}">
+            ${pkg.popular ? '<span class="package-badge">⭐ Recommended</span>' : ''}
+            ${pkg.bestValue ? '<span class="package-badge best">💎 Best Value</span>' : ''}
+            <h3 class="package-name">${pkg.name}</h3>
+            <div class="package-credits">${pkg.credits.toLocaleString()} Kredit</div>
+            <div class="package-price">Rp ${pkg.price.toLocaleString()}</div>
+            <div class="package-per-credit">Rp ${pkg.pricePerCredit}/kredit</div>
+            <button class="btn-buy-package" onclick="purchaseCredits('${pkg.id}')">Beli Sekarang</button>
         </div>
     `).join('');
+    
+    document.getElementById('modal-current-credits').textContent = userCredits.toLocaleString() + ' kredit';
+    document.getElementById('credits-modal').style.display = 'flex';
 }
 
 function closeCreditsModal() {
-    document.getElementById('credits-modal').classList.remove('active');
-    document.body.style.overflow = '';
+    document.getElementById('credits-modal').style.display = 'none';
 }
 
-function buyPackage(packageId) {
-    alert(`Fitur pembelian kredit akan segera hadir!\n\nPaket: ${packageId}`);
+async function purchaseCredits(packageId) {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            alert('Silakan login terlebih dahulu');
+            return;
+        }
+        
+        const btn = event.target;
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+        
+        // Call edge function to create payment
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-video-credit-payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ package_id: packageId })
+        });
+        
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.message || 'Failed to create payment');
+        }
+        
+        // Open Midtrans Snap
+        if (window.snap && result.snap_token) {
+            window.snap.pay(result.snap_token, {
+                onSuccess: async function(result) {
+                    alert('🎉 Pembayaran berhasil! Kredit akan ditambahkan.');
+                    closeCreditsModal();
+                    await loadUserCredits();
+                },
+                onPending: function(result) {
+                    alert('⏳ Menunggu pembayaran...\nSilakan selesaikan pembayaran Anda.');
+                    closeCreditsModal();
+                },
+                onError: function(result) {
+                    alert('❌ Pembayaran gagal. Silakan coba lagi.');
+                },
+                onClose: function() {
+                    console.log('Payment popup closed');
+                }
+            });
+        } else if (result.redirect_url) {
+            window.open(result.redirect_url, '_blank');
+        }
+        
+    } catch (error) {
+        console.error('Purchase error:', error);
+        alert('Gagal: ' + error.message);
+    } finally {
+        const btn = event.target;
+        btn.disabled = false;
+        btn.textContent = 'Beli Sekarang';
+    }
 }
 
 // ============================================
-// TABS & POLLING
+// TABS & PRICING
 // ============================================
 
 function switchTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
-    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === `tab-${tabName}`));
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `tab-${tabName}`);
+    });
     
-    if (tabName === 'pricing') loadPricing();
+    if (tabName === 'pricing') {
+        loadPricingTable();
+    }
 }
 
-async function loadPricing() {
-    const { data } = await supabaseClient.from('video_model_pricing').select('*').eq('is_active', true).order('display_order');
-    
+function loadPricingTable() {
     const grid = document.getElementById('pricing-grid');
-    grid.innerHTML = (data || []).map(m => `
-        <div class="pricing-card ${m.category}">
-            <div class="pricing-header"><h4>${m.model_name}</h4><span class="pricing-category">${m.category}</span></div>
-            <div class="pricing-body">
-                <div class="pricing-credits">
-                    <span>5s: <strong>${m.credits_5s || m.base_credits}</strong>🪙</span>
-                    ${m.credits_10s ? `<span>10s: <strong>${m.credits_10s}</strong>🪙</span>` : ''}
+    
+    const categories = {
+        'Kling': ['kling-2-5-pro', 'kling-o1-pro-i2v', 'kling-o1-std-i2v', 'kling-o1-pro-ref', 'kling-o1-std-ref', 'kling-2-6-pro', 'kling-2-6-motion-pro', 'kling-2-6-motion-std', 'kling-2-1-pro', 'kling-1-6-pro', 'kling-1-6-std'],
+        'MiniMax': ['minimax-live', 'minimax-hailuo-1080p', 'minimax-hailuo-1080p-fast', 'minimax-hailuo-768p', 'minimax-hailuo-768p-fast'],
+        'WAN': ['wan-i2v-720p', 'wan-i2v-1080p', 'wan-t2v-720p', 'wan-t2v-1080p'],
+        'Seedance': ['seedance-480p', 'seedance-720p', 'seedance-1080p'],
+        'LTX': ['ltx-t2v', 'ltx-i2v'],
+        'Lainnya': ['runway-gen4', 'omnihuman', 'vfx']
+    };
+    
+    let html = '';
+    
+    for (const [category, models] of Object.entries(categories)) {
+        html += `<div class="pricing-category"><h3>${category}</h3>`;
+        
+        for (const modelId of models) {
+            const config = MODEL_CONFIGS[modelId];
+            const credits = MODEL_PRICING[modelId];
+            
+            if (!config) continue;
+            
+            html += `
+                <div class="pricing-item">
+                    <div class="pricing-model">${modelId}</div>
+                    <div class="pricing-desc">${config.desc || ''}</div>
+                    <div class="pricing-credits">🪙 ${credits} kredit</div>
                 </div>
-                <p class="pricing-desc">${m.description || ''}</p>
-            </div>
-        </div>
-    `).join('');
+            `;
+        }
+        
+        html += '</div>';
+    }
+    
+    grid.innerHTML = html;
 }
+
+// ============================================
+// POLLING
+// ============================================
 
 function startPolling() {
-    if (pollingInterval) return;
+    if (pollingInterval) clearInterval(pollingInterval);
+    
     pollingInterval = setInterval(async () => {
-        if (userJobs.some(j => ['pending', 'processing'].includes(j.status))) {
+        const hasActiveJobs = userJobs.some(j => ['pending', 'processing'].includes(j.status));
+        
+        if (hasActiveJobs) {
             await loadJobs();
             await loadUserCredits();
         }
-    }, 5000);
+    }, POLLING_INTERVAL_MS);
 }
 
 function stopPolling() {
-    if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
 }
 
-window.addEventListener('beforeunload', stopPolling);
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) stopPolling();
-    else if (getCurrentUser()) startPolling();
-});
+// ============================================
+// GLOBAL FUNCTIONS
+// ============================================
 
-console.log('✅ Video API Generator v2.0 loaded');
+window.openJobModal = openJobModal;
+window.closeJobModal = closeJobModal;
+window.cancelJob = cancelJob;
+window.openCreditsModal = openCreditsModal;
+window.closeCreditsModal = closeCreditsModal;
+window.purchaseCredits = purchaseCredits;
+
+console.log('✅ Video API Generator v3.0 loaded');
