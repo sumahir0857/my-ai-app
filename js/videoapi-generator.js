@@ -720,7 +720,7 @@ function setupFileUpload(inputId, previewId, removeId = null, isVideo = false, i
 }
 
 // ============================================
-// SUBMIT JOB - FIXED
+// SUBMIT JOB - FIXED v2
 // ============================================
 
 async function submitJob(event) {
@@ -771,10 +771,10 @@ async function submitJob(event) {
         // Collect input data first
         const inputData = await collectInputData(modelId, config, prompt, requiredCredits, user.id);
         
-        // Deduct credits directly from user_credits table
+        // Get current credits
         const { data: currentCredits, error: fetchError } = await supabaseClient
             .from('user_credits')
-            .select('balance')
+            .select('balance, total_used')
             .eq('user_id', user.id)
             .single();
         
@@ -787,32 +787,24 @@ async function submitJob(event) {
         }
         
         const newBalance = currentCredits.balance - requiredCredits;
+        const newTotalUsed = (currentCredits.total_used || 0) + requiredCredits;
         
+        // Update credits
         const { error: updateError } = await supabaseClient
             .from('user_credits')
             .update({ 
                 balance: newBalance,
-                total_used: supabaseClient.sql`COALESCE(total_used, 0) + ${requiredCredits}`,
+                total_used: newTotalUsed,
                 updated_at: new Date().toISOString()
             })
             .eq('user_id', user.id);
         
         if (updateError) {
-            // Try simpler update
-            const { error: simpleUpdateError } = await supabaseClient
-                .from('user_credits')
-                .update({ 
-                    balance: newBalance,
-                    updated_at: new Date().toISOString()
-                })
-                .eq('user_id', user.id);
-            
-            if (simpleUpdateError) {
-                throw new Error('Gagal memotong kredit: ' + simpleUpdateError.message);
-            }
+            throw new Error('Gagal memotong kredit: ' + updateError.message);
         }
         
         userCredits = newBalance;
+        userStats.total_used = newTotalUsed;
         updateCreditsUI();
         
         // Create job
@@ -835,10 +827,14 @@ async function submitJob(event) {
             // Refund on failure
             await supabaseClient
                 .from('user_credits')
-                .update({ balance: currentCredits.balance })
+                .update({ 
+                    balance: currentCredits.balance,
+                    total_used: currentCredits.total_used || 0
+                })
                 .eq('user_id', user.id);
             
             userCredits = currentCredits.balance;
+            userStats.total_used = currentCredits.total_used || 0;
             updateCreditsUI();
             
             throw new Error('Gagal membuat job: ' + jobError.message);
