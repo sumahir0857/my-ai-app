@@ -1,5 +1,5 @@
 // ============================================
-// VIDEO API GENERATOR v3.1 - FIXED
+// VIDEO API GENERATOR v3.2 - ALL FIXES
 // ============================================
 
 let pollingInterval = null;
@@ -9,11 +9,10 @@ let userStats = {};
 let isNewUser = false;
 
 // ============================================
-// MODEL PRICING (Updated)
+// MODEL PRICING
 // ============================================
 
 const MODEL_PRICING = {
-    // Kling
     "kling-2-5-pro": 38,
     "kling-o1-pro-i2v": 56,
     "kling-o1-std-i2v": 42,
@@ -25,25 +24,20 @@ const MODEL_PRICING = {
     "kling-2-1-pro": 50,
     "kling-1-6-pro": 51,
     "kling-1-6-std": 30,
-    // MiniMax
     "minimax-live": 50,
     "minimax-hailuo-1080p": 49,
     "minimax-hailuo-1080p-fast": 33,
     "minimax-hailuo-768p": 28,
     "minimax-hailuo-768p-fast": 19,
-    // WAN
     "wan-i2v-720p": 50,
     "wan-i2v-1080p": 75,
     "wan-t2v-720p": 50,
     "wan-t2v-1080p": 75,
-    // Seedance
     "seedance-480p": 13,
     "seedance-720p": 28,
     "seedance-1080p": 31,
-    // LTX
     "ltx-t2v": 30,
     "ltx-i2v": 30,
-    // Others
     "runway-gen4": 75,
     "omnihuman": 81,
     "vfx": 9,
@@ -65,7 +59,6 @@ const CREDIT_PACKAGES = [
 // ============================================
 
 const MODEL_CONFIGS = {
-    // Kling Models
     'kling-2-5-pro': {
         type: 'image_to_video',
         desc: 'Model terbaru dengan kualitas tinggi',
@@ -122,8 +115,6 @@ const MODEL_CONFIGS = {
         desc: 'Motion Control Standard',
         showMotion: true, showCfg: true
     },
-    
-    // MiniMax Models
     'minimax-live': {
         type: 'minimax_live',
         desc: 'MiniMax Live Mode',
@@ -149,8 +140,6 @@ const MODEL_CONFIGS = {
         desc: 'Hailuo 768p Fast',
         showFrames: true, showPromptOptimizer: true
     },
-    
-    // WAN Models
     'wan-i2v-720p': {
         type: 'wan_i2v',
         desc: 'WAN Image to Video 720p',
@@ -175,8 +164,6 @@ const MODEL_CONFIGS = {
         showNegative: true, showWanSize: true,
         showPromptExpansion: true, showShotType: true, showSeed: true
     },
-    
-    // Seedance Models
     'seedance-480p': {
         type: 'seedance',
         desc: 'Seedance 480p - paling hemat',
@@ -195,8 +182,6 @@ const MODEL_CONFIGS = {
         showImage: true, showAspectSeedance: true,
         showGenerateAudio: true, showCameraFixed: true, showSeed: true
     },
-    
-    // LTX Models
     'ltx-t2v': {
         type: 'ltx_t2v',
         desc: 'LTX Text to Video',
@@ -208,22 +193,16 @@ const MODEL_CONFIGS = {
         showImage: true, showLtxResolution: true, 
         showGenerateAudio: true, showFps: true, showSeed: true
     },
-    
-    // RunWay
     'runway-gen4': {
         type: 'runway',
         desc: 'RunWay Gen4 Turbo',
         showImage: true, showRunwayRatio: true, showSeed: true
     },
-    
-    // OmniHuman
     'omnihuman': {
         type: 'omnihuman',
         desc: 'OmniHuman - Portrait animation dengan audio',
         showOmnihuman: true
     },
-    
-    // VFX
     'vfx': {
         type: 'vfx',
         desc: 'Apply visual effects ke video',
@@ -239,8 +218,79 @@ const MAX_JOBS_PER_USER = 5;
 const POLLING_INTERVAL_MS = 5000;
 
 // ============================================
-// FILE UPLOAD HELPERS
+// FILE UPLOAD HELPERS - IMPROVED
 // ============================================
+
+async function uploadToFileIO(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('https://file.io', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.link) {
+                console.log('✅ Uploaded to file.io:', data.link);
+                return data.link;
+            }
+        }
+    } catch (error) {
+        console.error('file.io upload error:', error);
+    }
+    return null;
+}
+
+async function uploadToTmpFiles(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('https://tmpfiles.org/api/v1/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 'success' && data.data?.url) {
+                // Convert to direct download link
+                const url = data.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                console.log('✅ Uploaded to tmpfiles.org:', url);
+                return url;
+            }
+        }
+    } catch (error) {
+        console.error('tmpfiles upload error:', error);
+    }
+    return null;
+}
+
+async function uploadTo0x0(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('https://0x0.st', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            const url = await response.text();
+            if (url.startsWith('http')) {
+                console.log('✅ Uploaded to 0x0.st:', url.trim());
+                return url.trim();
+            }
+        }
+    } catch (error) {
+        console.error('0x0.st upload error:', error);
+    }
+    return null;
+}
 
 async function uploadToLitterbox(file, expiry = '24h') {
     const formData = new FormData();
@@ -249,20 +299,30 @@ async function uploadToLitterbox(file, expiry = '24h') {
     formData.append('fileToUpload', file);
     
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+        
         const response = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (response.ok) {
             const url = await response.text();
             if (url.startsWith('http')) {
-                console.log('✅ Uploaded to Litterbox:', url);
+                console.log('✅ Uploaded to Litterbox:', url.trim());
                 return url.trim();
             }
         }
     } catch (error) {
-        console.error('Litterbox upload error:', error);
+        if (error.name === 'AbortError') {
+            console.error('Litterbox upload timeout');
+        } else {
+            console.error('Litterbox upload error:', error);
+        }
     }
     return null;
 }
@@ -273,45 +333,74 @@ async function uploadToCatbox(file) {
     formData.append('fileToUpload', file);
     
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+        
         const response = await fetch('https://catbox.moe/user/api.php', {
             method: 'POST',
-            body: formData
+            body: formData,
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (response.ok) {
             const url = await response.text();
             if (url.startsWith('http')) {
-                console.log('✅ Uploaded to Catbox:', url);
+                console.log('✅ Uploaded to Catbox:', url.trim());
                 return url.trim();
             }
         }
     } catch (error) {
-        console.error('Catbox upload error:', error);
+        if (error.name === 'AbortError') {
+            console.error('Catbox upload timeout');
+        } else {
+            console.error('Catbox upload error:', error);
+        }
     }
     return null;
 }
 
 async function uploadFile(file, progressCallback = null) {
-    console.log(`📤 Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)...`);
+    const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+    console.log(`📤 Uploading ${file.name} (${sizeMB} MB)...`);
     
-    if (progressCallback) progressCallback(10, 'Uploading file...');
+    if (progressCallback) progressCallback(5, `Uploading ${file.name}...`);
     
-    // Try Litterbox first (24h expiry, good for large files)
-    let url = await uploadToLitterbox(file, '24h');
-    
-    if (!url) {
-        if (progressCallback) progressCallback(50, 'Trying alternate upload...');
-        // Try Catbox as fallback (permanent)
-        url = await uploadToCatbox(file);
+    // Check file size limit (50MB for most services)
+    if (file.size > 50 * 1024 * 1024) {
+        throw new Error(`File terlalu besar (${sizeMB} MB). Maksimal 50 MB.`);
     }
     
-    if (progressCallback) progressCallback(100, 'Upload complete');
+    let url = null;
     
-    if (!url) {
-        throw new Error('Gagal mengupload file. Coba file yang lebih kecil atau format berbeda.');
+    // Try multiple services in order
+    const services = [
+        { name: 'file.io', fn: () => uploadToFileIO(file) },
+        { name: 'tmpfiles', fn: () => uploadToTmpFiles(file) },
+        { name: '0x0.st', fn: () => uploadTo0x0(file) },
+        { name: 'Litterbox', fn: () => uploadToLitterbox(file, '24h') },
+        { name: 'Catbox', fn: () => uploadToCatbox(file) },
+    ];
+    
+    for (let i = 0; i < services.length; i++) {
+        const service = services[i];
+        if (progressCallback) {
+            progressCallback(10 + (i * 18), `Trying ${service.name}...`);
+        }
+        
+        try {
+            url = await service.fn();
+            if (url) {
+                if (progressCallback) progressCallback(100, 'Upload complete!');
+                return url;
+            }
+        } catch (e) {
+            console.error(`${service.name} failed:`, e);
+        }
     }
     
-    return url;
+    throw new Error('Gagal mengupload file ke semua server. Coba lagi nanti atau gunakan file yang lebih kecil.');
 }
 
 // ============================================
@@ -319,7 +408,7 @@ async function uploadFile(file, progressCallback = null) {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🎬 Video API Generator v3.1 loading...');
+    console.log('🎬 Video API Generator v3.2 loading...');
     
     const isLoggedIn = await checkAuth();
     
@@ -374,7 +463,7 @@ async function getCurrentUser() {
 }
 
 // ============================================
-// INITIALIZE USER (with free trial check)
+// INITIALIZE USER
 // ============================================
 
 async function initializeUser() {
@@ -382,66 +471,48 @@ async function initializeUser() {
         const user = await getCurrentUser();
         if (!user) return;
         
-        // Update UI with user info
         document.getElementById('user-name').textContent = user.user_metadata?.full_name || user.email;
         const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
         if (avatarUrl) {
             document.getElementById('user-avatar').src = avatarUrl;
         }
         
-        // Try to get or create user credits
         let creditData = null;
         
-        // First, try the new function
-        try {
-            const { data, error } = await supabaseClient
-                .rpc('get_or_create_user_credits', { p_user_id: user.id });
-            
-            if (!error && data) {
-                creditData = data;
-            }
-        } catch (e) {
-            console.log('get_or_create_user_credits not available, falling back...');
-        }
+        const { data: credits, error } = await supabaseClient
+            .from('user_credits')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
         
-        // Fallback: directly query user_credits
-        if (!creditData) {
-            const { data: credits, error } = await supabaseClient
+        if (error && error.code === 'PGRST116') {
+            const { data: newCredits, error: insertError } = await supabaseClient
                 .from('user_credits')
-                .select('*')
-                .eq('user_id', user.id)
+                .insert({
+                    user_id: user.id,
+                    balance: 50,
+                    total_purchased: 0,
+                    total_used: 0,
+                    total_refunded: 0
+                })
+                .select()
                 .single();
             
-            if (error && error.code === 'PGRST116') {
-                // No credits found, create new with free trial
-                const { data: newCredits, error: insertError } = await supabaseClient
-                    .from('user_credits')
-                    .insert({
-                        user_id: user.id,
-                        balance: 50, // Free trial
-                        total_purchased: 0,
-                        total_used: 0,
-                        total_refunded: 0
-                    })
-                    .select()
-                    .single();
-                
-                if (!insertError && newCredits) {
-                    creditData = {
-                        balance: newCredits.balance,
-                        total_used: 0,
-                        total_refunded: 0,
-                        is_new_user: true
-                    };
-                }
-            } else if (credits) {
+            if (!insertError && newCredits) {
                 creditData = {
-                    balance: credits.balance,
-                    total_used: credits.total_used || 0,
-                    total_refunded: credits.total_refunded || 0,
-                    is_new_user: false
+                    balance: newCredits.balance,
+                    total_used: 0,
+                    total_refunded: 0,
+                    is_new_user: true
                 };
             }
+        } else if (credits) {
+            creditData = {
+                balance: credits.balance,
+                total_used: credits.total_used || 0,
+                total_refunded: credits.total_refunded || 0,
+                is_new_user: false
+            };
         }
         
         if (creditData) {
@@ -451,7 +522,6 @@ async function initializeUser() {
             
             updateCreditsUI();
             
-            // Show welcome message for new users
             if (isNewUser) {
                 setTimeout(() => {
                     alert(`🎉 Selamat datang!\n\nAnda mendapat 50 kredit GRATIS untuk mencoba layanan kami.\n\nCobalah model Seedance 480p (13 kredit) atau VFX (9 kredit) untuk memulai!`);
@@ -459,7 +529,6 @@ async function initializeUser() {
             }
         }
         
-        // Load jobs
         await loadJobs();
         
     } catch (error) {
@@ -521,12 +590,10 @@ function updateModelUI() {
     
     if (!config) return;
     
-    // Update credits display
     document.getElementById('estimated-credits').textContent = credits;
     document.getElementById('total-credits').textContent = credits;
     document.getElementById('model-desc').textContent = config.desc || '';
     
-    // Hide all optional sections
     const sections = [
         'section-image', 'section-frames', 'section-ref-images', 
         'section-motion', 'section-omnihuman', 'section-vfx',
@@ -543,13 +610,11 @@ function updateModelUI() {
         if (el) el.style.display = 'none';
     });
     
-    // Show prompt section unless noPrompt
     const promptSection = document.getElementById('section-prompt');
     if (promptSection) {
         promptSection.style.display = config.noPrompt ? 'none' : 'block';
     }
     
-    // Show relevant sections based on config
     if (config.showImage) {
         const sectionImage = document.getElementById('section-image');
         const groupImage = document.getElementById('group-image');
@@ -647,16 +712,13 @@ function updateModelUI() {
 // ============================================
 
 function setupEventListeners() {
-    // Model change
     const modelSelect = document.getElementById('input-model');
     if (modelSelect) {
         modelSelect.addEventListener('change', updateModelUI);
     }
     
-    // Initialize model UI
     updateModelUI();
     
-    // CFG slider
     const cfgSlider = document.getElementById('input-cfg');
     if (cfgSlider) {
         cfgSlider.addEventListener('input', () => {
@@ -665,7 +727,6 @@ function setupEventListeners() {
         });
     }
     
-    // File uploads with preview
     setupFileUpload('input-image', 'preview-image', 'btn-remove-image');
     setupFileUpload('input-image-tail', 'preview-image-tail', 'btn-remove-image-tail');
     setupFileUpload('input-first-frame', 'preview-first-frame');
@@ -676,29 +737,24 @@ function setupEventListeners() {
     setupFileUpload('input-omni-audio', 'preview-omni-audio', null, false, true);
     setupFileUpload('input-vfx-video', 'preview-vfx-video', null, true);
     
-    // Reference images
     for (let i = 1; i <= 7; i++) {
         setupFileUpload(`input-ref-${i}`, `preview-ref-${i}`);
     }
     
-    // Tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
     
-    // Form submit
     const form = document.getElementById('generator-form');
     if (form) {
         form.addEventListener('submit', submitJob);
     }
     
-    // Buy credits button
     const buyBtn = document.getElementById('btn-buy-credits');
     if (buyBtn) {
         buyBtn.addEventListener('click', openCreditsModal);
     }
     
-    // Logout
     const logoutBtn = document.getElementById('btn-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
@@ -707,7 +763,6 @@ function setupEventListeners() {
         });
     }
     
-    // Modal close
     const closeModalBtn = document.getElementById('btn-close-modal');
     if (closeModalBtn) {
         closeModalBtn.addEventListener('click', closeJobModal);
@@ -720,7 +775,6 @@ function setupEventListeners() {
         });
     }
     
-    // VFX filter change
     const filterSelect = document.getElementById('input-filter-type');
     if (filterSelect) {
         filterSelect.addEventListener('change', () => {
@@ -732,7 +786,6 @@ function setupEventListeners() {
         });
     }
     
-    // Bloom slider
     const bloomSlider = document.getElementById('input-bloom-contrast');
     if (bloomSlider) {
         bloomSlider.addEventListener('input', () => {
@@ -741,7 +794,6 @@ function setupEventListeners() {
         });
     }
     
-    // Motion decay slider
     const decaySlider = document.getElementById('input-motion-decay');
     if (decaySlider) {
         decaySlider.addEventListener('input', () => {
@@ -796,7 +848,7 @@ function setupFileUpload(inputId, previewId, removeId = null, isVideo = false, i
 }
 
 // ============================================
-// SUBMIT JOB - FIXED v2
+// SUBMIT JOB
 // ============================================
 
 async function submitJob(event) {
@@ -817,14 +869,12 @@ async function submitJob(event) {
         return;
     }
     
-    // Check active jobs limit
     const activeJobsCount = userJobs.filter(j => ['pending', 'processing'].includes(j.status)).length;
     if (activeJobsCount >= MAX_JOBS_PER_USER) {
-        alert(`Anda sudah memiliki ${activeJobsCount} job yang sedang berjalan.\n\nMaksimal ${MAX_JOBS_PER_USER} job bersamaan.\nTunggu job selesai atau batalkan yang tidak perlu.`);
+        alert(`Anda sudah memiliki ${activeJobsCount} job yang sedang berjalan.\n\nMaksimal ${MAX_JOBS_PER_USER} job bersamaan.\nTunggu job selesai terlebih dahulu.`);
         return;
     }
     
-    // Get prompt
     const promptEl = document.getElementById('input-prompt');
     const prompt = promptEl?.value?.trim() || '';
     if (!prompt && !config.noPrompt) {
@@ -832,7 +882,6 @@ async function submitJob(event) {
         return;
     }
     
-    // Check credits
     if (userCredits < requiredCredits) {
         alert(`Kredit tidak mencukupi!\n\nDibutuhkan: ${requiredCredits} kredit\nSaldo: ${userCredits} kredit`);
         openCreditsModal();
@@ -844,10 +893,8 @@ async function submitJob(event) {
     submitBtn.innerHTML = '⏳ Memproses...';
     
     try {
-        // Collect input data first
         const inputData = await collectInputData(modelId, config, prompt, requiredCredits, user.id);
         
-        // Get current credits
         const { data: currentCredits, error: fetchError } = await supabaseClient
             .from('user_credits')
             .select('balance, total_used')
@@ -865,7 +912,6 @@ async function submitJob(event) {
         const newBalance = currentCredits.balance - requiredCredits;
         const newTotalUsed = (currentCredits.total_used || 0) + requiredCredits;
         
-        // Update credits
         const { error: updateError } = await supabaseClient
             .from('user_credits')
             .update({ 
@@ -883,7 +929,6 @@ async function submitJob(event) {
         userStats.total_used = newTotalUsed;
         updateCreditsUI();
         
-        // Create job
         const { data: job, error: jobError } = await supabaseClient
             .from('jobs')
             .insert({
@@ -900,7 +945,6 @@ async function submitJob(event) {
             .single();
         
         if (jobError) {
-            // Refund on failure
             await supabaseClient
                 .from('user_credits')
                 .update({ 
@@ -916,7 +960,7 @@ async function submitJob(event) {
             throw new Error('Gagal membuat job: ' + jobError.message);
         }
         
-        alert(`✅ Job berhasil dibuat!\n\nModel: ${modelId}\nKredit: ${requiredCredits}\nSisa: ${userCredits}\n\nProses akan memakan waktu 5-15 menit.`);
+        alert(`✅ Job berhasil dibuat!\n\nModel: ${modelId}\nKredit: ${requiredCredits}\nSisa: ${userCredits}\n\n⏱️ Proses memakan waktu 5-45 menit.\n💰 Kredit otomatis dikembalikan jika gagal.`);
         
         resetForm();
         switchTab('active');
@@ -945,27 +989,19 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
     const settings = data.settings;
     const submitBtn = document.getElementById('btn-submit');
     
-    // Helper function to update button text
     const updateStatus = (text) => {
         if (submitBtn) submitBtn.innerHTML = text;
     };
     
-    // CFG Scale
     if (config.showCfg) {
         settings.cfg_scale = parseFloat(document.getElementById('input-cfg')?.value || 0.5);
     }
-    
-    // Seed
     if (config.showSeed) {
         settings.seed = parseInt(document.getElementById('input-seed')?.value || -1);
     }
-    
-    // FPS
     if (config.showFps) {
         settings.fps = parseInt(document.getElementById('input-fps')?.value || 25);
     }
-    
-    // Aspect ratios
     if (config.showAspectRatio) {
         settings.aspect_ratio = document.getElementById('input-aspect-ratio')?.value;
     }
@@ -984,8 +1020,6 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
     if (config.showLtxResolution) {
         settings.resolution = document.getElementById('input-ltx-resolution')?.value;
     }
-    
-    // Checkboxes
     if (config.showGenerateAudio) {
         settings.generate_audio = document.getElementById('input-generate-audio')?.checked || false;
     }
@@ -1002,7 +1036,7 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         settings.shot_type = document.getElementById('input-shot-type')?.value || 'single';
     }
     
-    // ===== IMAGE UPLOADS (convert to base64) =====
+    // Image uploads (base64)
     if (config.showImage) {
         const imgFile = document.getElementById('input-image')?.files[0];
         if (imgFile) {
@@ -1016,22 +1050,17 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
             settings.image_tail = await fileToBase64(tailFile);
         }
     }
-    
-    // First/Last frames
     if (config.showFrames) {
         const firstFile = document.getElementById('input-first-frame')?.files[0];
         if (firstFile) {
             updateStatus('⏳ Processing first frame...');
             settings.first_frame = await fileToBase64(firstFile);
         }
-        
         const lastFile = document.getElementById('input-last-frame')?.files[0];
         if (lastFile) {
             settings.last_frame = await fileToBase64(lastFile);
         }
     }
-    
-    // Reference images
     if (config.showRefImages) {
         const refImages = [];
         for (let i = 1; i <= 7; i++) {
@@ -1044,7 +1073,7 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         if (refImages.length > 0) settings.reference_images = refImages;
     }
     
-    // ===== MOTION CONTROL - PRE-UPLOAD VIDEO =====
+    // Motion Control - pre-upload
     if (config.showMotion) {
         const motionImg = document.getElementById('input-motion-image')?.files[0];
         const motionVid = document.getElementById('input-motion-video')?.files[0];
@@ -1053,18 +1082,16 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
             throw new Error('Motion Control membutuhkan gambar karakter DAN video gerakan!');
         }
         
-        // Upload image to get URL
         updateStatus('⏳ Uploading character image...');
         settings.image_url = await uploadFile(motionImg);
         
-        // Upload video to get URL
-        updateStatus('⏳ Uploading motion video (mungkin butuh waktu)...');
+        updateStatus('⏳ Uploading motion video...');
         settings.video_url = await uploadFile(motionVid);
         
         settings.character_orientation = document.getElementById('input-character-orientation')?.value || 'video';
     }
     
-    // ===== OMNIHUMAN - PRE-UPLOAD IMAGE & AUDIO =====
+    // OmniHuman - pre-upload
     if (config.showOmnihuman) {
         const omniImg = document.getElementById('input-omni-image')?.files[0];
         const omniAudio = document.getElementById('input-omni-audio')?.files[0];
@@ -1073,27 +1100,24 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
             throw new Error('OmniHuman membutuhkan gambar manusia DAN audio!');
         }
         
-        // Upload image to get URL
-        updateStatus('⏳ Uploading portrait image...');
+        updateStatus('⏳ Uploading portrait...');
         settings.image_url = await uploadFile(omniImg);
         
-        // Upload audio to get URL
-        updateStatus('⏳ Uploading audio file...');
+        updateStatus('⏳ Uploading audio...');
         settings.audio_url = await uploadFile(omniAudio);
         
         settings.resolution = document.getElementById('input-omni-resolution')?.value || '1080p';
         settings.turbo_mode = document.getElementById('input-turbo-mode')?.checked || false;
     }
     
-    // ===== VFX - PRE-UPLOAD VIDEO =====
+    // VFX - pre-upload
     if (config.showVfx) {
         const vfxVid = document.getElementById('input-vfx-video')?.files[0];
         if (!vfxVid) {
             throw new Error('VFX membutuhkan video input!');
         }
         
-        // Upload video to get URL
-        updateStatus('⏳ Uploading video (mungkin butuh waktu)...');
+        updateStatus('⏳ Uploading video...');
         settings.video_url = await uploadFile(vfxVid);
         
         settings.filter_type = parseInt(document.getElementById('input-filter-type')?.value || 1);
@@ -1138,7 +1162,7 @@ function resetForm() {
 }
 
 // ============================================
-// LOAD & RENDER JOBS
+// LOAD & RENDER JOBS (tanpa tombol batalkan)
 // ============================================
 
 async function loadJobs() {
@@ -1168,13 +1192,11 @@ function renderJobs() {
     const activeJobs = userJobs.filter(j => ['pending', 'processing'].includes(j.status));
     const historyJobs = userJobs.filter(j => ['completed', 'failed', 'cancelled'].includes(j.status));
     
-    // Update counts
     const activeCount = document.getElementById('active-count');
     const historyCount = document.getElementById('history-count');
     if (activeCount) activeCount.textContent = activeJobs.length;
     if (historyCount) historyCount.textContent = historyJobs.length;
     
-    // Render active jobs
     const activeContainer = document.getElementById('active-jobs');
     if (activeContainer) {
         if (activeJobs.length === 0) {
@@ -1190,7 +1212,6 @@ function renderJobs() {
         }
     }
     
-    // Render history
     const historyContainer = document.getElementById('history-jobs');
     if (historyContainer) {
         if (historyJobs.length === 0) {
@@ -1240,9 +1261,19 @@ function renderJobCard(job, isActive) {
         }
     }
     
-    let cancelButton = '';
+    // Hitung waktu tersisa (max 45 menit)
+    let timeInfo = '';
     if (isActive) {
-        cancelButton = `<button class="btn-cancel-job" onclick="event.stopPropagation(); cancelJob('${job.id}')">🛑 Batalkan</button>`;
+        const createdTime = new Date(job.created_at).getTime();
+        const now = Date.now();
+        const elapsed = Math.floor((now - createdTime) / 1000 / 60); // menit
+        const remaining = 45 - elapsed;
+        
+        if (remaining > 0) {
+            timeInfo = `<span class="job-time">⏱️ ${remaining} menit tersisa</span>`;
+        } else {
+            timeInfo = `<span class="job-time warning">⏱️ Akan selesai otomatis</span>`;
+        }
     }
     
     return `
@@ -1263,90 +1294,13 @@ function renderJobCard(job, isActive) {
                     </div>
                     <span class="progress-text">${progress}% - ${stepName}</span>
                 </div>
-                <div class="job-actions">
-                    ${cancelButton}
+                <div class="job-footer">
+                    ${timeInfo}
+                    <span class="job-note">💰 Kredit otomatis dikembalikan jika gagal</span>
                 </div>
             ` : ''}
         </div>
     `;
-}
-
-// ============================================
-// CANCEL JOB
-// ============================================
-
-async function cancelJob(jobId) {
-    if (!confirm('Apakah Anda yakin ingin membatalkan job ini?\n\nKredit akan dikembalikan.')) {
-        return;
-    }
-    
-    try {
-        const user = await getCurrentUser();
-        if (!user) return;
-        
-        // Get job details
-        const { data: job, error: jobError } = await supabaseClient
-            .from('jobs')
-            .select('*')
-            .eq('id', jobId)
-            .eq('user_id', user.id)
-            .single();
-        
-        if (jobError || !job) {
-            alert('Job tidak ditemukan');
-            return;
-        }
-        
-        if (!['pending', 'processing'].includes(job.status)) {
-            alert('Job ini tidak dapat dibatalkan');
-            return;
-        }
-        
-        const creditsToRefund = job.input_data?.credits_used || 0;
-        
-        // Update job status
-        const { error: updateError } = await supabaseClient
-            .from('jobs')
-            .update({
-                status: 'cancelled',
-                error_message: 'Dibatalkan oleh user',
-                completed_at: new Date().toISOString()
-            })
-            .eq('id', jobId);
-        
-        if (updateError) {
-            throw new Error('Gagal membatalkan job');
-        }
-        
-        // Refund credits
-        if (creditsToRefund > 0) {
-            const { data: currentCredits } = await supabaseClient
-                .from('user_credits')
-                .select('balance, total_refunded')
-                .eq('user_id', user.id)
-                .single();
-            
-            if (currentCredits) {
-                await supabaseClient
-                    .from('user_credits')
-                    .update({
-                        balance: currentCredits.balance + creditsToRefund,
-                        total_refunded: (currentCredits.total_refunded || 0) + creditsToRefund,
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('user_id', user.id);
-            }
-        }
-        
-        alert(`✅ Job dibatalkan.\n\n${creditsToRefund} kredit dikembalikan.`);
-        
-        await loadJobs();
-        await loadUserCredits();
-        
-    } catch (error) {
-        console.error('Cancel job error:', error);
-        alert('Gagal membatalkan job: ' + error.message);
-    }
 }
 
 // ============================================
@@ -1369,7 +1323,6 @@ function openJobModal(jobId) {
         statusEl.className = 'status-badge status-' + job.status;
     }
     
-    // Progress section
     const progressSection = document.getElementById('modal-progress');
     const resultsSection = document.getElementById('modal-results');
     const errorSection = document.getElementById('modal-error');
@@ -1397,7 +1350,7 @@ function openJobModal(jobId) {
         if (errorSection) errorSection.style.display = 'block';
         
         const modalErrorMsg = document.getElementById('modal-error-msg');
-        if (modalErrorMsg) modalErrorMsg.textContent = job.error_message || 'Unknown error';
+        if (modalErrorMsg) modalErrorMsg.textContent = job.error_message || 'Proses tidak selesai dalam waktu yang ditentukan';
         
     } else {
         if (progressSection) progressSection.style.display = 'block';
@@ -1429,7 +1382,7 @@ function closeJobModal() {
 }
 
 // ============================================
-// CREDITS MODAL & PURCHASE - FIXED
+// CREDITS MODAL & PURCHASE
 // ============================================
 
 function openCreditsModal() {
@@ -1447,7 +1400,6 @@ function openCreditsModal() {
             </div>
         `).join('');
         
-        // Add click handlers to buttons
         grid.querySelectorAll('.btn-buy-package').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1471,7 +1423,6 @@ function closeCreditsModal() {
     if (creditsModal) creditsModal.style.display = 'none';
 }
 
-// FIXED: purchaseCredits dengan format yang benar untuk Midtrans
 async function purchaseCredits(packageId, buttonElement) {
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1485,18 +1436,17 @@ async function purchaseCredits(packageId, buttonElement) {
         btn.disabled = true;
         btn.textContent = 'Memproses...';
         
-        // Get package info
         const pkg = CREDIT_PACKAGES.find(p => p.id === packageId);
         if (!pkg) {
             throw new Error('Paket tidak ditemukan');
         }
         
-        // Generate order ID (shorter format)
+        // Generate short order ID
         const timestamp = Date.now().toString(36).toUpperCase();
         const random = Math.random().toString(36).substr(2, 4).toUpperCase();
         const orderId = `VC${timestamp}${random}`;
         
-        // Create pending purchase record first
+        // Save to database
         try {
             await supabaseClient
                 .from('credit_purchases')
@@ -1508,22 +1458,20 @@ async function purchaseCredits(packageId, buttonElement) {
                     credits: pkg.credits,
                     status: 'pending'
                 });
-        } catch (insertError) {
-            console.warn('Could not save purchase record:', insertError);
+        } catch (e) {
+            console.warn('Could not save purchase:', e);
         }
         
-        // Check if Midtrans Snap is available
         if (typeof window.snap === 'undefined') {
-            alert(`💳 Midtrans belum dimuat.\n\nSilakan refresh halaman dan coba lagi.`);
+            alert('💳 Midtrans belum dimuat.\n\nSilakan refresh halaman dan coba lagi.');
             btn.disabled = false;
             btn.textContent = originalText;
             return;
         }
         
-        // Shorter item name (max 50 chars for Midtrans)
-        const itemName = `${pkg.credits} Video Credits`;
+        // Short item name (max 50 chars)
+        const itemName = `${pkg.credits} Credits`;
         
-        // Use existing create-payment edge function
         const response = await fetch(`${SUPABASE_URL}/functions/v1/create-payment`, {
             method: 'POST',
             headers: {
@@ -1541,32 +1489,18 @@ async function purchaseCredits(packageId, buttonElement) {
         
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Payment API error:', response.status, errorText);
+            console.error('Payment error:', response.status, errorText);
             throw new Error('Gagal membuat pembayaran');
         }
         
         const result = await response.json();
         
         if (!result.success || !result.snap_token) {
-            throw new Error(result.message || 'Gagal mendapatkan token pembayaran');
+            throw new Error(result.message || 'Gagal mendapatkan token');
         }
         
-        // Update purchase with snap token
-        try {
-            await supabaseClient
-                .from('credit_purchases')
-                .update({ snap_token: result.snap_token })
-                .eq('order_id', orderId);
-        } catch (e) {
-            console.warn('Could not update snap token:', e);
-        }
-        
-        // Open Midtrans Snap
         window.snap.pay(result.snap_token, {
             onSuccess: async function(paymentResult) {
-                console.log('Payment success:', paymentResult);
-                
-                // Add credits to user
                 try {
                     const { data: currentCredits } = await supabaseClient
                         .from('user_credits')
@@ -1585,42 +1519,26 @@ async function purchaseCredits(packageId, buttonElement) {
                             .eq('user_id', session.user.id);
                     }
                     
-                    // Update purchase status
                     await supabaseClient
                         .from('credit_purchases')
-                        .update({ 
-                            status: 'paid',
-                            paid_at: new Date().toISOString()
-                        })
+                        .update({ status: 'paid', paid_at: new Date().toISOString() })
                         .eq('order_id', orderId);
                 } catch (e) {
-                    console.error('Error updating credits:', e);
+                    console.error('Credit update error:', e);
                 }
                 
-                alert(`🎉 Pembayaran berhasil!\n\n+${pkg.credits} kredit telah ditambahkan ke akun Anda.`);
+                alert(`🎉 Pembayaran berhasil!\n\n+${pkg.credits} kredit ditambahkan.`);
                 closeCreditsModal();
                 await loadUserCredits();
             },
-            onPending: function(pendingResult) {
-                console.log('Payment pending:', pendingResult);
-                alert('⏳ Menunggu pembayaran...\n\nSilakan selesaikan pembayaran Anda.\nKredit akan ditambahkan otomatis setelah pembayaran dikonfirmasi.');
+            onPending: function() {
+                alert('⏳ Menunggu pembayaran...\n\nKredit akan ditambahkan otomatis setelah bayar.');
                 closeCreditsModal();
             },
-            onError: function(errorResult) {
-                console.error('Payment error:', errorResult);
-                
-                // Update purchase status
-                try {
-                    supabaseClient
-                        .from('credit_purchases')
-                        .update({ status: 'failed' })
-                        .eq('order_id', orderId);
-                } catch (e) {}
-                
-                alert('❌ Pembayaran gagal.\n\nSilakan coba lagi.');
+            onError: function() {
+                alert('❌ Pembayaran gagal.');
             },
             onClose: function() {
-                console.log('Payment popup closed');
                 btn.disabled = false;
                 btn.textContent = originalText;
             }
@@ -1649,9 +1567,7 @@ function switchTab(tabName) {
         panel.classList.toggle('active', panel.id === `tab-${tabName}`);
     });
     
-    if (tabName === 'pricing') {
-        loadPricingTable();
-    }
+    if (tabName === 'pricing') loadPricingTable();
 }
 
 function loadPricingTable() {
@@ -1669,16 +1585,12 @@ function loadPricingTable() {
     };
     
     let html = '';
-    
     for (const [category, models] of Object.entries(categories)) {
         html += `<div class="pricing-category"><h3>${category}</h3>`;
-        
         for (const modelId of models) {
             const config = MODEL_CONFIGS[modelId];
             const credits = MODEL_PRICING[modelId];
-            
             if (!config) continue;
-            
             html += `
                 <div class="pricing-item">
                     <div class="pricing-model">${modelId}</div>
@@ -1687,10 +1599,8 @@ function loadPricingTable() {
                 </div>
             `;
         }
-        
         html += '</div>';
     }
-    
     grid.innerHTML = html;
 }
 
@@ -1703,7 +1613,6 @@ function startPolling() {
     
     pollingInterval = setInterval(async () => {
         const hasActiveJobs = userJobs.some(j => ['pending', 'processing'].includes(j.status));
-        
         if (hasActiveJobs) {
             await loadJobs();
             await loadUserCredits();
@@ -1711,21 +1620,13 @@ function startPolling() {
     }, POLLING_INTERVAL_MS);
 }
 
-function stopPolling() {
-    if (pollingInterval) {
-        clearInterval(pollingInterval);
-        pollingInterval = null;
-    }
-}
-
 // ============================================
-// GLOBAL FUNCTIONS
+// GLOBAL
 // ============================================
 
 window.openJobModal = openJobModal;
 window.closeJobModal = closeJobModal;
-window.cancelJob = cancelJob;
 window.openCreditsModal = openCreditsModal;
 window.closeCreditsModal = closeCreditsModal;
 
-console.log('✅ Video API Generator v3.1 loaded');
+console.log('✅ Video API Generator v3.2 loaded');
