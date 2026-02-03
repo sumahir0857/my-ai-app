@@ -412,10 +412,22 @@
                         </div>
                     </div>
 
-                    <!-- Settings Section -->
+<!-- Settings Section -->
                     <div class="form-section" id="section-settings">
                         <h3>⚙️ Pengaturan</h3>
+                        
+                        <!-- Row 1: Duration & Aspect Ratios -->
                         <div class="form-row">
+                            <!-- Duration - Universal (NEW) -->
+                            <div class="form-group" id="group-duration">
+                                <label>Durasi Video</label>
+                                <select id="input-duration">
+                                    <option value="5">5 detik</option>
+                                    <option value="10">10 detik</option>
+                                </select>
+                            </div>
+
+                            <!-- Aspect Ratio variants (Existing) -->
                             <div class="form-group" id="group-aspect-ratio" style="display:none;">
                                 <label>Aspect Ratio</label>
                                 <select id="input-aspect-ratio">
@@ -468,6 +480,7 @@
                             </div>
                         </div>
 
+                        <!-- Row 2: Advanced Settings (Existing) -->
                         <div class="form-row">
                             <div class="form-group" id="group-cfg-scale" style="display:none;">
                                 <label>CFG Scale: <span id="cfg-value">0.5</span></label>
@@ -483,7 +496,7 @@
                             </div>
                         </div>
 
-                        <!-- Checkboxes -->
+                        <!-- Checkboxes (Existing) -->
                         <div class="checkbox-row">
                             <label class="checkbox-item" id="check-generate-audio" style="display:none;">
                                 <input type="checkbox" id="input-generate-audio">
