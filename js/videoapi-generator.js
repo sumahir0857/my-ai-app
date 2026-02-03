@@ -943,6 +943,12 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
     };
     
     const settings = data.settings;
+    const submitBtn = document.getElementById('btn-submit');
+    
+    // Helper function to update button text
+    const updateStatus = (text) => {
+        if (submitBtn) submitBtn.innerHTML = text;
+    };
     
     // CFG Scale
     if (config.showCfg) {
@@ -996,23 +1002,33 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         settings.shot_type = document.getElementById('input-shot-type')?.value || 'single';
     }
     
-    // Image uploads
+    // ===== IMAGE UPLOADS (convert to base64) =====
     if (config.showImage) {
         const imgFile = document.getElementById('input-image')?.files[0];
-        if (imgFile) settings.image = await fileToBase64(imgFile);
+        if (imgFile) {
+            updateStatus('⏳ Processing image...');
+            settings.image = await fileToBase64(imgFile);
+        }
     }
     if (config.showImageTail) {
         const tailFile = document.getElementById('input-image-tail')?.files[0];
-        if (tailFile) settings.image_tail = await fileToBase64(tailFile);
+        if (tailFile) {
+            settings.image_tail = await fileToBase64(tailFile);
+        }
     }
     
     // First/Last frames
     if (config.showFrames) {
         const firstFile = document.getElementById('input-first-frame')?.files[0];
-        if (firstFile) settings.first_frame = await fileToBase64(firstFile);
+        if (firstFile) {
+            updateStatus('⏳ Processing first frame...');
+            settings.first_frame = await fileToBase64(firstFile);
+        }
         
         const lastFile = document.getElementById('input-last-frame')?.files[0];
-        if (lastFile) settings.last_frame = await fileToBase64(lastFile);
+        if (lastFile) {
+            settings.last_frame = await fileToBase64(lastFile);
+        }
     }
     
     // Reference images
@@ -1020,12 +1036,15 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         const refImages = [];
         for (let i = 1; i <= 7; i++) {
             const refFile = document.getElementById(`input-ref-${i}`)?.files[0];
-            if (refFile) refImages.push(await fileToBase64(refFile));
+            if (refFile) {
+                updateStatus(`⏳ Processing ref image ${i}...`);
+                refImages.push(await fileToBase64(refFile));
+            }
         }
         if (refImages.length > 0) settings.reference_images = refImages;
     }
     
-    // Motion control
+    // ===== MOTION CONTROL - PRE-UPLOAD VIDEO =====
     if (config.showMotion) {
         const motionImg = document.getElementById('input-motion-image')?.files[0];
         const motionVid = document.getElementById('input-motion-video')?.files[0];
@@ -1034,12 +1053,18 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
             throw new Error('Motion Control membutuhkan gambar karakter DAN video gerakan!');
         }
         
-        settings.motion_image = await fileToBase64(motionImg);
-        settings.motion_video = await fileToBase64(motionVid);
+        // Upload image to get URL
+        updateStatus('⏳ Uploading character image...');
+        settings.image_url = await uploadFile(motionImg);
+        
+        // Upload video to get URL
+        updateStatus('⏳ Uploading motion video (mungkin butuh waktu)...');
+        settings.video_url = await uploadFile(motionVid);
+        
         settings.character_orientation = document.getElementById('input-character-orientation')?.value || 'video';
     }
     
-    // OmniHuman
+    // ===== OMNIHUMAN - PRE-UPLOAD IMAGE & AUDIO =====
     if (config.showOmnihuman) {
         const omniImg = document.getElementById('input-omni-image')?.files[0];
         const omniAudio = document.getElementById('input-omni-audio')?.files[0];
@@ -1048,20 +1073,29 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
             throw new Error('OmniHuman membutuhkan gambar manusia DAN audio!');
         }
         
-        settings.omni_image = await fileToBase64(omniImg);
-        settings.omni_audio = await fileToBase64(omniAudio);
+        // Upload image to get URL
+        updateStatus('⏳ Uploading portrait image...');
+        settings.image_url = await uploadFile(omniImg);
+        
+        // Upload audio to get URL
+        updateStatus('⏳ Uploading audio file...');
+        settings.audio_url = await uploadFile(omniAudio);
+        
         settings.resolution = document.getElementById('input-omni-resolution')?.value || '1080p';
         settings.turbo_mode = document.getElementById('input-turbo-mode')?.checked || false;
     }
     
-    // VFX
+    // ===== VFX - PRE-UPLOAD VIDEO =====
     if (config.showVfx) {
         const vfxVid = document.getElementById('input-vfx-video')?.files[0];
         if (!vfxVid) {
             throw new Error('VFX membutuhkan video input!');
         }
         
-        settings.vfx_video = await fileToBase64(vfxVid);
+        // Upload video to get URL
+        updateStatus('⏳ Uploading video (mungkin butuh waktu)...');
+        settings.video_url = await uploadFile(vfxVid);
+        
         settings.filter_type = parseInt(document.getElementById('input-filter-type')?.value || 1);
         settings.fps = parseInt(document.getElementById('input-vfx-fps')?.value || 24);
         
@@ -1073,6 +1107,8 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
             settings.motion_decay = parseFloat(document.getElementById('input-motion-decay')?.value || 0.8);
         }
     }
+    
+    updateStatus('⏳ Submitting job...');
     
     return data;
 }
@@ -1435,8 +1471,7 @@ function closeCreditsModal() {
     if (creditsModal) creditsModal.style.display = 'none';
 }
 
-// FIXED: purchaseCredits now receives button element directly
-// FIXED: purchaseCredits menggunakan create-payment yang sudah ada
+// FIXED: purchaseCredits dengan format yang benar untuk Midtrans
 async function purchaseCredits(packageId, buttonElement) {
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1456,24 +1491,25 @@ async function purchaseCredits(packageId, buttonElement) {
             throw new Error('Paket tidak ditemukan');
         }
         
-        // Generate order ID
-        const orderId = 'VCRED-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        // Generate order ID (shorter format)
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+        const orderId = `VC${timestamp}${random}`;
         
         // Create pending purchase record first
-        const { error: insertError } = await supabaseClient
-            .from('credit_purchases')
-            .insert({
-                user_id: session.user.id,
-                order_id: orderId,
-                package_id: packageId,
-                amount_idr: pkg.price,
-                credits: pkg.credits,
-                status: 'pending'
-            });
-        
-        if (insertError) {
+        try {
+            await supabaseClient
+                .from('credit_purchases')
+                .insert({
+                    user_id: session.user.id,
+                    order_id: orderId,
+                    package_id: packageId,
+                    amount_idr: pkg.price,
+                    credits: pkg.credits,
+                    status: 'pending'
+                });
+        } catch (insertError) {
             console.warn('Could not save purchase record:', insertError);
-            // Continue anyway - we can still process payment
         }
         
         // Check if Midtrans Snap is available
@@ -1484,6 +1520,9 @@ async function purchaseCredits(packageId, buttonElement) {
             return;
         }
         
+        // Shorter item name (max 50 chars for Midtrans)
+        const itemName = `${pkg.credits} Video Credits`;
+        
         // Use existing create-payment edge function
         const response = await fetch(`${SUPABASE_URL}/functions/v1/create-payment`, {
             method: 'POST',
@@ -1493,10 +1532,10 @@ async function purchaseCredits(packageId, buttonElement) {
                 'apikey': SUPABASE_ANON_KEY
             },
             body: JSON.stringify({ 
-                plan_id: 'video-credit-' + packageId,
+                plan_id: packageId,
                 order_id: orderId,
                 amount: pkg.price,
-                plan_name: `Video Credits ${pkg.name} (${pkg.credits} kredit)`
+                plan_name: itemName
             })
         });
         
@@ -1513,10 +1552,14 @@ async function purchaseCredits(packageId, buttonElement) {
         }
         
         // Update purchase with snap token
-        await supabaseClient
-            .from('credit_purchases')
-            .update({ snap_token: result.snap_token })
-            .eq('order_id', orderId);
+        try {
+            await supabaseClient
+                .from('credit_purchases')
+                .update({ snap_token: result.snap_token })
+                .eq('order_id', orderId);
+        } catch (e) {
+            console.warn('Could not update snap token:', e);
+        }
         
         // Open Midtrans Snap
         window.snap.pay(result.snap_token, {
@@ -1524,31 +1567,35 @@ async function purchaseCredits(packageId, buttonElement) {
                 console.log('Payment success:', paymentResult);
                 
                 // Add credits to user
-                const { data: currentCredits } = await supabaseClient
-                    .from('user_credits')
-                    .select('balance, total_purchased')
-                    .eq('user_id', session.user.id)
-                    .single();
-                
-                if (currentCredits) {
-                    await supabaseClient
+                try {
+                    const { data: currentCredits } = await supabaseClient
                         .from('user_credits')
-                        .update({
-                            balance: currentCredits.balance + pkg.credits,
-                            total_purchased: (currentCredits.total_purchased || 0) + pkg.credits,
-                            updated_at: new Date().toISOString()
+                        .select('balance, total_purchased')
+                        .eq('user_id', session.user.id)
+                        .single();
+                    
+                    if (currentCredits) {
+                        await supabaseClient
+                            .from('user_credits')
+                            .update({
+                                balance: currentCredits.balance + pkg.credits,
+                                total_purchased: (currentCredits.total_purchased || 0) + pkg.credits,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('user_id', session.user.id);
+                    }
+                    
+                    // Update purchase status
+                    await supabaseClient
+                        .from('credit_purchases')
+                        .update({ 
+                            status: 'paid',
+                            paid_at: new Date().toISOString()
                         })
-                        .eq('user_id', session.user.id);
+                        .eq('order_id', orderId);
+                } catch (e) {
+                    console.error('Error updating credits:', e);
                 }
-                
-                // Update purchase status
-                await supabaseClient
-                    .from('credit_purchases')
-                    .update({ 
-                        status: 'paid',
-                        paid_at: new Date().toISOString()
-                    })
-                    .eq('order_id', orderId);
                 
                 alert(`🎉 Pembayaran berhasil!\n\n+${pkg.credits} kredit telah ditambahkan ke akun Anda.`);
                 closeCreditsModal();
@@ -1563,10 +1610,12 @@ async function purchaseCredits(packageId, buttonElement) {
                 console.error('Payment error:', errorResult);
                 
                 // Update purchase status
-                supabaseClient
-                    .from('credit_purchases')
-                    .update({ status: 'failed' })
-                    .eq('order_id', orderId);
+                try {
+                    supabaseClient
+                        .from('credit_purchases')
+                        .update({ status: 'failed' })
+                        .eq('order_id', orderId);
+                } catch (e) {}
                 
                 alert('❌ Pembayaran gagal.\n\nSilakan coba lagi.');
             },
