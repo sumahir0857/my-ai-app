@@ -276,11 +276,13 @@
                         </div>
                     </div>
 
-                    <!-- Motion Control Section -->
+                    <!-- Motion Control Section - UPDATED -->
                     <div class="form-section" id="section-motion" style="display:none;">
                         <h3>🎭 Motion Control</h3>
                         <p class="form-hint">Upload gambar karakter + video referensi gerakan</p>
+                        
                         <div class="upload-row">
+                            <!-- Character Image -->
                             <div class="upload-group">
                                 <label>Character Image * (JPG/PNG, min 300x300px)</label>
                                 <div class="upload-box" onclick="document.getElementById('input-motion-image').click()">
@@ -292,18 +294,41 @@
                                     <img id="preview-motion-image" class="upload-preview" style="display:none;">
                                 </div>
                             </div>
+                            
+                            <!-- Motion Video - NEW UPLOAD SYSTEM -->
                             <div class="upload-group">
                                 <label>Motion Video * (MP4/MOV, 3-30 detik)</label>
+                                
+                                <!-- Option 1: Upload File -->
                                 <div class="upload-box" onclick="document.getElementById('input-motion-video').click()">
                                     <input type="file" id="input-motion-video" accept="video/*" hidden>
                                     <div class="upload-placeholder">
                                         <span class="upload-icon">🎥</span>
-                                        <span>Video Gerakan</span>
+                                        <span>Klik untuk pilih video</span>
                                     </div>
                                     <video id="preview-motion-video" class="upload-preview" style="display:none;" controls></video>
                                 </div>
+                                
+                                <button type="button" id="btn-upload-motion-video" class="btn-upload-video" style="display:none;" disabled>
+                                    📤 Upload Video
+                                </button>
+                                
+                                <div id="motion-video-status" class="video-upload-status"></div>
+                                
+                                <!-- Option 2: Paste URL -->
+                                <div class="video-url-section">
+                                    <label>Atau paste URL video:</label>
+                                    <input type="text" id="input-motion-video-url" class="video-url-input" 
+                                           placeholder="https://example.com/video.mp4">
+                                    <span class="url-status"></span>
+                                </div>
+                                
+                                <button type="button" class="btn-tutorial" onclick="openVideoTutorial()">
+                                    📖 Lihat Tutorial Upload Video
+                                </button>
                             </div>
                         </div>
+                        
                         <div class="form-group">
                             <label>Character Orientation</label>
                             <select id="input-character-orientation">
@@ -358,21 +383,43 @@
                         </div>
                     </div>
 
-                    <!-- VFX Section -->
+                    <!-- VFX Section - UPDATED -->
                     <div class="form-section" id="section-vfx" style="display:none;">
                         <h3>🎨 VFX - Visual Effects</h3>
                         <p class="form-hint">Apply efek visual ke video yang sudah ada</p>
+                        
                         <div class="upload-group full-width">
                             <label>Video Input * (MP4/MOV)</label>
+                            
+                            <!-- Option 1: Upload File -->
                             <div class="upload-box" onclick="document.getElementById('input-vfx-video').click()">
                                 <input type="file" id="input-vfx-video" accept="video/*" hidden>
                                 <div class="upload-placeholder">
                                     <span class="upload-icon">🎬</span>
-                                    <span>Video untuk VFX</span>
+                                    <span>Klik untuk pilih video</span>
                                 </div>
                                 <video id="preview-vfx-video" class="upload-preview" style="display:none;" controls></video>
                             </div>
+                            
+                            <button type="button" id="btn-upload-vfx-video" class="btn-upload-video" style="display:none;" disabled>
+                                📤 Upload Video
+                            </button>
+                            
+                            <div id="vfx-video-status" class="video-upload-status"></div>
+                            
+                            <!-- Option 2: Paste URL -->
+                            <div class="video-url-section">
+                                <label>Atau paste URL video:</label>
+                                <input type="text" id="input-vfx-video-url" class="video-url-input" 
+                                       placeholder="https://example.com/video.mp4">
+                                <span class="url-status"></span>
+                            </div>
+                            
+                            <button type="button" class="btn-tutorial" onclick="openVideoTutorial()">
+                                📖 Lihat Tutorial Upload Video
+                            </button>
                         </div>
+                        
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Filter Type</label>
@@ -412,7 +459,7 @@
                         </div>
                     </div>
 
-<!-- Settings Section -->
+                    <!-- Settings Section -->
                     <div class="form-section" id="section-settings">
                         <h3>⚙️ Pengaturan</h3>
                         
