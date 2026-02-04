@@ -105,83 +105,60 @@
             <div id="tab-create" class="tab-panel active">
                 <form id="generator-form" class="generator-form">
                     
-                     <!-- Model Selection - CUSTOM DROPDOWN -->
-<div class="form-section">
-    <h3>🤖 Pilih Model</h3>
-    <div class="form-group">
-        <!-- Custom Model Selector -->
-        <div class="custom-select-wrapper" id="model-select-wrapper">
-            <div class="custom-select-trigger" id="model-select-trigger">
-                <span class="custom-select-value" id="model-select-value">Kling 2.5 Pro (38 kredit)</span>
-                <span class="custom-select-arrow">▼</span>
-            </div>
-            <!-- Hidden native select for form submission -->
-            <select id="input-model" class="hidden-select">
-                <optgroup label="⭐ Kling Premium">
-                    <option value="kling-2-5-pro" selected>Kling 2.5 Pro (38 kredit)</option>
-                    <option value="kling-o1-pro-i2v">Kling O1 Pro - Image to Video (56 kredit)</option>
-                    <option value="kling-o1-pro-ref">Kling O1 Pro - Video Reference (84 kredit)</option>
-                    <option value="kling-2-6-pro">Kling 2.6 Pro - Text/Image to Video (35 kredit)</option>
-                    <option value="kling-2-6-motion-pro">Kling 2.6 Pro - Motion Control (70 kredit)</option>
-                    <option value="kling-2-1-pro">Kling 2.1 Pro (50 kredit)</option>
-                </optgroup>
-                <optgroup label="🎬 Kling Standard">
-                    <option value="kling-o1-std-i2v">Kling O1 Std - Image to Video (42 kredit)</option>
-                    <option value="kling-o1-std-ref">Kling O1 Std - Video Reference (63 kredit)</option>
-                    <option value="kling-2-6-motion-std">Kling 2.6 Std - Motion Control (35 kredit)</option>
-                    <option value="kling-1-6-pro">Kling 1.6 Pro (51 kredit)</option>
-                    <option value="kling-1-6-std">Kling 1.6 Std (30 kredit)</option>
-                </optgroup>
-                <optgroup label="🎥 MiniMax / Hailuo">
-                    <option value="minimax-live">MiniMax Video 01 Live (50 kredit)</option>
-                    <option value="minimax-hailuo-1080p">Hailuo 2.3 - 1080p (49 kredit)</option>
-                    <option value="minimax-hailuo-1080p-fast">Hailuo 2.3 - 1080p Fast (33 kredit)</option>
-                    <option value="minimax-hailuo-768p">Hailuo 2.3 - 768p (28 kredit)</option>
-                    <option value="minimax-hailuo-768p-fast">Hailuo 2.3 - 768p Fast (19 kredit)</option>
-                </optgroup>
-                <optgroup label="🌊 WAN">
-                    <option value="wan-i2v-720p">WAN 2.6 - Image to Video 720p (50 kredit)</option>
-                    <option value="wan-i2v-1080p">WAN 2.6 - Image to Video 1080p (75 kredit)</option>
-                    <option value="wan-t2v-720p">WAN 2.6 - Text to Video 720p (50 kredit)</option>
-                    <option value="wan-t2v-1080p">WAN 2.6 - Text to Video 1080p (75 kredit)</option>
-                </optgroup>
-                <optgroup label="🌱 Seedance (Hemat)">
-                    <option value="seedance-480p">Seedance 1.5 Pro - 480p (13 kredit) ⭐</option>
-                    <option value="seedance-720p">Seedance 1.5 Pro - 720p (28 kredit)</option>
-                    <option value="seedance-1080p">Seedance 1.5 Pro - 1080p (31 kredit)</option>
-                </optgroup>
-                <optgroup label="⚡ LTX">
-                    <option value="ltx-t2v">LTX 2.0 Pro - Text to Video (30 kredit)</option>
-                    <option value="ltx-i2v">LTX 2.0 Pro - Image to Video (30 kredit)</option>
-                </optgroup>
-                <optgroup label="🚀 RunWay & Lainnya">
-                    <option value="runway-gen4">RunWay Gen4 Turbo (75 kredit)</option>
-                    <option value="omnihuman">OmniHuman 1.5 (81 kredit)</option>
-                    <option value="vfx">VFX - Visual Effects (9 kredit)</option>
-                </optgroup>
-            </select>
-        </div>
-    </div>
-    <div class="model-info-box">
-        <span class="model-credits">🪙 Biaya: <strong id="estimated-credits">38</strong> kredit</span>
-        <span class="model-desc" id="model-desc">Model terbaru dengan kualitas tinggi</span>
-    </div>
-</div>
-
-<!-- Model Selector Bottom Sheet (Mobile) -->
-<div class="model-sheet-overlay" id="model-sheet-overlay"></div>
-<div class="model-sheet" id="model-sheet">
-    <div class="model-sheet-header">
-        <h3>🤖 Pilih Model</h3>
-        <button class="model-sheet-close" id="model-sheet-close">✕</button>
-    </div>
-    <div class="model-sheet-search">
-        <input type="text" id="model-search" placeholder="🔍 Cari model...">
-    </div>
-    <div class="model-sheet-content" id="model-sheet-content">
-        <!-- Will be populated by JS -->
-    </div>
-</div>
+                                        <!-- Model Selection - UPDATED PRICING -->
+                    <div class="form-section">
+                        <h3>🤖 Pilih Model</h3>
+                        <div class="form-group">
+                            <select id="input-model" class="model-select">
+                                <optgroup label="⭐ Kling Premium">
+                                    <option value="kling-2-5-pro">Kling 2.5 Pro (38 kredit)</option>
+                                    <option value="kling-o1-pro-i2v">Kling O1 Pro - Image to Video (56 kredit)</option>
+                                    <option value="kling-o1-pro-ref">Kling O1 Pro - Video Reference (84 kredit)</option>
+                                    <option value="kling-2-6-pro">Kling 2.6 Pro - Text/Image to Video (35 kredit)</option>
+                                    <option value="kling-2-6-motion-pro">Kling 2.6 Pro - Motion Control (70 kredit)</option>
+                                    <option value="kling-2-1-pro">Kling 2.1 Pro (50 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🎬 Kling Standard">
+                                    <option value="kling-o1-std-i2v">Kling O1 Std - Image to Video (42 kredit)</option>
+                                    <option value="kling-o1-std-ref">Kling O1 Std - Video Reference (63 kredit)</option>
+                                    <option value="kling-2-6-motion-std">Kling 2.6 Std - Motion Control (35 kredit)</option>
+                                    <option value="kling-1-6-pro">Kling 1.6 Pro (51 kredit)</option>
+                                    <option value="kling-1-6-std">Kling 1.6 Std (30 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🎥 MiniMax / Hailuo">
+                                    <option value="minimax-live">MiniMax Video 01 Live (50 kredit)</option>
+                                    <option value="minimax-hailuo-1080p">Hailuo 2.3 - 1080p (49 kredit)</option>
+                                    <option value="minimax-hailuo-1080p-fast">Hailuo 2.3 - 1080p Fast (33 kredit)</option>
+                                    <option value="minimax-hailuo-768p">Hailuo 2.3 - 768p (28 kredit)</option>
+                                    <option value="minimax-hailuo-768p-fast">Hailuo 2.3 - 768p Fast (19 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🌊 WAN">
+                                    <option value="wan-i2v-720p">WAN 2.6 - Image to Video 720p (50 kredit)</option>
+                                    <option value="wan-i2v-1080p">WAN 2.6 - Image to Video 1080p (75 kredit)</option>
+                                    <option value="wan-t2v-720p">WAN 2.6 - Text to Video 720p (50 kredit)</option>
+                                    <option value="wan-t2v-1080p">WAN 2.6 - Text to Video 1080p (75 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🌱 Seedance (Hemat)">
+                                    <option value="seedance-480p">Seedance 1.5 Pro - 480p (13 kredit) ⭐ Termurah</option>
+                                    <option value="seedance-720p">Seedance 1.5 Pro - 720p (28 kredit)</option>
+                                    <option value="seedance-1080p">Seedance 1.5 Pro - 1080p (31 kredit)</option>
+                                </optgroup>
+                                <optgroup label="⚡ LTX">
+                                    <option value="ltx-t2v">LTX 2.0 Pro - Text to Video (30 kredit)</option>
+                                    <option value="ltx-i2v">LTX 2.0 Pro - Image to Video (30 kredit)</option>
+                                </optgroup>
+                                <optgroup label="🚀 RunWay & Lainnya">
+                                    <option value="runway-gen4">RunWay Gen4 Turbo (75 kredit)</option>
+                                    <option value="omnihuman">OmniHuman 1.5 (81 kredit)</option>
+                                    <option value="vfx">VFX - Visual Effects (9 kredit)</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div class="model-info-box">
+                            <span class="model-credits">🪙 Biaya: <strong id="estimated-credits">38</strong> kredit</span>
+                            <span class="model-desc" id="model-desc">Model terbaru dengan kualitas tinggi</span>
+                        </div>
+                    </div>
                     <!-- Prompt Section -->
                     <div class="form-section" id="section-prompt">
                         <h3>📝 Prompt</h3>
