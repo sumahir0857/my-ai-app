@@ -180,8 +180,7 @@ const MODEL_CONFIGS = {
         desc: 'Motion Control - Gambar + Video wajib',
         showMotion: true, 
         showCfg: true,
-        showDuration: true,
-        durationOptions: [5, 10]
+        hideDuration: true
     },
     
     'kling-2-6-motion-std': {
@@ -189,8 +188,7 @@ const MODEL_CONFIGS = {
         desc: 'Motion Control - Gambar + Video wajib',
         showMotion: true, 
         showCfg: true,
-        showDuration: true,
-        durationOptions: [5, 10]
+        hideDuration: true
     },
     
     // ==========================================
