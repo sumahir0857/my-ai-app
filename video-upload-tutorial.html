@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutorial Upload Video - OrbitBot</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Space Grotesk', sans-serif; }
+        body { background: #050510; color: white; padding: 40px 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 2rem; margin-bottom: 30px; text-align: center; }
+        .card { background: rgba(30, 41, 59, 0.5); border-radius: 15px; padding: 25px; margin-bottom: 20px; }
+        h2 { color: #8b5cf6; margin-bottom: 15px; }
+        p { color: #cbd5e1; line-height: 1.7; margin-bottom: 12px; }
+        .step { display: flex; gap: 15px; margin-bottom: 15px; }
+        .step-num { background: #6366f1; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .host { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 10px; padding: 15px; margin: 10px 0; }
+        .host-name { font-weight: 600; color: #818cf8; }
+        a { color: #6366f1; }
+        .back-btn { display: inline-block; padding: 12px 24px; background: #6366f1; color: white; border-radius: 10px; text-decoration: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📹 Tutorial Upload Video</h1>
+        
+        <div class="card">
+            <h2>Kenapa Perlu Upload Dulu?</h2>
+            <p>Model AI seperti Motion Control dan VFX membutuhkan video dalam bentuk URL publik. Video harus diupload terlebih dahulu ke layanan hosting agar dapat diakses oleh server AI.</p>
+        </div>
+        
+        <div class="card">
+            <h2>Cara 1: Upload Langsung di Website</h2>
+            <div class="step">
+                <div class="step-num">1</div>
+                <p>Pilih file video dengan klik area upload</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <p>Klik tombol "📤 Upload Video"</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <p>Tunggu hingga muncul "✅ Video berhasil diupload!"</p>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <p>Baru setelah itu klik "Generate Video"</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Cara 2: Upload Manual ke Hosting</h2>
+            <p>Jika upload langsung gagal, Anda bisa upload manual ke salah satu layanan berikut:</p>
+            
+            <div class="host">
+                <p class="host-name">🐱 Catbox.moe (Recommended)</p>
+                <p>Gratis, tanpa registrasi, link permanen</p>
+                <p><a href="https://catbox.moe/" target="_blank">https://catbox.moe/</a></p>
+            </div>
+            
+            <div class="host">
+                <p class="host-name">📦 Litterbox.catbox.moe</p>
+                <p>Untuk file sementara (24 jam - 72 jam)</p>
+                <p><a href="https://litterbox.catbox.moe/" target="_blank">https://litterbox.catbox.moe/</a></p>
+            </div>
+            
+            <div class="host">
+                <p class="host-name">📁 file.io</p>
+                <p>Link sekali download</p>
+                <p><a href="https://www.file.io/" target="_blank">https://www.file.io/</a></p>
+            </div>
+            
+            <p style="margin-top: 15px;">Setelah upload, copy link yang diberikan dan paste di kolom "URL video".</p>
+        </div>
+        
+        <div class="card">
+            <h2>⚠️ Tips Penting</h2>
+            <ul style="list-style: disc; padding-left: 20px; color: #cbd5e1;">
+                <li>Ukuran video maksimal 100 MB</li>
+                <li>Format yang didukung: MP4, MOV, WebM</li>
+                <li>Durasi video 3-30 detik untuk hasil terbaik</li>
+                <li>Pastikan video tidak corrupt</li>
+                <li>Gunakan koneksi internet yang stabil</li>
+            </ul>
+        </div>
+        
+        <a href="videoapi-generator.html" class="back-btn">← Kembali ke Generator</a>
+    </div>
+</body>
+</html>
