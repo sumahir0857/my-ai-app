@@ -1788,8 +1788,9 @@ function renderJobCard(job, isActive) {
     `;
 }
 
-// Job Modal, Credits Modal, Tabs, Polling - sama seperti sebelumnya...
-// (Copy dari kode sebelumnya)
+// ============================================
+// JOB MODAL - Bagian ini SEBELUM purchaseCredits
+// ============================================
 
 function openJobModal(jobId) {
     const job = userJobs.find(j => j.id === jobId);
@@ -1798,80 +1799,274 @@ function openJobModal(jobId) {
     const input = job.input_data || {};
     const results = typeof job.results === 'string' ? JSON.parse(job.results || '{}') : (job.results || {});
     
-    document.getElementById('modal-title').textContent = input.model_id || 'Job Details';
+    const modalTitle = document.getElementById('modal-title');
+    if (modalTitle) modalTitle.textContent = input.model_id || 'Job Details';
     
     const statusEl = document.getElementById('modal-status');
-    statusEl.textContent = job.status;
-    statusEl.className = 'status-badge status-' + job.status;
+    if (statusEl) {
+        statusEl.textContent = job.status;
+        statusEl.className = 'status-badge status-' + job.status;
+    }
     
     const progressSection = document.getElementById('modal-progress');
     const resultsSection = document.getElementById('modal-results');
     const errorSection = document.getElementById('modal-error');
     
     if (job.status === 'completed') {
-        progressSection.style.display = 'none';
-        errorSection.style.display = 'none';
-        resultsSection.style.display = 'block';
+        if (progressSection) progressSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'block';
         
         if (results.video_url) {
-            document.getElementById('modal-video').src = results.video_url;
-            document.getElementById('modal-download').href = results.video_url;
+            const modalVideo = document.getElementById('modal-video');
+            const modalDownload = document.getElementById('modal-download');
+            if (modalVideo) modalVideo.src = results.video_url;
+            if (modalDownload) modalDownload.href = results.video_url;
         }
         
-        document.getElementById('modal-model').textContent = input.model_id || '-';
-        document.getElementById('modal-credits-final').textContent = (input.credits_used || 0) + ' kredit';
+        const modalModel = document.getElementById('modal-model');
+        const modalCreditsFinal = document.getElementById('modal-credits-final');
+        if (modalModel) modalModel.textContent = input.model_id || '-';
+        if (modalCreditsFinal) modalCreditsFinal.textContent = (input.credits_used || 0) + ' kredit';
         
     } else if (job.status === 'failed' || job.status === 'cancelled') {
-        progressSection.style.display = 'none';
-        resultsSection.style.display = 'none';
-        errorSection.style.display = 'block';
-        document.getElementById('modal-error-msg').textContent = job.error_message || 'Proses gagal';
+        if (progressSection) progressSection.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'block';
+        
+        const modalErrorMsg = document.getElementById('modal-error-msg');
+        if (modalErrorMsg) modalErrorMsg.textContent = job.error_message || 'Proses tidak selesai dalam waktu yang ditentukan';
         
     } else {
-        progressSection.style.display = 'block';
-        resultsSection.style.display = 'none';
-        errorSection.style.display = 'none';
+        if (progressSection) progressSection.style.display = 'block';
+        if (resultsSection) resultsSection.style.display = 'none';
+        if (errorSection) errorSection.style.display = 'none';
         
-        document.getElementById('modal-progress-fill').style.width = (job.progress_percent || 0) + '%';
-        document.getElementById('modal-progress-percent').textContent = (job.progress_percent || 0) + '%';
-        document.getElementById('modal-credits-used').textContent = (input.credits_used || 0) + ' kredit';
-        document.getElementById('modal-step').textContent = job.step_name || 'Waiting...';
+        const progress = job.progress_percent || 0;
+        const modalProgressFill = document.getElementById('modal-progress-fill');
+        const modalProgressPercent = document.getElementById('modal-progress-percent');
+        const modalCreditsUsed = document.getElementById('modal-credits-used');
+        const modalStep = document.getElementById('modal-step');
+        
+        if (modalProgressFill) modalProgressFill.style.width = progress + '%';
+        if (modalProgressPercent) modalProgressPercent.textContent = progress + '%';
+        if (modalCreditsUsed) modalCreditsUsed.textContent = (input.credits_used || 0) + ' kredit';
+        if (modalStep) modalStep.textContent = job.step_name || 'Waiting...';
     }
     
-    document.getElementById('job-modal').style.display = 'flex';
+    const jobModal = document.getElementById('job-modal');
+    if (jobModal) jobModal.style.display = 'flex';
 }
 
 function closeJobModal() {
-    document.getElementById('job-modal').style.display = 'none';
-    document.getElementById('modal-video').pause();
+    const jobModal = document.getElementById('job-modal');
+    if (jobModal) jobModal.style.display = 'none';
+    
+    const modalVideo = document.getElementById('modal-video');
+    if (modalVideo) modalVideo.pause();
 }
+
+// ============================================
+// CREDITS MODAL & PURCHASE - LETAKKAN DI SINI!
+// ============================================
 
 function openCreditsModal() {
     const grid = document.getElementById('packages-grid');
-    grid.innerHTML = CREDIT_PACKAGES.map(pkg => `
-        <div class="package-card ${pkg.popular ? 'popular' : ''} ${pkg.bestValue ? 'best-value' : ''}">
-            ${pkg.popular ? '<span class="package-badge">⭐ Recommended</span>' : ''}
-            ${pkg.bestValue ? '<span class="package-badge best">💎 Best Value</span>' : ''}
-            <h3 class="package-name">${pkg.name}</h3>
-            <div class="package-credits">${pkg.credits.toLocaleString('id-ID')} Kredit</div>
-            <div class="package-price">Rp ${pkg.price.toLocaleString('id-ID')}</div>
-            <div class="package-per-credit">Rp ${pkg.pricePerCredit}/kredit</div>
-            <button class="btn-buy-package" onclick="purchaseCredits('${pkg.id}', this)">Beli Sekarang</button>
-        </div>
-    `).join('');
+    if (grid) {
+        grid.innerHTML = CREDIT_PACKAGES.map(pkg => `
+            <div class="package-card ${pkg.popular ? 'popular' : ''} ${pkg.bestValue ? 'best-value' : ''}">
+                ${pkg.popular ? '<span class="package-badge">⭐ Recommended</span>' : ''}
+                ${pkg.bestValue ? '<span class="package-badge best">💎 Best Value</span>' : ''}
+                <h3 class="package-name">${pkg.name}</h3>
+                <div class="package-credits">${pkg.credits.toLocaleString('id-ID')} Kredit</div>
+                <div class="package-price">Rp ${pkg.price.toLocaleString('id-ID')}</div>
+                <div class="package-per-credit">Rp ${pkg.pricePerCredit}/kredit</div>
+                <button class="btn-buy-package" data-package-id="${pkg.id}">Beli Sekarang</button>
+            </div>
+        `).join('');
+        
+        grid.querySelectorAll('.btn-buy-package').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const packageId = btn.dataset.packageId;
+                purchaseCredits(packageId, btn);
+            });
+        });
+    }
     
-    document.getElementById('modal-current-credits').textContent = userCredits.toLocaleString('id-ID') + ' kredit';
-    document.getElementById('credits-modal').style.display = 'flex';
+    const modalCredits = document.getElementById('modal-current-credits');
+    if (modalCredits) {
+        modalCredits.textContent = userCredits.toLocaleString('id-ID') + ' kredit';
+    }
+    
+    const creditsModal = document.getElementById('credits-modal');
+    if (creditsModal) creditsModal.style.display = 'flex';
 }
 
 function closeCreditsModal() {
-    document.getElementById('credits-modal').style.display = 'none';
+    const creditsModal = document.getElementById('credits-modal');
+    if (creditsModal) creditsModal.style.display = 'none';
 }
 
-async function purchaseCredits(packageId, btn) {
-    // Same as before...
-    alert('Fitur pembelian akan tersedia segera!');
+async function purchaseCredits(packageId, buttonElement) {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            alert('Silakan login terlebih dahulu');
+            return;
+        }
+        
+        const btn = buttonElement;
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+        
+        const pkg = CREDIT_PACKAGES.find(p => p.id === packageId);
+        if (!pkg) {
+            throw new Error('Paket tidak ditemukan');
+        }
+        
+        // Generate short order ID
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substr(2, 4).toUpperCase();
+        const orderId = `VC${timestamp}${random}`;
+        
+        // Save to database
+        try {
+            await supabaseClient
+                .from('credit_purchases')
+                .insert({
+                    user_id: session.user.id,
+                    order_id: orderId,
+                    package_id: packageId,
+                    amount_idr: pkg.price,
+                    credits: pkg.credits,
+                    status: 'pending'
+                });
+        } catch (e) {
+            console.warn('Could not save purchase:', e);
+        }
+        
+        // Check if Midtrans Snap is loaded
+        if (typeof window.snap === 'undefined') {
+            alert('💳 Midtrans belum dimuat.\n\nSilakan refresh halaman dan coba lagi.');
+            btn.disabled = false;
+            btn.textContent = originalText;
+            return;
+        }
+        
+        // Short item name (max 50 chars)
+        const itemName = `${pkg.credits} Credits`;
+        
+        // Call Edge Function to create payment
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/create-payment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+                'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({ 
+                plan_id: packageId,
+                order_id: orderId,
+                amount: pkg.price,
+                plan_name: itemName
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Payment error:', response.status, errorText);
+            throw new Error('Gagal membuat pembayaran');
+        }
+        
+        const result = await response.json();
+        
+        if (!result.success || !result.snap_token) {
+            throw new Error(result.message || 'Gagal mendapatkan token');
+        }
+        
+        // Open Midtrans Snap popup
+        window.snap.pay(result.snap_token, {
+            onSuccess: async function(paymentResult) {
+                console.log('Payment success:', paymentResult);
+                
+                try {
+                    // Update credits in database
+                    const { data: currentCredits } = await supabaseClient
+                        .from('user_credits')
+                        .select('balance, total_purchased')
+                        .eq('user_id', session.user.id)
+                        .single();
+                    
+                    if (currentCredits) {
+                        await supabaseClient
+                            .from('user_credits')
+                            .update({
+                                balance: currentCredits.balance + pkg.credits,
+                                total_purchased: (currentCredits.total_purchased || 0) + pkg.credits,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('user_id', session.user.id);
+                    }
+                    
+                    // Update purchase status
+                    await supabaseClient
+                        .from('credit_purchases')
+                        .update({ 
+                            status: 'paid', 
+                            paid_at: new Date().toISOString(),
+                            payment_data: paymentResult
+                        })
+                        .eq('order_id', orderId);
+                        
+                } catch (e) {
+                    console.error('Credit update error:', e);
+                }
+                
+                alert(`🎉 Pembayaran berhasil!\n\n+${pkg.credits} kredit ditambahkan ke akun Anda.`);
+                closeCreditsModal();
+                await loadUserCredits();
+            },
+            
+            onPending: function(pendingResult) {
+                console.log('Payment pending:', pendingResult);
+                alert('⏳ Menunggu pembayaran...\n\nKredit akan ditambahkan otomatis setelah pembayaran dikonfirmasi.');
+                closeCreditsModal();
+            },
+            
+            onError: function(errorResult) {
+                console.error('Payment error:', errorResult);
+                alert('❌ Pembayaran gagal.\n\nSilakan coba lagi.');
+                
+                // Update purchase status
+                supabaseClient
+                    .from('credit_purchases')
+                    .update({ status: 'failed' })
+                    .eq('order_id', orderId);
+            },
+            
+            onClose: function() {
+                console.log('Payment popup closed');
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+        
+    } catch (error) {
+        console.error('Purchase error:', error);
+        alert('Gagal: ' + error.message);
+        
+        if (buttonElement) {
+            buttonElement.disabled = false;
+            buttonElement.textContent = 'Beli Sekarang';
+        }
+    }
 }
+
+// ============================================
+// TABS & PRICING - Bagian ini SETELAH purchaseCredits
+// ============================================
 
 function switchTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1888,19 +2083,39 @@ function loadPricingTable() {
     const grid = document.getElementById('pricing-grid');
     if (!grid) return;
     
+    const categories = {
+        'Kling Premium': ['kling-2-5-pro', 'kling-o1-pro-i2v', 'kling-o1-pro-ref', 'kling-2-6-pro', 'kling-2-6-motion-pro', 'kling-2-1-pro'],
+        'Kling Standard': ['kling-o1-std-i2v', 'kling-o1-std-ref', 'kling-2-6-motion-std', 'kling-1-6-pro', 'kling-1-6-std'],
+        'MiniMax / Hailuo': ['minimax-live', 'minimax-hailuo-1080p', 'minimax-hailuo-1080p-fast', 'minimax-hailuo-768p', 'minimax-hailuo-768p-fast'],
+        'WAN': ['wan-i2v-720p', 'wan-i2v-1080p', 'wan-t2v-720p', 'wan-t2v-1080p'],
+        'Seedance (Hemat)': ['seedance-480p', 'seedance-720p', 'seedance-1080p'],
+        'LTX': ['ltx-t2v', 'ltx-i2v'],
+        'Lainnya': ['runway-gen4', 'omnihuman', 'vfx']
+    };
+    
     let html = '';
-    for (const [modelId, config] of Object.entries(MODEL_CONFIGS)) {
-        const credits = MODEL_PRICING[modelId];
-        html += `
-            <div class="pricing-item">
-                <div class="pricing-model">${modelId}</div>
-                <div class="pricing-desc">${config.desc || ''}</div>
-                <div class="pricing-credits">🪙 ${credits} kredit</div>
-            </div>
-        `;
+    for (const [category, models] of Object.entries(categories)) {
+        html += `<div class="pricing-category"><h3>${category}</h3>`;
+        for (const modelId of models) {
+            const config = MODEL_CONFIGS[modelId];
+            const credits = MODEL_PRICING[modelId];
+            if (!config) continue;
+            html += `
+                <div class="pricing-item">
+                    <div class="pricing-model">${modelId}</div>
+                    <div class="pricing-desc">${config.desc || ''}</div>
+                    <div class="pricing-credits">🪙 ${credits} kredit</div>
+                </div>
+            `;
+        }
+        html += '</div>';
     }
     grid.innerHTML = html;
 }
+
+// ============================================
+// POLLING
+// ============================================
 
 function startPolling() {
     if (pollingInterval) clearInterval(pollingInterval);
@@ -1914,11 +2129,18 @@ function startPolling() {
     }, POLLING_INTERVAL_MS);
 }
 
+// ============================================
+// TUTORIAL LINK
+// ============================================
+
 function openVideoTutorial() {
     window.open('video-upload-tutorial.html', '_blank');
 }
 
-// Global exports
+// ============================================
+// GLOBAL EXPORTS
+// ============================================
+
 window.openJobModal = openJobModal;
 window.closeJobModal = closeJobModal;
 window.openCreditsModal = openCreditsModal;
@@ -1926,4 +2148,4 @@ window.closeCreditsModal = closeCreditsModal;
 window.openVideoTutorial = openVideoTutorial;
 window.purchaseCredits = purchaseCredits;
 
-console.log('✅ Video API Generator v3.4 with Supabase Storage loaded');
+console.log('✅ Video API Generator loaded');
