@@ -1271,7 +1271,7 @@ function setupVideoUrlInput(inputId, urlKey) {
 }
 
 // ============================================
-// SUBMIT JOB (UPDATED WITH FULL VALIDATION)
+// SUBMIT JOB - SECURE VERSION (via Edge Function)
 // ============================================
 
 async function submitJob(event) {
@@ -1285,45 +1285,41 @@ async function submitJob(event) {
     
     const modelId = document.getElementById('input-model').value;
     const config = MODEL_CONFIGS[modelId];
-    const requiredCredits = MODEL_PRICING[modelId] || 30;
+    const estimatedCredits = MODEL_PRICING[modelId] || 30; // For display only
     
     if (!config) {
         alert('Model tidak valid');
         return;
     }
     
-    // ==========================================
-    // VALIDATION - Check required inputs
-    // ==========================================
-    
+    // Validasi input di client (UX only, server akan validasi ulang)
     const promptEl = document.getElementById('input-prompt');
     const prompt = promptEl?.value?.trim() || '';
     
-    // Check prompt (unless noPrompt model)
     if (!prompt && !config.noPrompt) {
         alert('Prompt wajib diisi!');
         return;
     }
     
-    // Check image requirement (Image-to-Video models)
+    // Validasi gambar jika required
     if (config.requiresImage) {
         const imageFile = document.getElementById('input-image')?.files[0];
         if (!imageFile) {
-            alert(`⚠️ Model ${modelId} WAJIB menggunakan gambar!\n\nModel ini adalah Image-to-Video, bukan Text-to-Video.\nSilakan upload gambar terlebih dahulu.`);
+            alert(`Model ${modelId} membutuhkan gambar!`);
             return;
         }
     }
     
-    // Check first frame requirement (Kling O1)
+    // Validasi first frame jika required
     if (config.requiresFirstFrame) {
         const firstFrameFile = document.getElementById('input-first-frame')?.files[0];
         if (!firstFrameFile) {
-            alert(`⚠️ Model ${modelId} membutuhkan First Frame!\n\nUpload gambar di bagian "First Frame" terlebih dahulu.`);
+            alert(`Model ${modelId} membutuhkan First Frame!`);
             return;
         }
     }
     
-    // Check reference images requirement (Kling O1 Ref)
+    // Validasi reference images jika required
     if (config.requiresRefImages) {
         let hasRefImage = false;
         for (let i = 1; i <= 7; i++) {
@@ -1333,126 +1329,69 @@ async function submitJob(event) {
             }
         }
         if (!hasRefImage) {
-            alert(`⚠️ Model ${modelId} membutuhkan Reference Images!\n\nUpload minimal 1 gambar referensi.`);
+            alert(`Model ${modelId} membutuhkan Reference Images!`);
             return;
         }
     }
     
-    // Check Motion Control requirements
-    if (config.showMotion) {
-        if (!uploadedVideoUrls.motion_video) {
-            alert('Video Motion belum diupload!\n\nKlik tombol "Upload Video ke Server" terlebih dahulu.');
-            return;
-        }
-        const motionImg = document.getElementById('input-motion-image')?.files[0];
-        if (!motionImg) {
-            alert('Gambar karakter wajib diupload untuk Motion Control!');
-            return;
-        }
-    }
-    
-    // Check VFX requirements
-    if (config.showVfx) {
-        if (!uploadedVideoUrls.vfx_video) {
-            alert('Video VFX belum diupload!\n\nKlik tombol "Upload Video ke Server" terlebih dahulu.');
-            return;
-        }
-    }
-    
-    // ==========================================
-    // CHECK JOB LIMITS & CREDITS
-    // ==========================================
-    
-    const activeJobsCount = userJobs.filter(j => ['pending', 'processing'].includes(j.status)).length;
-    if (activeJobsCount >= MAX_JOBS_PER_USER) {
-        alert(`Anda sudah memiliki ${activeJobsCount} job yang sedang berjalan.\n\nMaksimal ${MAX_JOBS_PER_USER} job bersamaan.`);
+    // Validasi video uploads
+    if (config.showMotion && !uploadedVideoUrls.motion_video) {
+        alert('Video Motion belum diupload!');
         return;
     }
     
-    if (userCredits < requiredCredits) {
-        alert(`Kredit tidak mencukupi!\n\nDibutuhkan: ${requiredCredits} kredit\nSaldo: ${userCredits} kredit`);
-        openCreditsModal();
+    if (config.showVfx && !uploadedVideoUrls.vfx_video) {
+        alert('Video VFX belum diupload!');
         return;
     }
-    
-    // ==========================================
-    // SUBMIT PROCESS
-    // ==========================================
     
     const submitBtn = document.getElementById('btn-submit');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '⏳ Memproses...';
     
     try {
-        const inputData = await collectInputData(modelId, config, prompt, requiredCredits, user.id);
+        // Collect settings (not credits - server will calculate!)
+        const settings = await collectSettings(modelId, config);
         
-        const { data: currentCredits, error: fetchError } = await supabaseClient
-            .from('user_credits')
-            .select('balance, total_used')
-            .eq('user_id', user.id)
-            .single();
-        
-        if (fetchError || !currentCredits) {
-            throw new Error('Gagal mengambil data kredit');
+        // Get session for auth
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            throw new Error('Session expired. Please login again.');
         }
         
-        if (currentCredits.balance < requiredCredits) {
-            throw new Error('Kredit tidak mencukupi');
-        }
+        submitBtn.innerHTML = '⏳ Mengirim ke server...';
         
-        const newBalance = currentCredits.balance - requiredCredits;
-        const newTotalUsed = (currentCredits.total_used || 0) + requiredCredits;
-        
-        const { error: updateError } = await supabaseClient
-            .from('user_credits')
-            .update({ 
-                balance: newBalance,
-                total_used: newTotalUsed,
-                updated_at: new Date().toISOString()
+        // ========================================
+        // SECURE: Call Edge Function instead of direct insert!
+        // ========================================
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-video-job`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+                'apikey': SUPABASE_ANON_KEY
+            },
+            body: JSON.stringify({
+                model_id: modelId,
+                prompt: prompt,
+                negative_prompt: document.getElementById('input-negative')?.value || '',
+                settings: settings
+                // NOTE: Tidak kirim credits_used! Server yang hitung!
             })
-            .eq('user_id', user.id);
+        });
         
-        if (updateError) {
-            throw new Error('Gagal memotong kredit: ' + updateError.message);
+        const result = await response.json();
+        
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Failed to submit job');
         }
         
-        userCredits = newBalance;
-        userStats.total_used = newTotalUsed;
+        // Update local credits display
+        userCredits = result.balance_remaining;
+        userStats.total_used = (userStats.total_used || 0) + result.credits_charged;
         updateCreditsUI();
         
-        const { data: job, error: jobError } = await supabaseClient
-            .from('jobs')
-            .insert({
-                user_id: user.id,
-                service: 'videoapi',
-                status: 'pending',
-                input_data: inputData,
-                total_steps: 4,
-                current_step: 0,
-                step_name: 'Queued',
-                progress_percent: 0
-            })
-            .select()
-            .single();
-        
-        if (jobError) {
-            // Rollback credits
-            await supabaseClient
-                .from('user_credits')
-                .update({ 
-                    balance: currentCredits.balance,
-                    total_used: currentCredits.total_used || 0
-                })
-                .eq('user_id', user.id);
-            
-            userCredits = currentCredits.balance;
-            userStats.total_used = currentCredits.total_used || 0;
-            updateCreditsUI();
-            
-            throw new Error('Gagal membuat job: ' + jobError.message);
-        }
-        
-        alert(`✅ Job berhasil dibuat!\n\nModel: ${modelId}\nKredit: ${requiredCredits}\nSisa: ${userCredits}`);
+        alert(`✅ Job berhasil dibuat!\n\nModel: ${modelId}\nKredit: ${result.credits_charged}\nSisa: ${result.balance_remaining}`);
         
         resetForm();
         switchTab('active');
@@ -1461,11 +1400,160 @@ async function submitJob(event) {
     } catch (error) {
         console.error('Submit error:', error);
         alert('Gagal: ' + error.message);
-        await loadUserCredits();
+        await loadUserCredits(); // Refresh credits dari server
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '🚀 Generate Video';
     }
+}
+
+// Collect settings without credits (server will calculate)
+async function collectSettings(modelId, config) {
+    const settings = {};
+    
+    // Duration
+    if (config.showDuration && !config.hideDuration) {
+        const durationSelect = document.getElementById('input-duration');
+        if (durationSelect) {
+            settings.duration = parseInt(durationSelect.value);
+        } else if (config.fixedDuration) {
+            settings.duration = config.fixedDuration;
+        }
+    }
+    
+    // CFG Scale
+    if (config.showCfg) {
+        settings.cfg_scale = parseFloat(document.getElementById('input-cfg')?.value || 0.5);
+    }
+    
+    // Seed
+    if (config.showSeed) {
+        settings.seed = parseInt(document.getElementById('input-seed')?.value || -1);
+    }
+    
+    // FPS
+    if (config.showFps) {
+        settings.fps = parseInt(document.getElementById('input-fps')?.value || 25);
+    }
+    
+    // Aspect Ratios
+    if (config.showAspectRatio) {
+        settings.aspect_ratio = document.getElementById('input-aspect-ratio')?.value;
+    }
+    if (config.showAspectKling26) {
+        settings.aspect_ratio = document.getElementById('input-aspect-ratio-kling26')?.value;
+    }
+    if (config.showAspectSeedance) {
+        settings.aspect_ratio = document.getElementById('input-aspect-ratio-seedance')?.value;
+    }
+    if (config.showRunwayRatio) {
+        settings.ratio = document.getElementById('input-runway-ratio')?.value;
+    }
+    if (config.showWanSize) {
+        settings.size = document.getElementById('input-wan-size')?.value;
+    }
+    if (config.showLtxResolution) {
+        settings.resolution = document.getElementById('input-ltx-resolution')?.value;
+    }
+    
+    // Checkboxes
+    if (config.showGenerateAudio) {
+        settings.generate_audio = document.getElementById('input-generate-audio')?.checked || false;
+    }
+    if (config.showPromptOptimizer) {
+        settings.prompt_optimizer = document.getElementById('input-prompt-optimizer')?.checked ?? true;
+    }
+    if (config.showPromptExpansion) {
+        settings.enable_prompt_expansion = document.getElementById('input-prompt-expansion')?.checked || false;
+    }
+    if (config.showCameraFixed) {
+        settings.camera_fixed = document.getElementById('input-camera-fixed')?.checked || false;
+    }
+    if (config.showShotType) {
+        settings.shot_type = document.getElementById('input-shot-type')?.value || 'single';
+    }
+    
+    // Image uploads (convert to base64)
+    if (config.showImage) {
+        const imgFile = document.getElementById('input-image')?.files[0];
+        if (imgFile) {
+            settings.image = await fileToBase64(imgFile);
+        }
+    }
+    if (config.showImageTail) {
+        const tailFile = document.getElementById('input-image-tail')?.files[0];
+        if (tailFile) {
+            settings.image_tail = await fileToBase64(tailFile);
+        }
+    }
+    
+    // Frames
+    if (config.showFrames) {
+        const firstFile = document.getElementById('input-first-frame')?.files[0];
+        if (firstFile) {
+            settings.first_frame = await fileToBase64(firstFile);
+        }
+        const lastFile = document.getElementById('input-last-frame')?.files[0];
+        if (lastFile) {
+            settings.last_frame = await fileToBase64(lastFile);
+        }
+    }
+    
+    // Reference images
+    if (config.showRefImages) {
+        const refImages = [];
+        for (let i = 1; i <= 7; i++) {
+            const refFile = document.getElementById(`input-ref-${i}`)?.files[0];
+            if (refFile) {
+                refImages.push(await fileToBase64(refFile));
+            }
+        }
+        if (refImages.length > 0) {
+            settings.reference_images = refImages;
+        }
+    }
+    
+    // Motion Control
+    if (config.showMotion) {
+        const motionImg = document.getElementById('input-motion-image')?.files[0];
+        if (motionImg) {
+            settings.image_url = await uploadFile(motionImg);
+        }
+        settings.video_url = uploadedVideoUrls.motion_video;
+        settings.character_orientation = document.getElementById('input-character-orientation')?.value || 'video';
+    }
+    
+    // OmniHuman
+    if (config.showOmnihuman) {
+        const omniImg = document.getElementById('input-omni-image')?.files[0];
+        const omniAudio = document.getElementById('input-omni-audio')?.files[0];
+        if (omniImg) {
+            settings.image_url = await uploadFile(omniImg);
+        }
+        if (omniAudio) {
+            settings.audio_url = await uploadFile(omniAudio);
+        }
+        settings.resolution = document.getElementById('input-omni-resolution')?.value || '1080p';
+        settings.turbo_mode = document.getElementById('input-turbo-mode')?.checked || false;
+    }
+    
+    // VFX
+    if (config.showVfx) {
+        settings.video_url = uploadedVideoUrls.vfx_video;
+        settings.filter_type = parseInt(document.getElementById('input-filter-type')?.value || 1);
+        settings.fps = parseInt(document.getElementById('input-vfx-fps')?.value || 24);
+        
+        const filterType = settings.filter_type;
+        if (filterType === 7) {
+            settings.bloom_contrast = parseFloat(document.getElementById('input-bloom-contrast')?.value || 1.2);
+        }
+        if (filterType === 2) {
+            settings.motion_kernel = parseInt(document.getElementById('input-motion-kernel')?.value || 5);
+            settings.motion_decay = parseFloat(document.getElementById('input-motion-decay')?.value || 0.8);
+        }
+    }
+    
+    return settings;
 }
 
 // ============================================
