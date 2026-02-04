@@ -45,14 +45,17 @@ serve(async (req) => {
       fraud_status,
     } = body;
 
-    // Only process video credit orders
-    if (!order_id?.startsWith("VCRED-")) {
-      console.log("⏭️ Not a video credit order, skipping");
+    // --- MODIFIKASI DISINI ---
+    // Mengubah pengecekan dari "VCRED-" menjadi "VC" 
+    // agar Order ID "VCML..." Anda bisa diterima.
+    if (!order_id?.startsWith("VC")) {
+      console.log("⏭️ Not a video credit order, skipping (Order ID:", order_id, ")");
       return new Response(
         JSON.stringify({ success: true, message: "Not a video credit order" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    // -------------------------
 
     // Verify signature
     const isValid = await verifySignature(
@@ -103,9 +106,11 @@ serve(async (req) => {
       });
 
       if (error) {
-        console.error("❌ Failed to complete:", error);
+        console.error("❌ Failed to complete (DB Error):", error);
+        // Tetap return 200 ke Midtrans agar tidak retry terus menerus jika errornya dari DB logika
+        // Tapi kita log errornya
       } else {
-        console.log("✅ Credits added:", data);
+        console.log("✅ Credits added successfully:", data);
       }
     }
 
