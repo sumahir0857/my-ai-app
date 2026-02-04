@@ -58,10 +58,13 @@ const CREDIT_PACKAGES = [
 ];
 
 // ============================================
-// MODEL CONFIGURATIONS
+// MODEL CONFIGURATIONS - FIXED v3.5
 // ============================================
 
 const MODEL_CONFIGS = {
+    // ==========================================
+    // KLING 2.5 PRO - NO END FRAME
+    // ==========================================
     'kling-2-5-pro': {
         type: 'image_to_video',
         desc: 'Model terbaru dengan kualitas tinggi',
@@ -72,6 +75,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-2-6-pro': {
         type: 'kling_2_6',
         desc: 'Text/Image to Video dengan audio generation',
@@ -80,6 +84,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-2-1-pro': {
         type: 'image_to_video',
         desc: 'Model 2.1 Pro',
@@ -87,6 +92,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-1-6-pro': {
         type: 'image_to_video',
         desc: 'Model klasik dengan kualitas pro',
@@ -94,6 +100,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-1-6-std': {
         type: 'image_to_video',
         desc: 'Model hemat biaya',
@@ -101,6 +108,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-o1-pro-i2v': {
         type: 'kling_o1',
         desc: 'Kling O1 Pro - Image to Video',
@@ -108,6 +116,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-o1-std-i2v': {
         type: 'kling_o1',
         desc: 'Kling O1 Standard - Image to Video',
@@ -115,6 +124,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-o1-pro-ref': {
         type: 'kling_o1_reference',
         desc: 'Video Reference dengan max 7 gambar',
@@ -122,6 +132,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-o1-std-ref': {
         type: 'kling_o1_reference',
         desc: 'Video Reference Standard',
@@ -129,6 +140,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-2-6-motion-pro': {
         type: 'kling_2_6_motion',
         desc: 'Motion Control Pro',
@@ -136,6 +148,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'kling-2-6-motion-std': {
         type: 'kling_2_6_motion',
         desc: 'Motion Control Standard',
@@ -145,52 +158,62 @@ const MODEL_CONFIGS = {
     },
     
     // ==========================================
-    // MINIMAX - FIXED DURATIONS
+    // MINIMAX LIVE - NO DURATION AT ALL!
     // ==========================================
     'minimax-live': {
         type: 'minimax_live',
         desc: 'MiniMax Live Mode - Tanpa opsi durasi',
         showImage: true, 
         showPromptOptimizer: true,
-        hideDuration: true // NO DURATION
+        hideDuration: true // FIXED: Completely hide duration
     },
+    
+    // ==========================================
+    // HAILUO 1080p - FIXED 6 SECONDS ONLY
+    // ==========================================
     'minimax-hailuo-1080p': {
         type: 'minimax_hailuo',
         desc: 'Hailuo 1080p - Fixed 6 detik',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6],
+        durationOptions: [6], // FIXED: Only 6 seconds
         fixedDuration: 6
     },
+    
     'minimax-hailuo-1080p-fast': {
         type: 'minimax_hailuo',
         desc: 'Hailuo 1080p Fast - Fixed 6 detik',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6],
+        durationOptions: [6], // FIXED: Only 6 seconds
         fixedDuration: 6
     },
+    
+    // ==========================================
+    // HAILUO 768p - 6 OR 10 SECONDS
+    // ==========================================
     'minimax-hailuo-768p': {
         type: 'minimax_hailuo',
         desc: 'Hailuo 768p - 6 atau 10 detik',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6, 10]
+        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
     },
+    
     'minimax-hailuo-768p-fast': {
         type: 'minimax_hailuo',
         desc: 'Hailuo 768p Fast - 6 atau 10 detik',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6, 10]
+        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
     },
     
     // ==========================================
-    // WAN
+    // WAN MODELS
     // ==========================================
     'wan-i2v-720p': {
         type: 'wan_i2v',
@@ -200,6 +223,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'wan-i2v-1080p': {
         type: 'wan_i2v',
         desc: 'WAN Image to Video 1080p',
@@ -208,6 +232,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'wan-t2v-720p': {
         type: 'wan_t2v',
         desc: 'WAN Text to Video 720p',
@@ -216,6 +241,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'wan-t2v-1080p': {
         type: 'wan_t2v',
         desc: 'WAN Text to Video 1080p',
@@ -226,7 +252,7 @@ const MODEL_CONFIGS = {
     },
     
     // ==========================================
-    // SEEDANCE
+    // SEEDANCE MODELS
     // ==========================================
     'seedance-480p': {
         type: 'seedance',
@@ -236,6 +262,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'seedance-720p': {
         type: 'seedance',
         desc: 'Seedance 720p',
@@ -244,6 +271,7 @@ const MODEL_CONFIGS = {
         showDuration: true,
         durationOptions: [5, 10]
     },
+    
     'seedance-1080p': {
         type: 'seedance',
         desc: 'Seedance 1080p',
@@ -254,38 +282,39 @@ const MODEL_CONFIGS = {
     },
     
     // ==========================================
-    // LTX - FIXED 6/10 SECONDS
+    // LTX MODELS - FIXED: 6, 8, or 10 seconds
     // ==========================================
     'ltx-t2v': {
         type: 'ltx_t2v',
-        desc: 'LTX Text to Video - 6 atau 10 detik',
+        desc: 'LTX Text to Video - 6, 8, atau 10 detik',
         showLtxResolution: true, 
         showGenerateAudio: true, 
         showFps: true, 
         showSeed: true,
         showDuration: true,
-        durationOptions: [6, 10]
+        durationOptions: [6, 8, 10] // FIXED: API only accepts 6, 8, or 10
     },
+    
     'ltx-i2v': {
         type: 'ltx_i2v',
-        desc: 'LTX Image to Video - 6 atau 10 detik',
+        desc: 'LTX Image to Video - 6, 8, atau 10 detik',
         showImage: true, 
         showLtxResolution: true,
         showGenerateAudio: true, 
         showFps: true, 
         showSeed: true,
         showDuration: true,
-        durationOptions: [6, 10]
+        durationOptions: [6, 8, 10] // FIXED: API only accepts 6, 8, or 10
     },
     
     // ==========================================
-    // RUNWAY
+    // RUNWAY GEN4 - FIXED RATIO OPTIONS
     // ==========================================
     'runway-gen4': {
         type: 'runway',
         desc: 'RunWay Gen4 Turbo',
         showImage: true, 
-        showRunwayRatio: true, 
+        showRunwayRatio: true, // Use special ratio selector
         showSeed: true,
         showDuration: true,
         durationOptions: [5, 10]
@@ -1370,7 +1399,7 @@ async function collectInputData(modelId, config, prompt, credits, userId) {
         settings.aspect_ratio = document.getElementById('input-aspect-ratio-seedance')?.value;
     }
     if (config.showRunwayRatio) {
-        settings.ratio = document.getElementById('input-runway-ratio')?.value;
+        settings.ratio = document.getElementById('input-runway-ratio')?.value || '1280:720';
     }
     if (config.showWanSize) {
         settings.size = document.getElementById('input-wan-size')?.value;
