@@ -58,136 +58,173 @@ const CREDIT_PACKAGES = [
 ];
 
 // ============================================
-// MODEL CONFIGURATIONS - FIXED v3.5
+// MODEL CONFIGURATIONS - FIXED v3.6
 // ============================================
 
 const MODEL_CONFIGS = {
     // ==========================================
-    // KLING 2.5 PRO - NO END FRAME
+    // KLING 2.5 PRO - IMAGE TO VIDEO ONLY (No End Frame)
     // ==========================================
     'kling-2-5-pro': {
         type: 'image_to_video',
-        desc: 'Model terbaru dengan kualitas tinggi',
+        desc: 'Image to Video - Gambar wajib diupload',
         showImage: true, 
-        showImageTail: false, // FIXED: No End Frame
+        showImageTail: false, // No End Frame for 2.5
         showNegative: true, 
         showCfg: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: true // IMPORTANT: Gambar wajib!
     },
     
     'kling-2-6-pro': {
         type: 'kling_2_6',
-        desc: 'Text/Image to Video dengan audio generation',
-        showImage: true, showNegative: true, showCfg: true, 
-        showAspectKling26: true, showGenerateAudio: true,
+        desc: 'Text/Image to Video - Gambar opsional',
+        showImage: true, 
+        showNegative: true, 
+        showCfg: true, 
+        showAspectKling26: true, 
+        showGenerateAudio: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: false // Image optional
     },
     
     'kling-2-1-pro': {
         type: 'image_to_video',
-        desc: 'Model 2.1 Pro',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true,
+        desc: 'Image to Video - Gambar wajib',
+        showImage: true, 
+        showImageTail: true, 
+        showNegative: true, 
+        showCfg: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: true
     },
     
+    // ==========================================
+    // KLING 1.6 - IMAGE TO VIDEO ONLY!
+    // ==========================================
     'kling-1-6-pro': {
         type: 'image_to_video',
-        desc: 'Model klasik dengan kualitas pro',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true,
+        desc: '⚠️ IMAGE WAJIB - Tidak bisa text-to-video!',
+        showImage: true, 
+        showImageTail: true, 
+        showNegative: true, 
+        showCfg: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: true // WAJIB!
     },
     
     'kling-1-6-std': {
         type: 'image_to_video',
-        desc: 'Model hemat biaya',
-        showImage: true, showImageTail: true, showNegative: true, showCfg: true,
+        desc: '⚠️ IMAGE WAJIB - Tidak bisa text-to-video!',
+        showImage: true, 
+        showImageTail: true, 
+        showNegative: true, 
+        showCfg: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: true // WAJIB!
     },
     
+    // ==========================================
+    // KLING O1 - REQUIRES FIRST FRAME
+    // ==========================================
     'kling-o1-pro-i2v': {
         type: 'kling_o1',
-        desc: 'Kling O1 Pro - Image to Video',
-        showFrames: true, showAspectRatio: true,
+        desc: '⚠️ First Frame WAJIB diupload!',
+        showFrames: true, 
+        showAspectRatio: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresFirstFrame: true
     },
     
     'kling-o1-std-i2v': {
         type: 'kling_o1',
-        desc: 'Kling O1 Standard - Image to Video',
-        showFrames: true, showAspectRatio: true,
+        desc: '⚠️ First Frame WAJIB diupload!',
+        showFrames: true, 
+        showAspectRatio: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresFirstFrame: true
     },
     
+    // ==========================================
+    // KLING O1 REFERENCE - REQUIRES REF IMAGES
+    // ==========================================
     'kling-o1-pro-ref': {
         type: 'kling_o1_reference',
-        desc: 'Video Reference dengan max 7 gambar',
-        showRefImages: true, showAspectRatio: true,
+        desc: '⚠️ Minimal 1 Reference Image wajib!',
+        showRefImages: true, 
+        showAspectRatio: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresRefImages: true
     },
     
     'kling-o1-std-ref': {
         type: 'kling_o1_reference',
-        desc: 'Video Reference Standard',
-        showRefImages: true, showAspectRatio: true,
+        desc: '⚠️ Minimal 1 Reference Image wajib!',
+        showRefImages: true, 
+        showAspectRatio: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresRefImages: true
     },
     
     'kling-2-6-motion-pro': {
         type: 'kling_2_6_motion',
-        desc: 'Motion Control Pro',
-        showMotion: true, showCfg: true,
+        desc: 'Motion Control - Gambar + Video wajib',
+        showMotion: true, 
+        showCfg: true,
         showDuration: true,
         durationOptions: [5, 10]
     },
     
     'kling-2-6-motion-std': {
         type: 'kling_2_6_motion',
-        desc: 'Motion Control Standard',
-        showMotion: true, showCfg: true,
+        desc: 'Motion Control - Gambar + Video wajib',
+        showMotion: true, 
+        showCfg: true,
         showDuration: true,
         durationOptions: [5, 10]
     },
     
     // ==========================================
-    // MINIMAX LIVE - NO DURATION AT ALL!
+    // MINIMAX LIVE - NO DURATION!
     // ==========================================
     'minimax-live': {
         type: 'minimax_live',
-        desc: 'MiniMax Live Mode - Tanpa opsi durasi',
+        desc: 'Live Mode - Tanpa opsi durasi',
         showImage: true, 
         showPromptOptimizer: true,
-        hideDuration: true // FIXED: Completely hide duration
+        hideDuration: true,
+        requiresImage: false
     },
     
     // ==========================================
-    // HAILUO 1080p - FIXED 6 SECONDS ONLY
+    // HAILUO 1080p - FIXED 6 SECONDS
     // ==========================================
     'minimax-hailuo-1080p': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 1080p - Fixed 6 detik',
+        desc: 'Fixed 6 detik',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6], // FIXED: Only 6 seconds
+        durationOptions: [6],
         fixedDuration: 6
     },
     
     'minimax-hailuo-1080p-fast': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 1080p Fast - Fixed 6 detik',
+        desc: 'Fixed 6 detik - Fast',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6], // FIXED: Only 6 seconds
+        durationOptions: [6],
         fixedDuration: 6
     },
     
@@ -196,20 +233,20 @@ const MODEL_CONFIGS = {
     // ==========================================
     'minimax-hailuo-768p': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 768p - 6 atau 10 detik',
+        desc: '6 atau 10 detik',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
+        durationOptions: [6, 10]
     },
     
     'minimax-hailuo-768p-fast': {
         type: 'minimax_hailuo',
-        desc: 'Hailuo 768p Fast - 6 atau 10 detik',
+        desc: '6 atau 10 detik - Fast',
         showFrames: true, 
         showPromptOptimizer: true,
         showDuration: true,
-        durationOptions: [6, 10] // FIXED: 6 or 10 seconds
+        durationOptions: [6, 10]
     },
     
     // ==========================================
@@ -217,107 +254,134 @@ const MODEL_CONFIGS = {
     // ==========================================
     'wan-i2v-720p': {
         type: 'wan_i2v',
-        desc: 'WAN Image to Video 720p',
-        showImage: true, showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true,
+        desc: 'Image to Video 720p - Gambar wajib',
+        showImage: true, 
+        showNegative: true, 
+        showWanSize: true,
+        showPromptExpansion: true, 
+        showShotType: true, 
+        showSeed: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: true
     },
     
     'wan-i2v-1080p': {
         type: 'wan_i2v',
-        desc: 'WAN Image to Video 1080p',
-        showImage: true, showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true,
+        desc: 'Image to Video 1080p - Gambar wajib',
+        showImage: true, 
+        showNegative: true, 
+        showWanSize: true,
+        showPromptExpansion: true, 
+        showShotType: true, 
+        showSeed: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: true
     },
     
     'wan-t2v-720p': {
         type: 'wan_t2v',
-        desc: 'WAN Text to Video 720p',
-        showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true,
+        desc: 'Text to Video 720p',
+        showNegative: true, 
+        showWanSize: true,
+        showPromptExpansion: true, 
+        showShotType: true, 
+        showSeed: true,
         showDuration: true,
         durationOptions: [5, 10]
     },
     
     'wan-t2v-1080p': {
         type: 'wan_t2v',
-        desc: 'WAN Text to Video 1080p',
-        showNegative: true, showWanSize: true,
-        showPromptExpansion: true, showShotType: true, showSeed: true,
+        desc: 'Text to Video 1080p',
+        showNegative: true, 
+        showWanSize: true,
+        showPromptExpansion: true, 
+        showShotType: true, 
+        showSeed: true,
         showDuration: true,
         durationOptions: [5, 10]
     },
     
     // ==========================================
-    // SEEDANCE MODELS
+    // SEEDANCE
     // ==========================================
     'seedance-480p': {
         type: 'seedance',
-        desc: 'Seedance 480p - paling hemat',
-        showImage: true, showAspectSeedance: true,
-        showGenerateAudio: true, showCameraFixed: true, showSeed: true,
+        desc: 'Paling hemat - Gambar opsional',
+        showImage: true, 
+        showAspectSeedance: true,
+        showGenerateAudio: true, 
+        showCameraFixed: true, 
+        showSeed: true,
         showDuration: true,
         durationOptions: [5, 10]
     },
     
     'seedance-720p': {
         type: 'seedance',
-        desc: 'Seedance 720p',
-        showImage: true, showAspectSeedance: true,
-        showGenerateAudio: true, showCameraFixed: true, showSeed: true,
+        desc: 'Gambar opsional',
+        showImage: true, 
+        showAspectSeedance: true,
+        showGenerateAudio: true, 
+        showCameraFixed: true, 
+        showSeed: true,
         showDuration: true,
         durationOptions: [5, 10]
     },
     
     'seedance-1080p': {
         type: 'seedance',
-        desc: 'Seedance 1080p',
-        showImage: true, showAspectSeedance: true,
-        showGenerateAudio: true, showCameraFixed: true, showSeed: true,
+        desc: 'Gambar opsional',
+        showImage: true, 
+        showAspectSeedance: true,
+        showGenerateAudio: true, 
+        showCameraFixed: true, 
+        showSeed: true,
         showDuration: true,
         durationOptions: [5, 10]
     },
     
     // ==========================================
-    // LTX MODELS - FIXED: 6, 8, or 10 seconds
+    // LTX - DURATION: 6, 8, or 10 ONLY!
     // ==========================================
     'ltx-t2v': {
         type: 'ltx_t2v',
-        desc: 'LTX Text to Video - 6, 8, atau 10 detik',
+        desc: 'Text to Video - Durasi: 6, 8, atau 10 detik',
         showLtxResolution: true, 
         showGenerateAudio: true, 
         showFps: true, 
         showSeed: true,
         showDuration: true,
-        durationOptions: [6, 8, 10] // FIXED: API only accepts 6, 8, or 10
+        durationOptions: [6, 8, 10]
     },
     
     'ltx-i2v': {
         type: 'ltx_i2v',
-        desc: 'LTX Image to Video - 6, 8, atau 10 detik',
+        desc: 'Image to Video - Durasi: 6, 8, atau 10 detik',
         showImage: true, 
         showLtxResolution: true,
         showGenerateAudio: true, 
         showFps: true, 
         showSeed: true,
         showDuration: true,
-        durationOptions: [6, 8, 10] // FIXED: API only accepts 6, 8, or 10
+        durationOptions: [6, 8, 10],
+        requiresImage: true
     },
     
     // ==========================================
-    // RUNWAY GEN4 - FIXED RATIO OPTIONS
+    // RUNWAY GEN4 - REQUIRES IMAGE URL
     // ==========================================
     'runway-gen4': {
         type: 'runway',
-        desc: 'RunWay Gen4 Turbo',
+        desc: '⚠️ Gambar WAJIB diupload!',
         showImage: true, 
-        showRunwayRatio: true, // Use special ratio selector
+        showRunwayRatio: true, 
         showSeed: true,
         showDuration: true,
-        durationOptions: [5, 10]
+        durationOptions: [5, 10],
+        requiresImage: true
     },
     
     // ==========================================
@@ -325,7 +389,7 @@ const MODEL_CONFIGS = {
     // ==========================================
     'omnihuman': {
         type: 'omnihuman',
-        desc: 'OmniHuman - Portrait animation',
+        desc: 'Portrait + Audio wajib',
         showOmnihuman: true
     },
     
@@ -334,7 +398,7 @@ const MODEL_CONFIGS = {
     // ==========================================
     'vfx': {
         type: 'vfx',
-        desc: 'Apply visual effects ke video',
+        desc: 'Video input wajib',
         showVfx: true, 
         noPrompt: true,
         requiresVideoUrl: true
@@ -1209,7 +1273,7 @@ function setupVideoUrlInput(inputId, urlKey) {
 }
 
 // ============================================
-// SUBMIT JOB
+// SUBMIT JOB (UPDATED WITH FULL VALIDATION)
 // ============================================
 
 async function submitJob(event) {
@@ -1230,27 +1294,80 @@ async function submitJob(event) {
         return;
     }
     
-    const activeJobsCount = userJobs.filter(j => ['pending', 'processing'].includes(j.status)).length;
-    if (activeJobsCount >= MAX_JOBS_PER_USER) {
-        alert(`Anda sudah memiliki ${activeJobsCount} job yang sedang berjalan.\n\nMaksimal ${MAX_JOBS_PER_USER} job bersamaan.`);
-        return;
-    }
+    // ==========================================
+    // VALIDATION - Check required inputs
+    // ==========================================
     
     const promptEl = document.getElementById('input-prompt');
     const prompt = promptEl?.value?.trim() || '';
+    
+    // Check prompt (unless noPrompt model)
     if (!prompt && !config.noPrompt) {
         alert('Prompt wajib diisi!');
         return;
     }
     
-    // Check for required video uploads
-    if (config.showMotion && !uploadedVideoUrls.motion_video) {
-        alert('Video Motion belum diupload!\n\nKlik tombol "Upload Video ke Server" terlebih dahulu.');
-        return;
+    // Check image requirement (Image-to-Video models)
+    if (config.requiresImage) {
+        const imageFile = document.getElementById('input-image')?.files[0];
+        if (!imageFile) {
+            alert(`⚠️ Model ${modelId} WAJIB menggunakan gambar!\n\nModel ini adalah Image-to-Video, bukan Text-to-Video.\nSilakan upload gambar terlebih dahulu.`);
+            return;
+        }
     }
     
-    if (config.showVfx && !uploadedVideoUrls.vfx_video) {
-        alert('Video VFX belum diupload!\n\nKlik tombol "Upload Video ke Server" terlebih dahulu.');
+    // Check first frame requirement (Kling O1)
+    if (config.requiresFirstFrame) {
+        const firstFrameFile = document.getElementById('input-first-frame')?.files[0];
+        if (!firstFrameFile) {
+            alert(`⚠️ Model ${modelId} membutuhkan First Frame!\n\nUpload gambar di bagian "First Frame" terlebih dahulu.`);
+            return;
+        }
+    }
+    
+    // Check reference images requirement (Kling O1 Ref)
+    if (config.requiresRefImages) {
+        let hasRefImage = false;
+        for (let i = 1; i <= 7; i++) {
+            if (document.getElementById(`input-ref-${i}`)?.files[0]) {
+                hasRefImage = true;
+                break;
+            }
+        }
+        if (!hasRefImage) {
+            alert(`⚠️ Model ${modelId} membutuhkan Reference Images!\n\nUpload minimal 1 gambar referensi.`);
+            return;
+        }
+    }
+    
+    // Check Motion Control requirements
+    if (config.showMotion) {
+        if (!uploadedVideoUrls.motion_video) {
+            alert('Video Motion belum diupload!\n\nKlik tombol "Upload Video ke Server" terlebih dahulu.');
+            return;
+        }
+        const motionImg = document.getElementById('input-motion-image')?.files[0];
+        if (!motionImg) {
+            alert('Gambar karakter wajib diupload untuk Motion Control!');
+            return;
+        }
+    }
+    
+    // Check VFX requirements
+    if (config.showVfx) {
+        if (!uploadedVideoUrls.vfx_video) {
+            alert('Video VFX belum diupload!\n\nKlik tombol "Upload Video ke Server" terlebih dahulu.');
+            return;
+        }
+    }
+    
+    // ==========================================
+    // CHECK JOB LIMITS & CREDITS
+    // ==========================================
+    
+    const activeJobsCount = userJobs.filter(j => ['pending', 'processing'].includes(j.status)).length;
+    if (activeJobsCount >= MAX_JOBS_PER_USER) {
+        alert(`Anda sudah memiliki ${activeJobsCount} job yang sedang berjalan.\n\nMaksimal ${MAX_JOBS_PER_USER} job bersamaan.`);
         return;
     }
     
@@ -1259,6 +1376,10 @@ async function submitJob(event) {
         openCreditsModal();
         return;
     }
+    
+    // ==========================================
+    // SUBMIT PROCESS
+    // ==========================================
     
     const submitBtn = document.getElementById('btn-submit');
     submitBtn.disabled = true;
