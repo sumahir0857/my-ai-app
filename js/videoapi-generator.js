@@ -1234,6 +1234,12 @@ window.selectModel = selectModel;
 // ============================================
 // EVENT LISTENERS
 // ============================================
+function setupEventListeners() {
+    // Initialize custom model selector for mobile
+    initCustomModelSelector();
+    
+    // ... rest of existing code ...
+}
 
 function setupEventListeners() {
     const modelSelect = document.getElementById('input-model');
