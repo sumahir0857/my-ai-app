@@ -1285,14 +1285,13 @@ async function submitJob(event) {
     
     const modelId = document.getElementById('input-model').value;
     const config = MODEL_CONFIGS[modelId];
-    const estimatedCredits = MODEL_PRICING[modelId] || 30; // For display only
+    const estimatedCredits = MODEL_PRICING[modelId] || 30;
     
     if (!config) {
         alert('Model tidak valid');
         return;
     }
     
-    // Validasi input di client (UX only, server akan validasi ulang)
     const promptEl = document.getElementById('input-prompt');
     const prompt = promptEl?.value?.trim() || '';
     
@@ -1310,7 +1309,6 @@ async function submitJob(event) {
         }
     }
     
-    // Validasi first frame jika required
     if (config.requiresFirstFrame) {
         const firstFrameFile = document.getElementById('input-first-frame')?.files[0];
         if (!firstFrameFile) {
@@ -1319,7 +1317,6 @@ async function submitJob(event) {
         }
     }
     
-    // Validasi reference images jika required
     if (config.requiresRefImages) {
         let hasRefImage = false;
         for (let i = 1; i <= 7; i++) {
@@ -1334,7 +1331,6 @@ async function submitJob(event) {
         }
     }
     
-    // Validasi video uploads
     if (config.showMotion && !uploadedVideoUrls.motion_video) {
         alert('Video Motion belum diupload!');
         return;
@@ -1350,20 +1346,19 @@ async function submitJob(event) {
     submitBtn.innerHTML = '⏳ Memproses...';
     
     try {
-        // Collect settings (not credits - server will calculate!)
+        // Collect settings
+        submitBtn.innerHTML = '⏳ Menyiapkan data...';
         const settings = await collectSettings(modelId, config);
         
         // Get session for auth
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
-            throw new Error('Session expired. Please login again.');
+            throw new Error('Session expired. Silakan login ulang.');
         }
         
         submitBtn.innerHTML = '⏳ Mengirim ke server...';
         
-        // ========================================
-        // SECURE: Call Edge Function instead of direct insert!
-        // ========================================
+        // SECURE: Call Edge Function
         const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-video-job`, {
             method: 'POST',
             headers: {
@@ -1376,14 +1371,13 @@ async function submitJob(event) {
                 prompt: prompt,
                 negative_prompt: document.getElementById('input-negative')?.value || '',
                 settings: settings
-                // NOTE: Tidak kirim credits_used! Server yang hitung!
             })
         });
         
         const result = await response.json();
         
         if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Failed to submit job');
+            throw new Error(result.error || 'Gagal submit job');
         }
         
         // Update local credits display
@@ -1400,14 +1394,17 @@ async function submitJob(event) {
     } catch (error) {
         console.error('Submit error:', error);
         alert('Gagal: ' + error.message);
-        await loadUserCredits(); // Refresh credits dari server
+        await loadUserCredits();
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '🚀 Generate Video';
     }
 }
 
-// Collect settings without credits (server will calculate)
+// ============================================
+// COLLECT SETTINGS (NOT credits - server calculates)
+// ============================================
+
 async function collectSettings(modelId, config) {
     const settings = {};
     
@@ -1554,218 +1551,6 @@ async function collectSettings(modelId, config) {
     }
     
     return settings;
-}
-
-// ============================================
-// COLLECT INPUT DATA
-// ============================================
-
-async function collectInputData(modelId, config, prompt, credits, userId) {
-    const data = {
-        model_id: modelId,
-        prompt: prompt,
-        negative_prompt: document.getElementById('input-negative')?.value || '',
-        credits_used: credits,
-        user_id: userId,
-        settings: {}
-    };
-    
-    const settings = data.settings;
-    const submitBtn = document.getElementById('btn-submit');
-    
-    const updateStatus = (text) => {
-        if (submitBtn) submitBtn.innerHTML = text;
-    };
-    
-    // Duration
-    if (config.showDuration && !config.hideDuration) {
-        const durationSelect = document.getElementById('input-duration');
-        if (durationSelect) {
-            settings.duration = parseInt(durationSelect.value);
-        } else if (config.fixedDuration) {
-            settings.duration = config.fixedDuration;
-        }
-    }
-    
-    if (config.showCfg) {
-        settings.cfg_scale = parseFloat(document.getElementById('input-cfg')?.value || 0.5);
-    }
-    if (config.showSeed) {
-        settings.seed = parseInt(document.getElementById('input-seed')?.value || -1);
-    }
-    if (config.showFps) {
-        settings.fps = parseInt(document.getElementById('input-fps')?.value || 25);
-    }
-    if (config.showAspectRatio) {
-        settings.aspect_ratio = document.getElementById('input-aspect-ratio')?.value;
-    }
-    if (config.showAspectKling26) {
-        settings.aspect_ratio = document.getElementById('input-aspect-ratio-kling26')?.value;
-    }
-    if (config.showAspectSeedance) {
-        settings.aspect_ratio = document.getElementById('input-aspect-ratio-seedance')?.value;
-    }
-    if (config.showRunwayRatio) {
-        settings.ratio = document.getElementById('input-runway-ratio')?.value || '1280:720';
-    }
-    if (config.showWanSize) {
-        settings.size = document.getElementById('input-wan-size')?.value;
-    }
-    if (config.showLtxResolution) {
-        settings.resolution = document.getElementById('input-ltx-resolution')?.value;
-    }
-    if (config.showGenerateAudio) {
-        settings.generate_audio = document.getElementById('input-generate-audio')?.checked || false;
-    }
-    if (config.showPromptOptimizer) {
-        settings.prompt_optimizer = document.getElementById('input-prompt-optimizer')?.checked ?? true;
-    }
-    if (config.showPromptExpansion) {
-        settings.enable_prompt_expansion = document.getElementById('input-prompt-expansion')?.checked || false;
-    }
-    if (config.showCameraFixed) {
-        settings.camera_fixed = document.getElementById('input-camera-fixed')?.checked || false;
-    }
-    if (config.showShotType) {
-        settings.shot_type = document.getElementById('input-shot-type')?.value || 'single';
-    }
-    
-    // Image uploads (base64)
-    if (config.showImage) {
-        const imgFile = document.getElementById('input-image')?.files[0];
-        if (imgFile) {
-            updateStatus('⏳ Processing image...');
-            settings.image = await fileToBase64(imgFile);
-        }
-    }
-    if (config.showImageTail) {
-        const tailFile = document.getElementById('input-image-tail')?.files[0];
-        if (tailFile) {
-            settings.image_tail = await fileToBase64(tailFile);
-        }
-    }
-    if (config.showFrames) {
-        const firstFile = document.getElementById('input-first-frame')?.files[0];
-        if (firstFile) {
-            updateStatus('⏳ Processing first frame...');
-            settings.first_frame = await fileToBase64(firstFile);
-        }
-        const lastFile = document.getElementById('input-last-frame')?.files[0];
-        if (lastFile) {
-            settings.last_frame = await fileToBase64(lastFile);
-        }
-    }
-    if (config.showRefImages) {
-        const refImages = [];
-        for (let i = 1; i <= 7; i++) {
-            const refFile = document.getElementById(`input-ref-${i}`)?.files[0];
-            if (refFile) {
-                updateStatus(`⏳ Processing ref image ${i}...`);
-                refImages.push(await fileToBase64(refFile));
-            }
-        }
-        if (refImages.length > 0) settings.reference_images = refImages;
-    }
-    
-    // Motion Control - use pre-uploaded URL
-    if (config.showMotion) {
-        const motionImg = document.getElementById('input-motion-image')?.files[0];
-        
-        if (!motionImg) {
-            throw new Error('Gambar karakter wajib diupload!');
-        }
-        
-        if (!uploadedVideoUrls.motion_video) {
-            throw new Error('Video motion belum diupload!');
-        }
-        
-        updateStatus('⏳ Uploading character image...');
-        settings.image_url = await uploadFile(motionImg);
-        settings.video_url = uploadedVideoUrls.motion_video;
-        settings.character_orientation = document.getElementById('input-character-orientation')?.value || 'video';
-    }
-    
-    // OmniHuman
-    if (config.showOmnihuman) {
-        const omniImg = document.getElementById('input-omni-image')?.files[0];
-        const omniAudio = document.getElementById('input-omni-audio')?.files[0];
-        
-        if (!omniImg || !omniAudio) {
-            throw new Error('OmniHuman membutuhkan gambar dan audio!');
-        }
-        
-        updateStatus('⏳ Uploading portrait...');
-        settings.image_url = await uploadFile(omniImg);
-        
-        updateStatus('⏳ Uploading audio...');
-        settings.audio_url = await uploadFile(omniAudio);
-        
-        settings.resolution = document.getElementById('input-omni-resolution')?.value || '1080p';
-        settings.turbo_mode = document.getElementById('input-turbo-mode')?.checked || false;
-    }
-    
-    // VFX - use pre-uploaded URL
-    if (config.showVfx) {
-        if (!uploadedVideoUrls.vfx_video) {
-            throw new Error('Video VFX belum diupload!');
-        }
-        
-        settings.video_url = uploadedVideoUrls.vfx_video;
-        settings.filter_type = parseInt(document.getElementById('input-filter-type')?.value || 1);
-        settings.fps = parseInt(document.getElementById('input-vfx-fps')?.value || 24);
-        
-        if (settings.filter_type === 7) {
-            settings.bloom_contrast = parseFloat(document.getElementById('input-bloom-contrast')?.value || 1.2);
-        }
-        if (settings.filter_type === 2) {
-            settings.motion_kernel = parseInt(document.getElementById('input-motion-kernel')?.value || 5);
-            settings.motion_decay = parseFloat(document.getElementById('input-motion-decay')?.value || 0.8);
-        }
-    }
-    
-    updateStatus('⏳ Submitting job...');
-    return data;
-}
-
-async function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-    });
-}
-
-function resetForm() {
-    const form = document.getElementById('generator-form');
-    if (form) form.reset();
-    
-    document.querySelectorAll('.upload-preview').forEach(el => {
-        el.style.display = 'none';
-        el.src = '';
-    });
-    document.querySelectorAll('.upload-box').forEach(el => el.classList.remove('has-preview'));
-    document.querySelectorAll('.btn-remove-upload').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.upload-placeholder').forEach(el => el.style.display = 'flex');
-    
-    // Reset video uploads
-    uploadedVideoUrls = {};
-    
-    document.querySelectorAll('.video-upload-status').forEach(el => {
-        el.innerHTML = '';
-    });
-    
-    document.querySelectorAll('.btn-upload-video').forEach(btn => {
-        btn.innerHTML = '📤 Upload Video ke Server';
-        btn.disabled = true;
-        btn.style.display = 'none';
-    });
-    
-    document.querySelectorAll('.video-url-input').forEach(el => {
-        el.value = '';
-    });
-    
-    updateModelUI();
 }
 
 // ============================================
