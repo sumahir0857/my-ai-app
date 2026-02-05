@@ -1269,6 +1269,68 @@ function setupVideoUrlInput(inputId, urlKey) {
         }
     });
 }
+// ============================================
+// RESET FORM
+// ============================================
+
+function resetForm() {
+    const form = document.getElementById('generator-form');
+    if (form) form.reset();
+    
+    // Reset preview images
+    document.querySelectorAll('.upload-preview').forEach(el => {
+        el.style.display = 'none';
+        el.src = '';
+    });
+    
+    // Reset upload boxes
+    document.querySelectorAll('.upload-box').forEach(el => {
+        el.classList.remove('has-preview');
+    });
+    
+    // Reset remove buttons
+    document.querySelectorAll('.btn-remove-upload').forEach(el => {
+        el.style.display = 'none';
+    });
+    
+    // Show placeholders
+    document.querySelectorAll('.upload-placeholder').forEach(el => {
+        el.style.display = 'flex';
+    });
+    
+    // Reset video upload states
+    uploadedVideoUrls = {};
+    
+    // Reset video upload status messages
+    const motionStatus = document.getElementById('motion-video-status');
+    if (motionStatus) motionStatus.innerHTML = '';
+    
+    const vfxStatus = document.getElementById('vfx-video-status');
+    if (vfxStatus) vfxStatus.innerHTML = '';
+    
+    // Reset upload buttons
+    const motionUploadBtn = document.getElementById('btn-upload-motion-video');
+    if (motionUploadBtn) {
+        motionUploadBtn.innerHTML = '📤 Upload Video ke Server';
+        motionUploadBtn.disabled = true;
+        motionUploadBtn.style.display = 'none';
+    }
+    
+    const vfxUploadBtn = document.getElementById('btn-upload-vfx-video');
+    if (vfxUploadBtn) {
+        vfxUploadBtn.innerHTML = '📤 Upload Video ke Server';
+        vfxUploadBtn.disabled = true;
+        vfxUploadBtn.style.display = 'none';
+    }
+    
+    // Reset URL inputs
+    document.querySelectorAll('.video-url-input').forEach(el => {
+        el.value = '';
+    });
+    
+    // Update model UI to reset duration options etc
+    updateModelUI();
+}
 
 // ============================================
 // SUBMIT JOB - SECURE VERSION (via Edge Function)
