@@ -47,14 +47,14 @@ const MODEL_PRICING = {
 };
 
 // ============================================
-// CREDIT PACKAGES
+// CREDIT PACKAGES - UPDATED
 // ============================================
 
 const CREDIT_PACKAGES = [
-    { id: 'starter', name: 'Starter', credits: 500, price: 25000, pricePerCredit: 50 },
-    { id: 'creator', name: 'Creator', credits: 1000, price: 45000, pricePerCredit: 45 },
-    { id: 'pro', name: 'Pro', credits: 2500, price: 100000, pricePerCredit: 40, popular: true },
-    { id: 'studio', name: 'Studio', credits: 5000, price: 180000, pricePerCredit: 36, bestValue: true },
+    { id: 'starter', name: 'Starter', credits: 1750, price: 25000, pricePerCredit: 14 },
+    { id: 'creator', name: 'Creator', credits: 3500, price: 45000, pricePerCredit: 13 },
+    { id: 'pro', name: 'Pro', credits: 8750, price: 100000, pricePerCredit: 11, popular: true },
+    { id: 'studio', name: 'Studio', credits: 17500, price: 180000, pricePerCredit: 10, bestValue: true },
 ];
 
 // ============================================
