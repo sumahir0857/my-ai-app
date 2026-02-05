@@ -63,6 +63,68 @@
             gap: 15px;
         }
 
+        /* ===== STYLING TOMBOL UPGRADE ===== */
+        .btn-upgrade {
+            background: linear-gradient(135deg, #f59e0b, #f97316, #ef4444);
+            background-size: 200% 200%;
+            animation: gradientShift 3s ease infinite;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
+        }
+
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(249, 115, 22, 0.6);
+        }
+
+        .btn-upgrade-small {
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Pulse effect untuk menarik perhatian */
+        .btn-upgrade::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #f59e0b, #f97316, #ef4444);
+            border-radius: 10px;
+            z-index: -1;
+            opacity: 0;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.05); }
+        }
+
+        .btn-upgrade {
+            position: relative;
+            overflow: visible;
+        }
+
         /* RESPONSIVE HP: Agar tombol tidak bertumpuk/berantakan */
         @media (max-width: 640px) {
             .generator-header {
@@ -89,6 +151,21 @@
             .tab-panels {
                 padding-left: 10px;
                 padding-right: 10px;
+            }
+
+            /* Tombol upgrade lebih kecil di HP */
+            .btn-upgrade {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+
+            .btn-upgrade .upgrade-text {
+                display: none;
+            }
+
+            /* Sembunyikan tombol upgrade di header, tampilkan di stats saja */
+            .header-right .btn-upgrade {
+                display: none;
             }
         }
     </style>
@@ -140,6 +217,11 @@
                     <img id="user-avatar" src="" alt="Avatar" class="user-avatar">
                     <span id="user-name" class="user-name"></span>
                 </div>
+                <!-- TOMBOL UPGRADE DI HEADER -->
+                <a href="pricing.html" class="btn-upgrade">
+                    <span>⚡</span>
+                    <span class="upgrade-text">Upgrade</span>
+                </a>
                 <button id="btn-logout" class="btn-logout">Keluar</button>
             </div>
         </header>
@@ -149,6 +231,10 @@
             <div class="stat-item">
                 <span class="stat-label">Plan</span>
                 <span id="user-plan" class="stat-value">Free</span>
+                <!-- TOMBOL UPGRADE DI STATS BAR -->
+                <a href="pricing.html" class="btn-upgrade btn-upgrade-small" style="margin-left: 10px;">
+                    ⚡ Upgrade
+                </a>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Sisa Hari Ini</span>
