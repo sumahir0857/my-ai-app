@@ -309,8 +309,7 @@ const MODEL_CONFIGS = {
         type: 'seedance',
         desc: 'Paling hemat - Gambar opsional',
         showImage: true, 
-        showAspectSeedance: true,
-        showGenerateAudio: true, 
+        showAspectSeedance: true, 
         showCameraFixed: true, 
         showSeed: true,
         showDuration: true,
@@ -321,8 +320,7 @@ const MODEL_CONFIGS = {
         type: 'seedance',
         desc: 'Gambar opsional',
         showImage: true, 
-        showAspectSeedance: true,
-        showGenerateAudio: true, 
+        showAspectSeedance: true, 
         showCameraFixed: true, 
         showSeed: true,
         showDuration: true,
@@ -333,8 +331,7 @@ const MODEL_CONFIGS = {
         type: 'seedance',
         desc: 'Gambar opsional',
         showImage: true, 
-        showAspectSeedance: true,
-        showGenerateAudio: true, 
+        showAspectSeedance: true, 
         showCameraFixed: true, 
         showSeed: true,
         showDuration: true,
@@ -1461,6 +1458,22 @@ async function submitJob(event) {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '🚀 Generate Video';
     }
+}
+// ============================================
+// FILE TO BASE64 HELPER
+// ============================================
+
+async function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            // Remove data URL prefix (e.g., "data:image/jpeg;base64,")
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = (error) => reject(error);
+    });
 }
 
 // ============================================
