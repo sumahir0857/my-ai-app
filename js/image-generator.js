@@ -1,5 +1,5 @@
 // ============================================
-// IMAGE GENERATOR - Gemini Opal
+// IMAGE GENERATOR - WhatsApp Style
 // ============================================
 
 let pollingInterval = null;
@@ -9,6 +9,7 @@ let selectedImageBase64 = null;
 let selectedImageDimensions = { width: 0, height: 0 };
 let currentJobId = null;
 let lastResultImageUrl = null;
+let extrasOpen = false;
 
 // ========================================
 // INITIALIZATION
@@ -32,15 +33,28 @@ async function initImageGenerator() {
 }
 
 function showLoginUI() {
-    document.getElementById('login-section').style.display = 'flex';
+    document.getElementById('login-section').style.display = 'block';
     document.getElementById('generator-section').style.display = 'none';
     document.getElementById('user-bar').style.display = 'none';
+    
+    // Hide input bar when not logged in
+    const inputBar = document.getElementById('wa-input-bar');
+    if (inputBar) inputBar.style.display = 'none';
+    
+    updateWaStatus('offline');
 }
 
 function showGeneratorUI() {
     document.getElementById('login-section').style.display = 'none';
     document.getElementById('generator-section').style.display = 'block';
     document.getElementById('user-bar').style.display = 'flex';
+    
+    // Show input bar
+    const inputBar = document.getElementById('wa-input-bar');
+    if (inputBar) inputBar.style.display = 'block';
+    
+    updateWaStatus('online');
+    setWelcomeTime();
     
     const user = getCurrentUser();
     if (user) {
@@ -49,12 +63,105 @@ function showGeneratorUI() {
         
         if (avatar) {
             avatar.src = user.user_metadata?.avatar_url || 
-                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email)}&background=6366f1&color=fff`;
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(user.email)}&background=00a884&color=fff&size=60`;
         }
         if (name) {
             name.textContent = user.user_metadata?.full_name || user.email;
         }
     }
+}
+
+function updateWaStatus(status) {
+    const el = document.getElementById('wa-status');
+    if (!el) return;
+    el.textContent = status;
+    el.style.color = status === 'online' ? '#00a884' : '#8696a0';
+}
+
+function setWelcomeTime() {
+    const el = document.getElementById('welcome-time');
+    if (el) {
+        el.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+}
+
+function setResultTime() {
+    const el = document.getElementById('result-time');
+    if (el) {
+        el.textContent = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    }
+}
+
+// ========================================
+// EXTRAS TOGGLE
+// ========================================
+
+function toggleExtras() {
+    extrasOpen = !extrasOpen;
+    const extras = document.getElementById('wa-extras');
+    const btn = document.getElementById('wa-btn-extras');
+    
+    if (extras) {
+        extras.classList.toggle('open', extrasOpen);
+    }
+    if (btn) {
+        btn.classList.toggle('rotated', extrasOpen);
+    }
+}
+
+// ========================================
+// AUTO-RESIZE TEXTAREA
+// ========================================
+
+function autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+}
+
+// ========================================
+// SCROLL TO BOTTOM
+// ========================================
+
+function scrollToBottom() {
+    const chatBody = document.getElementById('wa-chat-body');
+    if (chatBody) {
+        setTimeout(() => {
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }, 100);
+    }
+}
+
+// ========================================
+// ADD USER MESSAGE BUBBLE
+// ========================================
+
+function addUserBubble(text, hasImage = false) {
+    const container = document.querySelector('#tab-active');
+    if (!container) return;
+    
+    const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'wa-bubble wa-bubble-outgoing wa-user-sent-msg';
+    
+    let imageHtml = '';
+    if (hasImage && selectedImageBase64) {
+        imageHtml = `<img src="${selectedImageBase64}" style="max-width: 200px; border-radius: 6px; margin-bottom: 6px; display: block;">`;
+    }
+    
+    bubble.innerHTML = `
+        <div class="wa-bubble-content">
+            ${imageHtml}
+            <p style="margin: 0;">${escapeHtml(text)}</p>
+        </div>
+        <span class="wa-time">${time} ✓✓</span>
+    `;
+    
+    // Insert before progress/result sections
+    const progressSection = document.getElementById('progress-section');
+    container.insertBefore(bubble, progressSection);
+    
+    scrollToBottom();
 }
 
 // ========================================
@@ -151,8 +258,8 @@ function renderJobs() {
     const activeContainer = document.getElementById('active-jobs');
     if (activeJobs.length === 0) {
         activeContainer.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">🚀</span>
+            <div class="wa-empty-state">
+                <span>🚀</span>
                 <p>Tidak ada proses berjalan</p>
             </div>
         `;
@@ -163,8 +270,8 @@ function renderJobs() {
     const historyContainer = document.getElementById('history-jobs');
     if (historyJobs.length === 0) {
         historyContainer.innerHTML = `
-            <div class="empty-state">
-                <span class="empty-icon">📁</span>
+            <div class="wa-empty-state">
+                <span>📁</span>
                 <p>Belum ada riwayat</p>
             </div>
         `;
@@ -236,21 +343,16 @@ function switchMode(mode) {
     
     const sourceSection = document.getElementById('source-image-section');
     const ratioSection = document.getElementById('ratio-section');
-    const promptLabel = document.getElementById('prompt-label');
     const promptInput = document.getElementById('input-prompt');
     
     if (mode === 'image-to-image') {
         sourceSection.style.display = 'block';
-        ratioSection.style.display = 'none'; // Hide ratio for edit mode (auto-detect)
-        promptLabel.textContent = 'Instruksi Edit ';
-        promptLabel.innerHTML += '<span class="required">*</span>';
-        promptInput.placeholder = 'Jelaskan perubahan yang ingin dilakukan... Contoh: "Ubah latar belakang menjadi pantai sunset" atau "Tambahkan efek vintage"';
+        ratioSection.style.display = 'none';
+        promptInput.placeholder = 'Jelaskan perubahan yang ingin dilakukan...';
     } else {
         sourceSection.style.display = 'none';
         ratioSection.style.display = 'block';
-        promptLabel.textContent = 'Deskripsi Gambar ';
-        promptLabel.innerHTML += '<span class="required">*</span>';
-        promptInput.placeholder = 'Deskripsikan gambar yang ingin dibuat... Contoh: "Kucing lucu bermain di taman dengan bunga-bunga"';
+        promptInput.placeholder = 'Ketik deskripsi gambar...';
         clearImage();
     }
 }
@@ -301,10 +403,10 @@ function handleImageSelect(file) {
         };
         img.src = selectedImageBase64;
         
+        // Show preview
         document.getElementById('preview-image').src = selectedImageBase64;
-        document.getElementById('preview-image').style.display = 'block';
+        document.getElementById('preview-wrap').style.display = 'block';
         document.getElementById('upload-placeholder').style.display = 'none';
-        document.getElementById('btn-remove-image').style.display = 'block';
     };
     reader.readAsDataURL(file);
 }
@@ -314,15 +416,14 @@ function clearImage() {
     selectedImageDimensions = { width: 0, height: 0 };
     
     document.getElementById('input-image').value = '';
-    document.getElementById('preview-image').style.display = 'none';
+    const previewWrap = document.getElementById('preview-wrap');
+    if (previewWrap) previewWrap.style.display = 'none';
     document.getElementById('preview-image').src = '';
-    document.getElementById('upload-placeholder').style.display = 'block';
-    document.getElementById('btn-remove-image').style.display = 'none';
+    document.getElementById('upload-placeholder').style.display = 'flex';
     document.getElementById('detected-ratio-info').style.display = 'none';
 }
 
 function useResultAsSource(imageUrl) {
-    // Fetch the image and convert to base64
     fetch(imageUrl)
         .then(res => res.blob())
         .then(blob => {
@@ -334,14 +435,14 @@ function useResultAsSource(imageUrl) {
                 img.onload = () => {
                     selectedImageDimensions = { width: img.width, height: img.height };
                     
-                    // Switch to edit mode
                     switchMode('image-to-image');
                     
-                    // Show the image
+                    // Open extras to show the upload
+                    if (!extrasOpen) toggleExtras();
+                    
                     document.getElementById('preview-image').src = selectedImageBase64;
-                    document.getElementById('preview-image').style.display = 'block';
+                    document.getElementById('preview-wrap').style.display = 'block';
                     document.getElementById('upload-placeholder').style.display = 'none';
-                    document.getElementById('btn-remove-image').style.display = 'block';
                     
                     const detected = detectAspectRatio(img.width, img.height);
                     const ratioInfo = document.getElementById('detected-ratio-info');
@@ -351,15 +452,12 @@ function useResultAsSource(imageUrl) {
                         ratioInfo.style.display = 'flex';
                     }
                     
-                    // Clear prompt
                     document.getElementById('input-prompt').value = '';
                     document.getElementById('char-count').textContent = '0';
                     
-                    // Hide result section
                     hideAllSections();
                     
-                    // Scroll to form
-                    document.getElementById('image-form').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('input-prompt').focus();
                 };
                 img.src = selectedImageBase64;
             };
@@ -396,7 +494,6 @@ async function submitImageJob(event) {
         return;
     }
     
-    // Determine aspect ratio
     let aspectRatio;
     if (currentMode === 'image-to-image') {
         const detected = detectAspectRatio(selectedImageDimensions.width, selectedImageDimensions.height);
@@ -406,20 +503,31 @@ async function submitImageJob(event) {
         aspectRatio = ratioInput?.value || '1:1';
     }
     
+    // Add user message bubble
+    addUserBubble(prompt, currentMode === 'image-to-image');
+    
+    // Close extras
+    if (extrasOpen) toggleExtras();
+    
     const submitBtn = document.getElementById('btn-generate');
     const btnText = submitBtn?.querySelector('.btn-text');
     const btnLoading = submitBtn?.querySelector('.btn-loading');
     
     submitBtn.disabled = true;
     btnText.style.display = 'none';
-    btnLoading.style.display = 'inline-flex';
+    btnLoading.style.display = 'flex';
+    
+    // Remove old user messages (keep last 5)
+    cleanupOldUserBubbles();
     
     hideAllSections();
     document.getElementById('progress-section').style.display = 'block';
     updateProgress(0, 'Memvalidasi...');
+    updateWaStatus('typing...');
+    
+    scrollToBottom();
     
     try {
-        // Check limit
         let limitResult = await supabaseClient.rpc('check_service_limit', {
             p_service: 'image'
         });
@@ -437,7 +545,6 @@ async function submitImageJob(event) {
         
         updateProgress(10, 'Membuat job...');
         
-        // Prepare input data
         const inputData = {
             prompt: prompt.substring(0, 1000),
             aspect_ratio: aspectRatio
@@ -447,7 +554,6 @@ async function submitImageJob(event) {
             inputData.image_base64 = selectedImageBase64;
         }
         
-        // Create job
         let jobResult = await supabaseClient.rpc('create_service_job', {
             p_service: 'image',
             p_input_data: inputData,
@@ -475,18 +581,28 @@ async function submitImageJob(event) {
         startJobPolling(result.job_id);
         await loadUserStats();
         
-        // Reset form
         document.getElementById('input-prompt').value = '';
         document.getElementById('char-count').textContent = '0';
+        autoResizeTextarea(document.getElementById('input-prompt'));
         clearImage();
         
     } catch (error) {
         console.error('❌ Submit error:', error);
         showError(error.message);
+        updateWaStatus('online');
     } finally {
         submitBtn.disabled = false;
-        btnText.style.display = 'inline';
+        btnText.style.display = 'flex';
         btnLoading.style.display = 'none';
+    }
+}
+
+function cleanupOldUserBubbles() {
+    const bubbles = document.querySelectorAll('.wa-user-sent-msg');
+    if (bubbles.length > 5) {
+        for (let i = 0; i < bubbles.length - 5; i++) {
+            bubbles[i].remove();
+        }
     }
 }
 
@@ -512,10 +628,12 @@ function startJobPolling(jobId) {
             
             if (job.status === 'completed') {
                 stopPolling();
+                updateWaStatus('online');
                 showResult(job.results);
                 await loadJobs();
             } else if (job.status === 'failed') {
                 stopPolling();
+                updateWaStatus('online');
                 showError(job.error_message || 'Image generation failed');
                 await loadJobs();
                 await loadUserStats();
@@ -546,9 +664,15 @@ function stopPolling() {
 }
 
 function updateProgress(percent, text) {
-    document.getElementById('progress-fill').style.width = `${percent || 0}%`;
-    document.getElementById('progress-text').textContent = text || 'Memproses...';
-    document.getElementById('progress-step').textContent = `${percent || 0}%`;
+    const fill = document.getElementById('progress-fill');
+    const textEl = document.getElementById('progress-text');
+    const stepEl = document.getElementById('progress-step');
+    
+    if (fill) fill.style.width = `${percent || 0}%`;
+    if (textEl) textEl.textContent = text || 'Memproses...';
+    if (stepEl) stepEl.textContent = `${percent || 0}%`;
+    
+    scrollToBottom();
 }
 
 // ========================================
@@ -571,17 +695,22 @@ function showResult(results) {
     document.getElementById('result-image').src = imageUrl || '';
     document.getElementById('btn-download').href = imageUrl || '#';
     
+    setResultTime();
+    
     document.getElementById('result-info').innerHTML = `
-        <span>📐 Rasio: ${parsedResults?.aspect_ratio || '1:1'}</span>
-        <span>📏 Ukuran: ${parsedResults?.width || '?'}×${parsedResults?.height || '?'}px</span>
-        <span>🎨 Mode: ${parsedResults?.mode || 'text-to-image'}</span>
+        <span>📐 ${parsedResults?.aspect_ratio || '1:1'}</span>
+        <span>📏 ${parsedResults?.width || '?'}×${parsedResults?.height || '?'}px</span>
+        <span>🎨 ${parsedResults?.mode || 'text-to-image'}</span>
     `;
+    
+    scrollToBottom();
 }
 
 function showError(message) {
     hideAllSections();
     document.getElementById('error-section').style.display = 'block';
     document.getElementById('error-message').textContent = message || 'Terjadi kesalahan';
+    scrollToBottom();
 }
 
 function hideAllSections() {
@@ -595,6 +724,9 @@ function resetGenerator() {
     currentJobId = null;
     loadJobs();
     loadUserStats();
+    
+    // Focus prompt
+    document.getElementById('input-prompt')?.focus();
 }
 
 // ========================================
@@ -632,7 +764,7 @@ function openJobModal(jobId) {
     const statusBadge = document.getElementById('modal-status-badge');
     const statusLabels = { pending: '⏳ Menunggu', processing: '🔄 Diproses', completed: '✅ Selesai', failed: '❌ Gagal' };
     statusBadge.textContent = statusLabels[job.status] || job.status;
-    statusBadge.className = `status-badge status-${job.status}`;
+    statusBadge.className = `wa-status-badge status-${job.status}`;
     
     const progressEl = document.getElementById('modal-progress');
     const resultEl = document.getElementById('modal-result');
@@ -685,7 +817,7 @@ function closeJobModal() {
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Initializing Image Generator...');
+    console.log('🚀 Initializing WhatsApp-Style Image Generator...');
     
     initImageGenerator();
     
@@ -694,47 +826,59 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.addEventListener('click', () => switchMode(btn.dataset.mode));
     });
     
+    // Extras toggle
+    document.getElementById('wa-btn-extras')?.addEventListener('click', toggleExtras);
+    
     // Image upload
     const uploadArea = document.getElementById('upload-area');
     const imageInput = document.getElementById('input-image');
     
-    uploadArea.addEventListener('click', (e) => {
-        if (e.target.id !== 'btn-remove-image') {
+    uploadArea?.addEventListener('click', (e) => {
+        if (e.target.id !== 'btn-remove-image' && !e.target.closest('.wa-btn-remove-img')) {
             imageInput.click();
         }
     });
     
-    imageInput.addEventListener('change', (e) => {
+    imageInput?.addEventListener('change', (e) => {
         if (e.target.files?.[0]) handleImageSelect(e.target.files[0]);
     });
     
-    uploadArea.addEventListener('dragover', (e) => {
+    uploadArea?.addEventListener('dragover', (e) => {
         e.preventDefault();
-        uploadArea.classList.add('dragover');
+        uploadArea.style.borderColor = '#00a884';
     });
-    uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
+    uploadArea?.addEventListener('dragleave', () => {
+        uploadArea.style.borderColor = '';
     });
-    uploadArea.addEventListener('drop', (e) => {
+    uploadArea?.addEventListener('drop', (e) => {
         e.preventDefault();
-        uploadArea.classList.remove('dragover');
+        uploadArea.style.borderColor = '';
         if (e.dataTransfer?.files?.[0]) handleImageSelect(e.dataTransfer.files[0]);
     });
     
-    document.getElementById('btn-remove-image').addEventListener('click', (e) => {
+    document.getElementById('btn-remove-image')?.addEventListener('click', (e) => {
         e.stopPropagation();
         clearImage();
     });
     
-    // Char count
+    // Textarea auto-resize & char count
     const promptInput = document.getElementById('input-prompt');
     const charCount = document.getElementById('char-count');
-    promptInput.addEventListener('input', () => {
+    promptInput?.addEventListener('input', () => {
         charCount.textContent = promptInput.value.length;
+        autoResizeTextarea(promptInput);
+    });
+    
+    // Submit on Enter (without Shift)
+    promptInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('image-form')?.dispatchEvent(new Event('submit'));
+        }
     });
     
     // Form submit
-    document.getElementById('image-form').addEventListener('submit', submitImageJob);
+    document.getElementById('image-form')?.addEventListener('submit', submitImageJob);
     
     // Tab buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -742,17 +886,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Result buttons
-    document.getElementById('btn-new-image').addEventListener('click', resetGenerator);
-    document.getElementById('btn-retry').addEventListener('click', resetGenerator);
-    document.getElementById('btn-edit-result').addEventListener('click', () => {
+    document.getElementById('btn-new-image')?.addEventListener('click', resetGenerator);
+    document.getElementById('btn-retry')?.addEventListener('click', resetGenerator);
+    document.getElementById('btn-edit-result')?.addEventListener('click', () => {
         if (lastResultImageUrl) {
             useResultAsSource(lastResultImageUrl);
         }
     });
     
     // Modal
-    document.getElementById('btn-close-modal').addEventListener('click', closeJobModal);
-    document.getElementById('job-modal').addEventListener('click', (e) => {
+    document.getElementById('btn-close-modal')?.addEventListener('click', closeJobModal);
+    document.getElementById('job-modal')?.addEventListener('click', (e) => {
         if (e.target.id === 'job-modal') closeJobModal();
     });
     document.addEventListener('keydown', (e) => {
@@ -760,7 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Login
-    document.getElementById('btn-login-google').addEventListener('click', () => {
+    document.getElementById('btn-login-google')?.addEventListener('click', () => {
         supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -770,7 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     // Logout
-    document.getElementById('btn-logout').addEventListener('click', logout);
+    document.getElementById('btn-logout')?.addEventListener('click', logout);
 });
 
 // Auth state listener
@@ -803,4 +947,4 @@ document.addEventListener('visibilitychange', () => {
 
 window.addEventListener('beforeunload', stopPolling);
 
-console.log('✅ Image Generator.js loaded');
+console.log('✅ WhatsApp-Style Image Generator loaded');
