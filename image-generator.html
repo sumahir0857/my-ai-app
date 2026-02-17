@@ -2,284 +2,257 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nano Banana Pro - OrbitBot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OrbitBot AI - Image Generator</title>
     
-    <!-- Fonts & Tailwind (Optional Utility) -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="css/image-generator.css">
 </head>
 <body>
-    <!-- Background Stars -->
-    <div class="stars" id="stars"></div>
-
-    <div class="main-container">
-        <!-- Header & Nav -->
-        <a href="/" class="back-nav">← Tools</a>
-        <header class="app-header">
-            <h1 class="app-title">Image Generator</h1>
-            <p class="app-subtitle">Powered by OrbitBot • Nano Banana Pro</p>
-        </header>
-        
-        <!-- User Bar (Compact Style) -->
-        <!-- Note: ID "user-bar" wajib ada untuk JS -->
-        <div id="user-bar" class="user-bar user-panel-wrapper" style="display: none;">
-            <div class="user-panel">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <img id="user-avatar" src="" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%;">
-                    <span id="user-name">User</span>
-                </div>
-                <div>Plan: <strong id="user-plan" style="color: #a78bfa;">Free</strong></div>
-                <div>Sisa: <strong id="user-remaining">0</strong></div>
-                <button id="btn-logout" class="btn-logout-icon">✕</button>
-            </div>
-        </div>
-        
-        <!-- Login Section -->
-        <section id="login-section" class="login-section" style="display: none;">
-            <div class="tool-card" style="text-align: center;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🖼️</div>
-                <h2 style="margin: 0 0 10px 0;">Login Akses</h2>
-                <p style="color: #94a3b8; margin-bottom: 20px;">Buat & edit gambar dengan  Nano Banana Pro</p>
-                <button id="btn-login-google" class="btn-google">
-                    <svg width="18" height="18" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-container">
+            <div class="login-logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
                     </svg>
-                    Masuk dengan Google
-                </button>
+                </div>
+                <h1>OrbitBot AI</h1>
+                <p>Image Generator</p>
             </div>
-        </section>
+            <div class="login-features">
+                <div class="feature-item">
+                    <span class="feature-icon">🎨</span>
+                    <span>Generate gambar dari teks</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">✨</span>
+                    <span>Edit & modifikasi gambar</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">⚡</span>
+                    <span>Hasil instan berkualitas tinggi</span>
+                </div>
+            </div>
+            <button id="btn-login-google" class="btn-google">
+                <svg width="20" height="20" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Masuk dengan Google
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Chat App -->
+    <div id="chat-app" class="chat-app" style="display: none;">
         
-        <!-- Main Generator Section -->
-        <main id="generator-section" class="generator-section" style="display: none;">
-            
-            <!-- Mode Selection (Pill Style) -->
-            <!-- PENTING: Class 'mode-selector' dan 'mode-btn' ditambahkan kembali agar JS bekerja -->
-            <div class="tabs-pill-container mode-selector" style="margin-bottom: 20px;">
-                <button class="tab-pill mode-btn active" data-mode="text-to-image">
-                    ✍️ Text to Image
-                </button>
-                <button class="tab-pill mode-btn" data-mode="image-to-image">
-                    🎨 Edit Image
-                </button>
-            </div>
-            
-            <!-- Tabs Menu -->
-            <!-- PENTING: Class 'tabs-header' dan 'tab-btn' ditambahkan kembali agar JS bekerja -->
-            <div class="tabs-container tabs-pill-container tabs-header">
-                <button class="tab-pill tab-btn active" data-tab="active">
-                    ⚡ Buat Baru <span id="active-count" class="tab-count">0</span>
-                </button>
-                <button class="tab-pill tab-btn" data-tab="history">
-                    📁 Riwayat <span id="history-count" class="tab-count">0</span>
-                </button>
-            </div>
-
-            <!-- Tab Panels Wrapper -->
-            <div class="tab-panels tabs-content" style="margin-top: 20px;">
-                
-                <!-- PANEL: ACTIVE / FORM -->
-                <div id="tab-active" class="tab-panel active">
-                    
-                    <!-- Input Form -->
-                    <form id="image-form">
-                        
-                        <!-- Card 1: Upload -->
-                        <div id="source-image-section" class="tool-card" style="display: none;">
-                            <h3>📷 Upload Source</h3>
-                            <div class="upload-box" id="upload-area">
-                                <input type="file" id="input-image" accept="image/*" hidden>
-                                <div class="upload-placeholder" id="upload-placeholder">
-                                    <span class="upload-icon">📤</span>
-                                    <p>Klik / Drag gambar</p>
-                                    <p class="upload-hint">JPG, PNG, WebP (Max 10MB)</p>
-                                </div>
-                                <img id="preview-image" class="image-preview" style="display: none;" alt="Preview">
-                                <button type="button" id="btn-remove-image" class="btn-remove" style="display: none;">✕</button>
-                            </div>
-                            <div id="detected-ratio-info" class="detected-ratio-info" style="display: none;">
-                                <span class="ratio-icon">📐</span>
-                                <span id="detected-ratio-text">Rasio: -</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Card 2: Prompt & Ratio -->
-                        <div class="tool-card">
-                            <h3>📝 Detail Gambar</h3>
-                            
-                            <div class="form-group">
-                                <label for="input-prompt" id="prompt-label">Prompt (Deskripsi) <span class="required">*</span></label>
-                                <textarea 
-                                    id="input-prompt" 
-                                    placeholder="Jelaskan gambar yang ingin dibuat se-detail mungkin..."
-                                    rows="4"
-                                    maxlength="1000"
-                                    required
-                                ></textarea>
-                                <span class="char-count"><span id="char-count">0</span>/1000</span>
-                            </div>
-                            
-                            <div id="ratio-section" class="form-group">
-                                <label>Rasio Aspek</label>
-                                <div class="ratio-options">
-                                    <label class="ratio-option">
-                                        <input type="radio" name="ratio" value="1:1" checked>
-                                        <span class="ratio-box square">
-                                            <span class="ratio-icon-box">⬜</span>
-                                            <span>1:1</span>
-                                        </span>
-                                    </label>
-                                    <label class="ratio-option">
-                                        <input type="radio" name="ratio" value="9:16">
-                                        <span class="ratio-box vertical">
-                                            <span class="ratio-icon-box">📱</span>
-                                            <span>9:16</span>
-                                        </span>
-                                    </label>
-                                    <label class="ratio-option">
-                                        <input type="radio" name="ratio" value="16:9">
-                                        <span class="ratio-box horizontal">
-                                            <span class="ratio-icon-box">🖥️</span>
-                                            <span>16:9</span>
-                                        </span>
-                                    </label>
-                                    <label class="ratio-option">
-                                        <input type="radio" name="ratio" value="4:3">
-                                        <span class="ratio-box">
-                                            <span class="ratio-icon-box">🖼️</span>
-                                            <span>4:3</span>
-                                        </span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Submit Button -->
-                        <button type="submit" id="btn-generate" class="btn-primary">
-                            <span class="btn-text">🚀 Generate Gambar</span>
-                            <span class="btn-loading" style="display: none;">
-                                <span class="spinner"></span> Memproses...
-                            </span>
-                        </button>
-                    </form>
-
-                    <!-- Progress Indicator -->
-                    <div id="progress-section" class="tool-card progress-section" style="display: none; text-align: center; margin-top: 20px;">
-                        <h3>⏳ Sedang Membuat...</h3>
-                        <div class="progress-bar-large progress-bar">
-                            <div class="progress-fill" id="progress-fill"></div>
-                        </div>
-                        <p id="progress-text" class="progress-text" style="color: #cbd5e1;">Memulai engine...</p>
-                        <p id="progress-step" class="progress-step" style="font-size: 0.8rem; color: #64748b;">0%</p>
-                    </div>
-
-                    <!-- Result Section -->
-                    <div id="result-section" class="tool-card result-section" style="display: none; margin-top: 20px;">
-                        <h3 style="color: #a78bfa;">🎉 Hasil Generate</h3>
-                        <div class="result-image-container">
-                            <img id="result-image" class="result-image" alt="Generated Image">
-                        </div>
-                        <div class="result-actions">
-                            <a id="btn-download" class="btn-primary btn-download" download="generated-image.webp" style="text-align: center; text-decoration: none;">
-                                ⬇️ Download
-                            </a>
-                            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                <button id="btn-edit-result" class="btn-secondary" style="flex: 1;">🎨 Edit Ini</button>
-                                <button id="btn-new-image" class="btn-secondary" style="flex: 1;">➕ Baru</button>
-                            </div>
-                        </div>
-                        <div id="result-info" class="result-info" style="margin-top: 15px; font-size: 0.8rem; text-align: center; opacity: 0.7;"></div>
-                    </div>
-
-                    <!-- Error Section -->
-                    <div id="error-section" class="tool-card error-section" style="display: none; border-color: #ef4444; background: rgba(239, 68, 68, 0.05);">
-                        <h3 style="color: #ef4444;">❌ Gagal Generate</h3>
-                        <p id="error-message" style="color: #fca5a5;"></p>
-                        <button id="btn-retry" class="btn-secondary btn-retry" style="width: 100%; margin-top: 10px;">🔄 Coba Lagi</button>
-                    </div>
-
-                    <!-- Active Jobs List -->
-                    <div id="active-jobs" class="jobs-grid" style="margin-top: 20px;"></div>
+        <!-- Chat Header -->
+        <header class="chat-header">
+            <div class="header-left">
+                <a href="/" class="back-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <div class="header-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                    </svg>
                 </div>
-                
-                <!-- PANEL: HISTORY -->
-                <div id="tab-history" class="tab-panel">
-                    <!-- Warning Banner 3 Jam -->
-                    <div class="warning-banner">
-                        <span style="font-size: 1.2rem;">⚠️</span>
-                        <span>Peringatan: Riwayat akan dihapus otomatis setelah <strong>3 jam</strong>. Unduh hasil Anda segera!</span>
-                    </div>
-
-                    <div id="history-jobs" class="jobs-grid">
-                        <div class="empty-state">
-                            <span class="empty-icon">📁</span>
-                            <p>Belum ada riwayat</p>
-                        </div>
-                    </div>
+                <div class="header-info">
+                    <h1>OrbitBot AI</h1>
+                    <span class="status-online">● Online</span>
                 </div>
-
             </div>
+            <div class="header-right">
+                <div class="user-credits">
+                    <span id="user-remaining">0</span>
+                    <span class="credits-label">credits</span>
+                </div>
+                <button id="btn-history" class="icon-btn" title="Riwayat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                </button>
+                <button id="btn-menu" class="icon-btn" title="Menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dropdown Menu -->
+        <div id="dropdown-menu" class="dropdown-menu">
+            <div class="dropdown-user">
+                <img id="menu-avatar" src="" alt="Avatar">
+                <div>
+                    <div id="menu-name">User</div>
+                    <div id="menu-plan" class="plan-badge">Free Plan</div>
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item" id="btn-clear-chat">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                </svg>
+                Hapus Chat
+            </button>
+            <button class="dropdown-item" id="btn-logout">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+                Keluar
+            </button>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <main class="chat-messages" id="chat-messages">
+            
+            <!-- Welcome Message -->
+            <div class="welcome-screen" id="welcome-screen">
+                <div class="welcome-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+                    </svg>
+                </div>
+                <h2>Halo! Saya OrbitBot</h2>
+                <p>Apa yang ingin kamu buat hari ini?</p>
+                <div class="suggestion-chips">
+                    <button class="chip" data-prompt="Kucing lucu bermain di taman bunga">🐱 Kucing lucu</button>
+                    <button class="chip" data-prompt="Pemandangan gunung saat sunset dengan warna dramatis">🌄 Sunset indah</button>
+                    <button class="chip" data-prompt="Robot futuristik dengan efek neon cyberpunk">🤖 Robot futuristik</button>
+                    <button class="chip" data-prompt="Kota fantasi dengan kastil melayang di awan">🏰 Kota fantasi</button>
+                </div>
+            </div>
+
+            <!-- Messages will be inserted here -->
+            <div id="messages-container"></div>
+
         </main>
-        
-        <!-- Job Detail Modal -->
-        <div id="job-modal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3 id="modal-title" style="margin: 0;">Detail Gambar</h3>
-                    <button id="btn-close-modal" class="modal-close btn-close">&times;</button>
+
+        <!-- Image Preview (for edit mode) -->
+        <div id="image-preview-bar" class="image-preview-bar" style="display: none;">
+            <div class="preview-content">
+                <img id="preview-thumb" src="" alt="Preview">
+                <div class="preview-info">
+                    <span>Edit Mode</span>
+                    <span id="preview-size">-</span>
                 </div>
-                <div class="modal-body">
-                    <div class="modal-status" style="text-align: center; margin-bottom: 15px;">
-                        <span id="modal-status-badge" class="status-badge">-</span>
-                    </div>
-                    
-                    <div id="modal-progress" class="modal-section" style="display: none;">
-                        <div class="progress-bar-large progress-bar">
-                            <div class="progress-fill" id="modal-progress-fill"></div>
-                        </div>
-                        <p id="modal-progress-text" style="text-align: center; font-size: 0.9rem;">Memproses...</p>
-                    </div>
-                    
-                    <div id="modal-result" class="modal-section" style="display: none;">
-                        <img id="modal-image" class="result-image modal-image" alt="Result" style="margin-bottom: 15px;">
-                        <a id="modal-download" class="btn-primary btn-download" style="display: block; text-align: center; text-decoration: none;" download>⬇️ Download</a>
-                    </div>
-                    
-                    <div id="modal-error" class="modal-section" style="display: none; color: #ef4444; text-align: center;">
-                        <p id="modal-error-msg" class="error-msg"></p>
-                    </div>
-                    
-                    <div id="modal-info" class="modal-info" style="margin-top: 15px; font-size: 0.8rem; color: #64748b; background: #0f1016; padding: 10px; border-radius: 8px;"></div>
+                <button id="btn-remove-preview" class="btn-remove-preview">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Input -->
+        <footer class="chat-input-container">
+            <!-- Ratio Selector -->
+            <div class="ratio-selector" id="ratio-selector">
+                <button class="ratio-btn active" data-ratio="1:1" title="Square">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+                </button>
+                <button class="ratio-btn" data-ratio="9:16" title="Portrait">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="2" width="12" height="20" rx="2"/></svg>
+                </button>
+                <button class="ratio-btn" data-ratio="16:9" title="Landscape">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+                </button>
+                <button class="ratio-btn" data-ratio="4:3" title="Classic">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+                </button>
+            </div>
+
+            <div class="input-wrapper">
+                <input type="file" id="input-image" accept="image/*" hidden>
+                <button id="btn-attach" class="btn-attach" title="Upload gambar untuk edit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                    </svg>
+                </button>
+                <textarea 
+                    id="input-prompt" 
+                    placeholder="Deskripsikan gambar yang ingin dibuat..."
+                    rows="1"
+                    maxlength="1000"
+                ></textarea>
+                <button id="btn-send" class="btn-send" disabled>
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </footer>
+
+        <!-- History Sidebar -->
+        <div id="history-sidebar" class="history-sidebar">
+            <div class="sidebar-header">
+                <h3>Riwayat Generate</h3>
+                <button id="btn-close-history" class="btn-close-sidebar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="sidebar-warning">
+                ⚠️ Riwayat dihapus otomatis setelah 3 jam
+            </div>
+            <div id="history-list" class="history-list">
+                <div class="empty-history">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                    </svg>
+                    <p>Belum ada riwayat</p>
                 </div>
             </div>
         </div>
-        
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
     </div>
-    
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="image-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="btn-close-modal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <img id="modal-image" src="" alt="Full Image">
+            <div class="modal-actions">
+                <a id="modal-download" class="modal-btn primary" download>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    Download
+                </a>
+                <button id="modal-edit" class="modal-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Edit
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/supabase-config.js"></script>
     <script src="js/image-generator.js"></script>
-    
-    <script>
-        // Script untuk membuat bintang di background
-        const starsContainer = document.getElementById('stars');
-        for (let i = 0; i < 150; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
-            star.style.animationDelay = Math.random() * 3 + 's';
-            star.style.width = Math.random() * 2 + 1 + 'px';
-            star.style.height = star.style.width;
-            starsContainer.appendChild(star);
-        }
-    </script>
 </body>
 </html>
