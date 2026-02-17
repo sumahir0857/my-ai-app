@@ -138,6 +138,7 @@ function renderHistory() {
         });
         
         const thumb = results.image_url || '';
+        const mode = input.image_base64 ? '✏️ Edit' : '🎨 Generate';
         
         return `
             <div class="history-item" onclick="loadHistoryItem('${job.id}')">
@@ -150,6 +151,8 @@ function renderHistory() {
                             <span class="status-dot ${job.status}"></span>
                             ${job.status === 'completed' ? 'Selesai' : 'Gagal'}
                         </span>
+                        <span>•</span>
+                        <span>${mode}</span>
                         <span>•</span>
                         <span>${date}</span>
                     </div>
@@ -187,8 +190,11 @@ function addUserMessage(prompt, sourceImage = null) {
     const initial = (user?.user_metadata?.full_name || user?.email || 'U')[0].toUpperCase();
     
     let sourceHtml = '';
+    let modeLabel = '';
+    
     if (sourceImage) {
         sourceHtml = `<img src="${sourceImage}" class="source-image-preview" alt="Source">`;
+        modeLabel = '<span class="mode-badge edit">✏️ Edit Mode</span>';
     }
     
     const messageHtml = `
@@ -197,6 +203,7 @@ function addUserMessage(prompt, sourceImage = null) {
             <div class="message-content">
                 <div class="message-bubble">
                     ${sourceHtml}
+                    ${modeLabel}
                     ${escapeHtml(prompt)}
                 </div>
                 <span class="message-time">${time}</span>
@@ -211,8 +218,10 @@ function addUserMessage(prompt, sourceImage = null) {
     document.getElementById('welcome-screen').classList.add('hidden');
 }
 
-function addBotLoading(jobId) {
+function addBotLoading(jobId, isEditMode = false) {
     const container = document.getElementById('messages-container');
+    
+    const modeText = isEditMode ? 'Mengedit gambar...' : 'Membuat gambar...';
     
     const messageHtml = `
         <div class="message bot" id="msg-${jobId}">
@@ -228,7 +237,7 @@ function addBotLoading(jobId) {
                         <span class="typing-dot"></span>
                         <span class="typing-dot"></span>
                     </div>
-                    <span class="loading-text">Membuat gambar...</span>
+                    <span class="loading-text">${modeText}</span>
                 </div>
                 <div class="message-progress">
                     <div class="progress-bar">
@@ -252,11 +261,12 @@ function updateBotMessage(jobId, progress, stepName) {
     if (progressText) progressText.textContent = `${stepName || 'Memproses...'} (${progress}%)`;
 }
 
-function completeBotMessage(jobId, imageUrl, aspectRatio) {
+function completeBotMessage(jobId, imageUrl, aspectRatio, isEditMode = false) {
     const messageEl = document.getElementById(`msg-${jobId}`);
     if (!messageEl) return;
     
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+    const modeLabel = isEditMode ? '✏️ Edited' : '🎨 Generated';
     
     messageEl.querySelector('.message-content').innerHTML = `
         <div class="message-image-container" onclick="openImageModal('${imageUrl}')">
@@ -266,7 +276,7 @@ function completeBotMessage(jobId, imageUrl, aspectRatio) {
                 <button class="img-action-btn" onclick="event.stopPropagation(); useAsSource('${imageUrl}')">✏️ Edit</button>
             </div>
         </div>
-        <span class="message-time">${time} • ${aspectRatio}</span>
+        <span class="message-time">${time} • ${modeLabel} • ${aspectRatio}</span>
     `;
     
     scrollToBottom();
@@ -304,7 +314,7 @@ function clearChat() {
 }
 
 // ========================================
-// SUBMIT & POLLING
+// SUBMIT & POLLING - FIXED VERSION
 // ========================================
 
 async function submitPrompt() {
@@ -319,23 +329,32 @@ async function submitPrompt() {
         return;
     }
     
-    // Add user message
-    addUserMessage(prompt, selectedImageBase64);
+    // ==========================================
+    // PENTING: Simpan nilai ke variabel lokal SEBELUM clear
+    // ==========================================
+    const imageToSend = selectedImageBase64;  // Simpan dulu!
+    const dimensionsToUse = { ...selectedImageDimensions };  // Copy object
+    const isEditMode = !!imageToSend;  // true jika ada gambar
     
-    // Clear input
-    promptInput.value = '';
-    promptInput.style.height = 'auto';
-    document.getElementById('btn-send').disabled = true;
+    console.log('📤 Submit Mode:', isEditMode ? 'IMAGE-TO-IMAGE' : 'TEXT-TO-IMAGE');
+    console.log('📤 Image attached:', isEditMode ? 'YES' : 'NO');
     
     // Determine aspect ratio
     let aspectRatio = currentRatio;
-    if (selectedImageBase64) {
-        const detected = detectAspectRatio(selectedImageDimensions.width, selectedImageDimensions.height);
+    if (isEditMode) {
+        const detected = detectAspectRatio(dimensionsToUse.width, dimensionsToUse.height);
         aspectRatio = detected.ratio;
+        console.log('📐 Detected ratio from image:', aspectRatio);
     }
     
-    // Clear preview
-    clearImagePreview();
+    // Add user message (tampilkan gambar jika ada)
+    addUserMessage(prompt, imageToSend);
+    
+    // Clear input dan preview SETELAH menyimpan data
+    promptInput.value = '';
+    promptInput.style.height = 'auto';
+    document.getElementById('btn-send').disabled = true;
+    clearImagePreview();  // Sekarang aman untuk clear
     
     try {
         // Check limit
@@ -354,15 +373,23 @@ async function submitPrompt() {
             throw new Error(`Kuota habis! (${quota.current_count}/${quota.daily_limit})`);
         }
         
-        // Prepare input
+        // ==========================================
+        // Prepare input - GUNAKAN variabel lokal, BUKAN global
+        // ==========================================
         const inputData = {
             prompt: prompt.substring(0, 1000),
             aspect_ratio: aspectRatio
         };
         
-        if (selectedImageBase64) {
-            inputData.image_base64 = selectedImageBase64;
+        // Tambahkan gambar jika mode edit (image-to-image)
+        if (isEditMode && imageToSend) {
+            inputData.image_base64 = imageToSend;
+            console.log('✅ Image base64 added to inputData');
+            console.log('📊 Image data length:', imageToSend.length, 'characters');
         }
+        
+        console.log('📦 Input data keys:', Object.keys(inputData));
+        console.log('📦 Has image_base64:', !!inputData.image_base64);
         
         // Create job
         let jobResult = await supabaseClient.rpc('create_service_job', {
@@ -386,25 +413,27 @@ async function submitPrompt() {
             throw new Error(result?.message || 'Gagal membuat job');
         }
         
-        // Add loading message
-        addBotLoading(result.job_id);
+        console.log('✅ Job created:', result.job_id, '| Mode:', isEditMode ? 'EDIT' : 'GENERATE');
+        
+        // Add loading message dengan info mode
+        addBotLoading(result.job_id, isEditMode);
         
         // Start polling for this job
-        pollJob(result.job_id);
+        pollJob(result.job_id, isEditMode);
         
         await loadUserStats();
         
     } catch (error) {
-        console.error('Submit error:', error);
+        console.error('❌ Submit error:', error);
         
         // Show error as bot message
         const tempId = 'error-' + Date.now();
-        addBotLoading(tempId);
+        addBotLoading(tempId, isEditMode);
         errorBotMessage(tempId, error.message);
     }
 }
 
-async function pollJob(jobId) {
+async function pollJob(jobId, isEditMode = false) {
     const poll = async () => {
         try {
             const { data: job, error } = await supabaseClient
@@ -424,7 +453,7 @@ async function pollJob(jobId) {
                     try { results = JSON.parse(results); } catch (e) { results = {}; }
                 }
                 
-                completeBotMessage(jobId, results.image_url, results.aspect_ratio || '1:1');
+                completeBotMessage(jobId, results.image_url, results.aspect_ratio || '1:1', isEditMode);
                 await loadJobs();
                 
             } else if (job.status === 'failed') {
@@ -498,7 +527,11 @@ function handleImageSelect(file) {
         const img = new Image();
         img.onload = () => {
             selectedImageDimensions = { width: img.width, height: img.height };
-            showImagePreview(selectedImageBase64, `${img.width}×${img.height}px`);
+            
+            const detected = detectAspectRatio(img.width, img.height);
+            console.log('📷 Image loaded:', img.width, 'x', img.height, '| Ratio:', detected.ratio);
+            
+            showImagePreview(selectedImageBase64, `${img.width}×${img.height}px • ${detected.ratio}`);
         };
         img.src = selectedImageBase64;
     };
@@ -514,9 +547,13 @@ function showImagePreview(src, sizeText) {
     previewSize.textContent = sizeText;
     previewBar.style.display = 'block';
     
-    // Hide ratio selector in edit mode
+    // Hide ratio selector in edit mode (rasio otomatis dari gambar)
     document.getElementById('ratio-selector').style.display = 'none';
-    document.getElementById('input-prompt').placeholder = 'Jelaskan perubahan yang ingin dilakukan...';
+    
+    // Update placeholder text
+    document.getElementById('input-prompt').placeholder = 'Jelaskan perubahan yang ingin dilakukan pada gambar...';
+    
+    console.log('✅ Image preview shown - Edit mode activated');
 }
 
 function clearImagePreview() {
@@ -527,9 +564,13 @@ function clearImagePreview() {
     document.getElementById('image-preview-bar').style.display = 'none';
     document.getElementById('ratio-selector').style.display = 'flex';
     document.getElementById('input-prompt').placeholder = 'Deskripsikan gambar yang ingin dibuat...';
+    
+    console.log('🗑️ Image preview cleared - Generate mode activated');
 }
 
 function useAsSource(imageUrl) {
+    console.log('🔄 Loading image as source:', imageUrl);
+    
     fetch(imageUrl)
         .then(res => res.blob())
         .then(blob => {
@@ -540,9 +581,14 @@ function useAsSource(imageUrl) {
                 const img = new Image();
                 img.onload = () => {
                     selectedImageDimensions = { width: img.width, height: img.height };
-                    showImagePreview(selectedImageBase64, `${img.width}×${img.height}px`);
+                    
+                    const detected = detectAspectRatio(img.width, img.height);
+                    showImagePreview(selectedImageBase64, `${img.width}×${img.height}px • ${detected.ratio}`);
+                    
                     closeImageModal();
                     document.getElementById('input-prompt').focus();
+                    
+                    console.log('✅ Image loaded as source for editing');
                 };
                 img.src = selectedImageBase64;
             };
@@ -670,12 +716,35 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('btn-remove-preview').addEventListener('click', clearImagePreview);
     
+    // Drag & drop support for chat area
+    const chatMessages = document.getElementById('chat-messages');
+    
+    chatMessages.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        chatMessages.classList.add('drag-over');
+    });
+    
+    chatMessages.addEventListener('dragleave', () => {
+        chatMessages.classList.remove('drag-over');
+    });
+    
+    chatMessages.addEventListener('drop', (e) => {
+        e.preventDefault();
+        chatMessages.classList.remove('drag-over');
+        
+        const file = e.dataTransfer?.files?.[0];
+        if (file && file.type.startsWith('image/')) {
+            handleImageSelect(file);
+        }
+    });
+    
     // Ratio buttons
     document.querySelectorAll('.ratio-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentRatio = btn.dataset.ratio;
+            console.log('📐 Ratio selected:', currentRatio);
         });
     });
     
