@@ -1,6 +1,55 @@
 // ============================================
 // CHAT UI - VIDEO GENERATOR (VEO 3.1)
 // ============================================
+// ============================================
+// MOBILE VIEWPORT FIX - Tambahkan di awal file JS
+// ============================================
+
+// Fix untuk 100vh di mobile browser
+function setViewportHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// Set on load
+setViewportHeight();
+
+// Update on resize dan orientation change
+window.addEventListener('resize', setViewportHeight);
+window.addEventListener('orientationchange', () => {
+    setTimeout(setViewportHeight, 100);
+});
+
+// Fix untuk keyboard di mobile - scroll ke input saat focus
+document.addEventListener('DOMContentLoaded', () => {
+    const promptInput = document.getElementById('input-prompt');
+    
+    if (promptInput) {
+        promptInput.addEventListener('focus', () => {
+            // Delay untuk menunggu keyboard muncul
+            setTimeout(() => {
+                // Scroll chat ke bawah
+                const chatMessages = document.getElementById('chat-messages');
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+                
+                // Scroll viewport ke input (untuk beberapa browser)
+                promptInput.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 300);
+        });
+    }
+});
+
+// Prevent zoom on double tap (iOS)
+let lastTouchEnd = 0;
+document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+    }
+    lastTouchEnd = now;
+}, false);
 
 let pollingInterval = null;
 let userJobs = [];
