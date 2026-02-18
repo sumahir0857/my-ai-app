@@ -2,231 +2,505 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>OrbitBot Studio</title>
-    
-    <!-- Tailwind & Fonts -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools - OrbitBot</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <style>
-        /* Base Settings */
-        * { font-family: 'Space Grotesk', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #050510; overflow: hidden; }
-
-        /* Custom Scrollbar for Sidebar */
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-
-        /* Glassmorphism */
-        .glass-sidebar {
-            background: rgba(11, 12, 21, 0.95);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        * { font-family: 'Space Grotesk', sans-serif; }
+        body { background: #050510; margin: 0; overflow: hidden; }
+        
+        /* Stars */
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        
+        /* Glass */
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            padding-top: 64px;
         }
         
-        /* Mobile Drawer Transition */
-        .sidebar-transition {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            min-width: 280px;
+            height: calc(100vh - 64px);
+            overflow-y: auto;
+            background: rgba(5, 5, 16, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+            z-index: 40;
         }
-
-        /* Active Tool State */
-        .nav-item.active {
-            background: linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0) 100%);
-            border-left: 3px solid #8b5cf6;
-            color: #fff;
+        
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.3); border-radius: 2px; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            height: calc(100vh - 64px);
+            overflow: hidden;
+            position: relative;
         }
-        .nav-item {
+        
+        /* Tool Frame */
+        .tool-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #050510;
+        }
+        
+        /* Tool Item */
+        .tool-item {
+            transition: all 0.2s ease;
             border-left: 3px solid transparent;
-            color: #94a3b8;
         }
-        .nav-item:hover:not(.active) {
-            color: #e2e8f0;
-            background: rgba(255,255,255,0.03);
-        }
-
-        /* Iframe Container */
-        .app-content {
-            height: calc(100vh - 60px); /* Height minus Header */
-        }
-        @media (min-width: 768px) {
-            .app-content { height: 100vh; }
+        .tool-item:hover { background: rgba(139, 92, 246, 0.1); }
+        .tool-item.active {
+            background: rgba(139, 92, 246, 0.15);
+            border-left-color: #8b5cf6;
         }
         
-        /* Hide scrollbar on iframe parent to avoid double scrolls */
-        iframe { display: block; width: 100%; height: 100%; border: none; }
+        /* Category Header */
+        .category-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            padding: 16px 16px 8px;
+            font-weight: 600;
+        }
+        
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 64px;
+                transform: translateX(-100%);
+                width: 85%;
+                max-width: 300px;
+                z-index: 50;
+            }
+            .sidebar.open { transform: translateX(0); }
+            
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                top: 64px;
+                background: rgba(0, 0, 0, 0.6);
+                z-index: 45;
+            }
+            .sidebar-overlay.active { display: block; }
+            
+            .main-content { width: 100%; }
+        }
+        
+        /* Badge Colors */
+        .badge-purple { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .badge-cyan { background: rgba(6, 182, 212, 0.2); color: #22d3ee; }
+        .badge-pink { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+        .badge-green { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .badge-orange { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+        .badge-slate { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+        
+        /* Loading */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top-color: #8b5cf6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="text-white h-screen flex flex-col md:flex-row">
-
-    <!-- 1. MOBILE HEADER (Hanya muncul di HP) -->
-    <header class="md:hidden h-[60px] flex items-center justify-between px-4 border-b border-white/10 bg-[#050510] z-50 relative">
-        <button onclick="toggleSidebar()" class="p-2 -ml-2 text-slate-300 hover:text-white">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-        <div class="font-bold text-lg tracking-wide flex items-center gap-2">
-            <span class="text-xl">🛰️</span> <span id="mobile-header-title">Video Affiliate</span>
+<body class="text-white">
+    <div class="stars" id="stars"></div>
+    
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass h-16">
+        <div class="h-full px-4 flex items-center justify-between">
+            <!-- Left -->
+            <div class="flex items-center space-x-3">
+                <button id="sidebarToggle" class="md:hidden p-2 hover:bg-white/10 rounded-lg transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <a href="index.html" class="flex items-center space-x-2 text-xl font-bold">
+                    <span class="text-2xl">🛰️</span>
+                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                </a>
+            </div>
+            
+            <!-- Center (Mobile) -->
+            <div class="md:hidden flex-1 text-center">
+                <span id="currentToolName" class="text-sm text-slate-300 truncate block px-2"></span>
+            </div>
+            
+            <!-- Right -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="tools.html" class="text-white font-medium">Tools</a>
+                <a href="showcase.html" class="text-slate-300 hover:text-white transition">Showcase</a>
+                <a href="pricing.html" class="text-slate-300 hover:text-white transition">Pricing</a>
+                <a href="docs.html" class="text-slate-300 hover:text-white transition">Docs</a>
+            </div>
+            
+            <!-- Mobile menu button placeholder for balance -->
+            <div class="md:hidden w-10"></div>
         </div>
-        <!-- Tombol Home -->
-        <a href="index.html" class="p-2 -mr-2 text-slate-300">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-        </a>
-    </header>
+    </nav>
 
-    <!-- 2. SIDEBAR NAVIGATION -->
-    <!-- Overlay Gelap untuk Mobile saat sidebar terbuka -->
-    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/80 z-40 hidden md:hidden glass-effect"></div>
-
-    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-[280px] glass-sidebar z-50 transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col h-full">
-        <!-- Logo Area (Desktop) -->
-        <div class="h-20 flex items-center px-6 border-b border-white/5 hidden md:flex">
-            <a href="index.html" class="flex items-center gap-3 text-xl font-bold hover:opacity-80 transition">
-                <span class="text-2xl">🛰️</span>
-                <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
-            </a>
-        </div>
-
-        <!-- User Profile Mini -->
-        <div class="p-4 md:hidden border-b border-white/5 bg-white/5">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-500 to-cyan-500 flex items-center justify-center font-bold text-sm">ME</div>
-                <div>
-                    <div class="font-medium">User Dashboard</div>
-                    <div class="text-xs text-green-400">● Online</div>
+    <!-- App Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="p-4">
+                <!-- Search (Optional) -->
+                <div class="relative mb-4">
+                    <input type="text" id="searchTools" placeholder="Cari tools..." 
+                        class="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-lg text-sm focus:outline-none focus:border-purple-500/50 placeholder-slate-500">
+                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                
+                <!-- Tools List -->
+                <div id="toolsList"></div>
+                
+                <!-- Divider -->
+                <div class="border-t border-white/10 my-4"></div>
+                
+                <!-- Quick Links -->
+                <div class="space-y-1">
+                    <a href="index.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-slate-400 hover:text-white text-sm">
+                        <span>🏠</span><span>Home</span>
+                    </a>
+                    <a href="showcase.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-slate-400 hover:text-white text-sm">
+                        <span>🎨</span><span>Showcase</span>
+                    </a>
+                    <a href="pricing.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-slate-400 hover:text-white text-sm">
+                        <span>💎</span><span>Pricing</span>
+                    </a>
+                    <a href="docs.html" class="flex items-center space-x-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition text-slate-400 hover:text-white text-sm">
+                        <span>📚</span><span>Documentation</span>
+                    </a>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- Menu Items -->
-        <div class="flex-1 overflow-y-auto custom-scroll py-6 px-3 space-y-1">
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Welcome Screen -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="text-7xl mb-6 animate-bounce">🛰️</div>
+                <h1 class="text-3xl md:text-4xl font-bold mb-3">
+                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">Tools Hub</span>
+                </h1>
+                <p class="text-slate-400 max-w-md mb-8">
+                    Pilih tool dari sidebar untuk mulai generate konten AI
+                </p>
+                
+                <!-- Quick Access Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-2xl w-full px-4" id="quickAccessCards"></div>
+            </div>
             
-            <div class="px-4 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Video Generation</div>
-            
-            <!-- BUTTON 1 -->
-            <button onclick="loadTool('videoapi-generator.html', 'Video Affiliate Gen', this)" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-all">
-                <span class="text-lg">🎬</span>
-                Video Affiliate Gen
-            </button>
-            
-            <!-- BUTTON 2 -->
-            <button onclick="loadTool('video-generator.html', 'VEO 3.1 & AI Video', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-all">
-                <span class="text-lg">🎥</span>
-                VEO 3.1 & AI Video
-            </button>
-
-            <div class="mt-6 px-4 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Image Generation</div>
-            
-            <!-- BUTTON 3 -->
-            <button onclick="loadTool('image-generator.html', 'Nano Banana Pro', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-all">
-                <span class="text-lg">🖼️</span>
-                Nano Banana Pro
-            </button>
-
-            <!-- Disabled Example -->
-            <button disabled class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium opacity-50 cursor-not-allowed">
-                <span class="text-lg">✂️</span>
-                <div class="flex-1 flex justify-between items-center">
-                    <span>BG Remover</span>
-                    <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">Soon</span>
+            <!-- Loading -->
+            <div class="hidden absolute inset-0 flex items-center justify-center bg-[#050510]/80 z-10" id="loadingScreen">
+                <div class="text-center">
+                    <div class="loading-spinner mx-auto mb-4"></div>
+                    <p class="text-slate-400 text-sm">Memuat tool...</p>
                 </div>
-            </button>
-
-            <div class="mt-6 px-4 mb-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Other Tools</div>
-
-            <!-- BUTTON 4 -->
-            <button onclick="loadTool('generator.html', 'UGC Generator', this)" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-all">
-                <span class="text-lg">⚙️</span>
-                General Generator
-            </button>
-        </div>
-
-        <!-- Footer Sidebar -->
-        <div class="p-4 border-t border-white/5">
-            <a href="docs.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-all text-sm">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Help & Support
-            </a>
-        </div>
-    </aside>
-
-    <!-- 3. MAIN CONTENT (IFRAME AREA) -->
-    <main class="flex-1 relative bg-[#0b0c15] app-content w-full">
-        <!-- Loading Indicator -->
-        <div id="loader" class="absolute inset-0 flex flex-col items-center justify-center bg-[#050510] z-0 transition-opacity duration-500">
-            <div class="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-slate-400 text-sm animate-pulse">Memuat Tools...</p>
-        </div>
-        
-        <!-- THE IFRAME -->
-        <!-- Pastikan file 'videoapi-generator.html' ada di folder yang sama! -->
-        <iframe id="tool-frame" src="videoapi-generator.html" onload="hideLoader()" class="relative z-10 w-full h-full bg-transparent"></iframe>
-    </main>
+            </div>
+            
+            <!-- Tool Frame -->
+            <iframe id="toolFrame" class="tool-frame hidden"></iframe>
+        </main>
+    </div>
 
     <script>
-        // Setup Variables
+        // ╔═══════════════════════════════════════════════════════════════════╗
+        // ║  KONFIGURASI TOOLS - TAMBAHKAN TOOL BARU DI SINI                 ║
+        // ╚═══════════════════════════════════════════════════════════════════╝
+        
+        const TOOLS = [
+            // ── VIDEO TOOLS ──────────────────────────────────────────────────
+            {
+                id: 'generator',
+                name: 'Video Affiliate Generator',
+                icon: '🎬',
+                url: 'generator.html',
+                category: 'Video',
+                badge: '⭐ Featured',
+                badgeColor: 'purple',
+                description: 'Buat konten affiliate lengkap dengan AI'
+            },
+            {
+                id: 'video-generator',
+                name: 'VEO 3.1',
+                icon: '🎥',
+                url: 'video-generator.html',
+                category: 'Video',
+                badge: 'New',
+                badgeColor: 'green',
+                description: 'Buat video AI dengan VEO 3.1'
+            },
+            {
+                id: 'videoapi-generator',
+                name: 'Video AI All Model',
+                icon: '📽️',
+                url: 'videoapi-generator.html',
+                category: 'Video',
+                badge: 'HOT',
+                badgeColor: 'pink',
+                description: 'Kling, MiniMax, Wan, Seedance, dll'
+            },
+            
+            // ── IMAGE TOOLS ──────────────────────────────────────────────────
+            {
+                id: 'image-generator',
+                name: 'Nano Banana Pro',
+                icon: '🖼️',
+                url: 'image-generator.html',
+                category: 'Image',
+                badge: 'New',
+                badgeColor: 'cyan',
+                description: 'Text to image atau Image to Image'
+            },
+            
+            // ══════════════════════════════════════════════════════════════════
+            // CARA MENAMBAH TOOL BARU:
+            // 1. Copy template di bawah ini
+            // 2. Sesuaikan nilai-nilainya
+            // 3. Paste di atas komentar ini (sesuai kategori)
+            // ══════════════════════════════════════════════════════════════════
+            //
+            // {
+            //     id: 'unique-id',           // ID unik (untuk URL hash)
+            //     name: 'Nama Tool',         // Nama yang ditampilkan
+            //     icon: '🔥',                // Emoji icon
+            //     url: 'file-tool.html',     // Path ke file HTML
+            //     category: 'Video',         // Kategori: Video, Image, Audio, Other
+            //     badge: 'New',              // Badge: New, HOT, Featured, Beta, dll (optional)
+            //     badgeColor: 'purple',      // Warna: purple, cyan, pink, green, orange, slate
+            //     description: 'Deskripsi'   // Deskripsi singkat
+            // },
+            //
+            // ══════════════════════════════════════════════════════════════════
+        ];
+
+        // ╔═══════════════════════════════════════════════════════════════════╗
+        // ║  CORE FUNCTIONALITY - JANGAN DIUBAH KECUALI PAHAM                ║
+        // ╚═══════════════════════════════════════════════════════════════════╝
+
+        // DOM Elements
         const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebar-overlay');
-        const iframe = document.getElementById('tool-frame');
-        const mobileTitle = document.getElementById('mobile-header-title');
-        const loader = document.getElementById('loader');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const toolsList = document.getElementById('toolsList');
+        const quickAccessCards = document.getElementById('quickAccessCards');
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const loadingScreen = document.getElementById('loadingScreen');
+        const toolFrame = document.getElementById('toolFrame');
+        const currentToolName = document.getElementById('currentToolName');
+        const searchInput = document.getElementById('searchTools');
 
-        // Toggle Sidebar Mobile
-        function toggleSidebar() {
-            const isClosed = sidebar.classList.contains('-translate-x-full');
-            if (isClosed) {
-                sidebar.classList.remove('-translate-x-full'); // Buka
-                overlay.classList.remove('hidden');
+        // Generate stars background
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 80; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.width = Math.random() * 2 + 1 + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
+        }
+
+        // Group tools by category
+        function groupByCategory(tools) {
+            return tools.reduce((groups, tool) => {
+                const category = tool.category || 'Other';
+                if (!groups[category]) groups[category] = [];
+                groups[category].push(tool);
+                return groups;
+            }, {});
+        }
+
+        // Render tools list with categories
+        function renderToolsList(tools = TOOLS) {
+            const grouped = groupByCategory(tools);
+            let html = '';
+            
+            Object.keys(grouped).forEach(category => {
+                html += `<div class="category-header">${category}</div>`;
+                html += `<div class="space-y-1 mb-2">`;
+                
+                grouped[category].forEach(tool => {
+                    html += `
+                        <button class="tool-item w-full flex items-center space-x-3 px-3 py-2.5 rounded-r-lg text-left" 
+                                data-tool-id="${tool.id}" onclick="loadTool('${tool.id}')">
+                            <span class="text-xl flex-shrink-0">${tool.icon}</span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm font-medium truncate">${tool.name}</span>
+                                    ${tool.badge ? `<span class="px-1.5 py-0.5 text-[10px] rounded-full badge-${tool.badgeColor} flex-shrink-0">${tool.badge}</span>` : ''}
+                                </div>
+                                <p class="text-xs text-slate-500 truncate">${tool.description}</p>
+                            </div>
+                        </button>
+                    `;
+                });
+                
+                html += `</div>`;
+            });
+            
+            toolsList.innerHTML = html;
+            
+            // Re-apply active state if there's a current tool
+            const hash = window.location.hash.slice(1);
+            if (hash) {
+                document.querySelectorAll('.tool-item').forEach(item => {
+                    item.classList.toggle('active', item.dataset.toolId === hash);
+                });
+            }
+        }
+
+        // Render quick access cards
+        function renderQuickAccessCards() {
+            quickAccessCards.innerHTML = TOOLS.slice(0, 4).map(tool => `
+                <button onclick="loadTool('${tool.id}')" 
+                        class="glass rounded-xl p-4 text-left hover:bg-purple-600/10 hover:border-purple-500/30 transition group">
+                    <div class="text-3xl mb-2">${tool.icon}</div>
+                    <div class="text-sm font-medium group-hover:text-purple-400 transition truncate">${tool.name}</div>
+                    <div class="text-xs text-slate-500 truncate mt-1">${tool.description}</div>
+                </button>
+            `).join('');
+        }
+
+        // Load tool
+        function loadTool(toolId) {
+            const tool = TOOLS.find(t => t.id === toolId);
+            if (!tool) return;
+
+            // Update URL
+            history.pushState(null, '', `#${toolId}`);
+
+            // Show loading
+            welcomeScreen.classList.add('hidden');
+            loadingScreen.classList.remove('hidden');
+            toolFrame.classList.add('hidden');
+
+            // Update header
+            currentToolName.textContent = tool.name;
+            document.title = `${tool.name} - OrbitBot`;
+
+            // Update active state
+            document.querySelectorAll('.tool-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.toolId === toolId);
+            });
+
+            // Load iframe
+            toolFrame.onload = () => {
+                loadingScreen.classList.add('hidden');
+                toolFrame.classList.remove('hidden');
+            };
+            toolFrame.src = tool.url;
+
+            // Close sidebar on mobile
+            closeSidebar();
+        }
+
+        // Sidebar controls
+        function openSidebar() {
+            sidebar.classList.add('open');
+            sidebarOverlay.classList.add('active');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            sidebarOverlay.classList.remove('active');
+        }
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+        });
+
+        sidebarOverlay.addEventListener('click', closeSidebar);
+
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = TOOLS.filter(tool => 
+                tool.name.toLowerCase().includes(query) || 
+                tool.description.toLowerCase().includes(query) ||
+                tool.category.toLowerCase().includes(query)
+            );
+            renderToolsList(filtered);
+        });
+
+        // Handle hash changes
+        function handleHash() {
+            const hash = window.location.hash.slice(1);
+            if (hash && TOOLS.find(t => t.id === hash)) {
+                loadTool(hash);
             } else {
-                sidebar.classList.add('-translate-x-full'); // Tutup
-                overlay.classList.add('hidden');
+                // Reset to welcome screen
+                welcomeScreen.classList.remove('hidden');
+                toolFrame.classList.add('hidden');
+                loadingScreen.classList.add('hidden');
+                currentToolName.textContent = '';
+                document.title = 'Tools - OrbitBot';
+                document.querySelectorAll('.tool-item').forEach(item => {
+                    item.classList.remove('active');
+                });
             }
         }
 
-        // Fungsi Ganti Tool
-        function loadTool(url, title, btnElement) {
-            // 1. Cek apakah URL valid/berbeda
-            if(iframe.contentWindow.location.href.includes(url)) {
-                // Jika user klik menu yang sama, tutup sidebar saja di mobile
-                if(window.innerWidth < 768) toggleSidebar();
-                return;
+        // Keyboard shortcut (Ctrl/Cmd + K for search)
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
             }
-
-            // 2. Tampilkan Loader
-            loader.style.opacity = '1';
-            loader.style.zIndex = '20'; // Di atas iframe sebentar
-
-            // 3. Ganti Source Iframe
-            // Tambahkan handling error sederhana jika file tidak ketemu
-            iframe.src = url;
-
-            // 4. Update Judul Mobile
-            if(title) mobileTitle.innerText = title;
-
-            // 5. Update Active State Tombol
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(btnElement) btnElement.classList.add('active');
-
-            // 6. Tutup Sidebar otomatis di Mobile
-            if (window.innerWidth < 768) {
-                toggleSidebar();
+            if (e.key === 'Escape') {
+                closeSidebar();
             }
-        }
+        });
 
-        // Sembunyikan Loader saat iframe selesai load
-        function hideLoader() {
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                loader.style.zIndex = '0';
-            }, 500); // Delay sedikit biar smooth
-        }
+        // Initialize
+        renderToolsList();
+        renderQuickAccessCards();
+        handleHash();
 
-        // Error Handling Iframe (Jika file tidak ditemukan)
-        iframe.onerror = function() {
-            alert("File tidak ditemukan! Pastikan nama file " + iframe.src + " sudah benar.");
-        };
-
+        window.addEventListener('hashchange', handleHash);
     </script>
 </body>
 </html>
