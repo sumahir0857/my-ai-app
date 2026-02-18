@@ -3,162 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OrbitBot - Tools Dashboard</title>
-    <!-- Masukkan CSS style utama kamu di sini -->
+    <title>OrbitBot - Generator Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Tambahan khusus untuk layout Dashboard */
-        body {
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Supaya tidak ada scroll double */
-            background-color: #0b0c15; /* Sesuaikan warna background kamu */
-            color: white;
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+        * { font-family: 'Space Grotesk', sans-serif; }
+        body { background: #050510; overflow: hidden; /* Mencegah scroll ganda */ }
+        
+        /* Background Effects */
+        .stars { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 3s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        
+        /* Glassmorphism Sidebar */
+        .sidebar-glass { 
+            background: rgba(18, 18, 31, 0.95); 
+            backdrop-filter: blur(10px); 
+            border-right: 1px solid rgba(255, 255, 255, 0.1); 
         }
 
-        /* Navbar tetap di atas */
-        header {
-            height: 60px;
-            border-bottom: 1px solid #333;
-            /* Styling header kamu yang sudah ada */
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            background: #0b0c15;
-            z-index: 10;
-        }
-
-        /* Container Utama */
-        .dashboard-container {
-            display: flex;
-            flex: 1; /* Mengisi sisa ruang di bawah header */
-            height: calc(100vh - 60px); 
-        }
-
-        /* Sidebar (Kiri) */
-        .sidebar {
-            width: 260px;
-            background-color: #11121c; /* Sedikit lebih terang dari bg utama */
-            border-right: 1px solid #333;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .sidebar h3 {
-            font-size: 14px;
-            color: #888;
-            text-transform: uppercase;
-            margin-bottom: 10px;
-            letter-spacing: 1px;
-        }
-
-        /* Tombol Tool di Sidebar */
-        .tool-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: #ccc;
-            padding: 12px 15px;
-            text-align: left;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .tool-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-
+        /* Tombol Sidebar Active State */
         .tool-btn.active {
-            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%); /* Warna ungu/biru orbitbot */
+            background: linear-gradient(90deg, rgba(147, 51, 234, 0.2) 0%, rgba(6, 182, 212, 0.1) 100%);
+            border-left: 3px solid #9333ea;
             color: white;
-            box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);
         }
-
-        /* Area Utama (Tengah/Kanan) */
-        .main-content {
-            flex: 1;
-            background-color: #0b0c15;
-            position: relative;
+        .tool-btn {
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
         }
-
-        /* Iframe */
-        iframe#tool-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
-        }
+        
+        /* Iframe Full Height */
+        iframe { width: 100%; height: 100%; border: none; }
     </style>
 </head>
-<body>
+<body class="text-white h-screen flex flex-col">
+    
+    <!-- Background Stars -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- 1. NAVBAR UTAMA (Tetap di Atas) -->
+    <nav id="navbar" class="h-16 z-50 w-full border-b border-white/10 bg-[#050510]/90 backdrop-blur-md flex-none">
+        <div class="max-w-full px-4 sm:px-6 lg:px-8 h-full">
+            <div class="flex items-center justify-between h-full">
+                <!-- Logo -->
+                <a href="index.html" class="flex items-center space-x-2 text-xl font-bold">
+                    <span class="text-2xl">🛰️</span>
+                    <span class="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">OrbitBot</span>
+                    <span class="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 ml-2 border border-purple-500/30">Dashboard</span>
+                </a>
 
-    <!-- 1. Header (Biarkan header lamamu di sini) -->
-    <header>
-        <div class="logo">🚀 OrbitBot</div>
-        <!-- Menu Navigasi Header Lainnya -->
-    </header>
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="index.html" class="text-slate-400 hover:text-white text-sm transition">Home</a>
+                    <a href="pricing.html" class="text-slate-400 hover:text-white text-sm transition">Pricing</a>
+                    <a href="docs.html" class="text-slate-400 hover:text-white text-sm transition">Docs</a>
+                    <!-- User Profile Placeholder -->
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 p-[1px]">
+                        <div class="w-full h-full rounded-full bg-[#050510] flex items-center justify-center text-xs">👤</div>
+                    </div>
+                </div>
 
-    <!-- 2. Dashboard Layout -->
-    <div class="dashboard-container">
+                <!-- Mobile Menu Button (Hamburger) -->
+                <button id="mobileMenuBtn" class="md:hidden text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 2. LAYOUT DASHBOARD (Flex Container) -->
+    <div class="flex flex-1 overflow-hidden relative z-10">
         
-        <!-- BAGIAN SAMPING: Pilihan Tool -->
-        <aside class="sidebar">
-            <h3>Video Tools</h3>
-            <!-- Tambahkan class 'active' pada tool pertama -->
-            <button class="tool-btn active" onclick="loadTool('videoapi-generator.html', this)">
-                🎬 Video Affiliate Gen
-            </button>
-            <button class="tool-btn" onclick="loadTool('video-generator.html', this)">
-                🎥 Video AI All Model
-            </button>
-            <button class="tool-btn" onclick="loadTool('veo-generator.html', this)"> <!-- Contoh VEO -->
-                📹 VEO 3.1
-            </button>
+        <!-- SIDEBAR (Menu Pilihan Tool) -->
+        <!-- Hidden di mobile, muncul di desktop. Di mobile pakai dropdown select di atas iframe -->
+        <aside class="sidebar-glass w-64 flex-col hidden md:flex h-full overflow-y-auto custom-scrollbar pb-10">
+            
+            <div class="p-4">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-3">Video Tools</p>
+                
+                <!-- TOOL 1: Video Affiliate (Default Active) -->
+                <button onclick="loadTool('videoapi-generator.html', this)" class="tool-btn active w-full text-left px-3 py-2.5 mb-1 rounded-r-lg text-slate-300 hover:text-white hover:bg-white/5 flex items-center group">
+                    <span class="mr-3 text-lg group-hover:scale-110 transition">🎬</span>
+                    <span class="text-sm font-medium">Video Affiliate Gen</span>
+                </button>
 
-            <h3>Image Tools</h3>
-            <button class="tool-btn" onclick="loadTool('image-generator.html', this)">
-                🖼️ Nano Banana Pro
-            </button>
+                <!-- TOOL 2: VEO -->
+                <button onclick="loadTool('video-generator.html', this)" class="tool-btn w-full text-left px-3 py-2.5 mb-1 rounded-r-lg text-slate-300 hover:text-white hover:bg-white/5 flex items-center group">
+                    <span class="mr-3 text-lg group-hover:scale-110 transition">🎥</span>
+                    <span class="text-sm font-medium">VEO 3.1 & AI Video</span>
+                </button>
+            </div>
 
-            <h3>General</h3>
-            <button class="tool-btn" onclick="loadTool('generator.html', this)">
-                ⚙️ General Generator
-            </button>
+            <div class="p-4 border-t border-white/5">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-3">Image Tools</p>
+                
+                <!-- TOOL 3: Image Generator -->
+                <button onclick="loadTool('image-generator.html', this)" class="tool-btn w-full text-left px-3 py-2.5 mb-1 rounded-r-lg text-slate-300 hover:text-white hover:bg-white/5 flex items-center group">
+                    <span class="mr-3 text-lg group-hover:scale-110 transition">🖼️</span>
+                    <span class="text-sm font-medium">Nano Banana Pro</span>
+                </button>
+
+                <!-- TOOL 4: Background Remover (Contoh Disabled/Coming Soon) -->
+                <button disabled class="w-full text-left px-3 py-2.5 mb-1 rounded-r-lg text-slate-600 cursor-not-allowed flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="mr-3 text-lg grayscale opacity-50">✂️</span>
+                        <span class="text-sm font-medium">BG Remover</span>
+                    </div>
+                    <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">Soon</span>
+                </button>
+            </div>
+
+            <div class="p-4 border-t border-white/5">
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-3">General</p>
+                
+                <!-- TOOL 5: General Generator -->
+                <button onclick="loadTool('generator.html', this)" class="tool-btn w-full text-left px-3 py-2.5 mb-1 rounded-r-lg text-slate-300 hover:text-white hover:bg-white/5 flex items-center group">
+                    <span class="mr-3 text-lg group-hover:scale-110 transition">⚙️</span>
+                    <span class="text-sm font-medium">UGC Generator</span>
+                </button>
+
+                <!-- ========================================== -->
+                <!-- CARA NAMBAH TOOL BARU: COPY KODE DI BAWAH -->
+                <!-- 
+                <button onclick="loadTool('NAMA_FILE_BARU.html', this)" class="tool-btn w-full text-left px-3 py-2.5 mb-1 rounded-r-lg text-slate-300 hover:text-white hover:bg-white/5 flex items-center group">
+                    <span class="mr-3 text-lg">🎵</span>
+                    <span class="text-sm font-medium">Nama Tool Baru</span>
+                </button> 
+                -->
+                <!-- ========================================== -->
+            </div>
+            
+            <!-- Footer Sidebar -->
+            <div class="mt-auto p-4 border-t border-white/10">
+                <div class="bg-gradient-to-r from-purple-900/40 to-cyan-900/40 rounded-xl p-3 border border-white/5">
+                    <p class="text-xs text-slate-300 mb-2">Butuh bantuan?</p>
+                    <a href="docs.html" class="block w-full text-center py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-semibold transition">Lihat Docs</a>
+                </div>
+            </div>
         </aside>
 
-        <!-- BAGIAN TENGAH: Tempat Generate -->
-        <main class="main-content">
-            <!-- Default src diisi dengan tool pertama -->
-            <iframe id="tool-frame" src="videoapi-generator.html"></iframe>
+        <!-- AREA UTAMA (Tempat Generate) -->
+        <main class="flex-1 bg-[#0b0c15] relative flex flex-col w-full">
+            
+            <!-- Mobile Tool Selector (Hanya muncul di HP) -->
+            <div class="md:hidden p-3 bg-[#12121f] border-b border-white/10 flex items-center gap-2">
+                <label class="text-xs text-slate-400">Tool:</label>
+                <select id="mobileToolSelect" onchange="loadTool(this.value, null, true)" class="flex-1 bg-[#050510] text-white text-sm border border-white/20 rounded px-2 py-1 focus:outline-none focus:border-purple-500">
+                    <option value="videoapi-generator.html">🎬 Video Affiliate Gen</option>
+                    <option value="video-generator.html">🎥 VEO 3.1 & Video AI</option>
+                    <option value="image-generator.html">🖼️ Nano Banana Pro</option>
+                    <option value="generator.html">⚙️ UGC Generator</option>
+                </select>
+            </div>
+
+            <!-- THE IFRAME: Konten Tool Akan Muncul Di Sini -->
+            <div class="flex-1 relative w-full h-full">
+                <!-- Loader (Opsional) -->
+                <div id="loader" class="absolute inset-0 flex items-center justify-center bg-[#050510] z-0">
+                    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+                </div>
+
+                <!-- Default src diisi dengan tool pertama -->
+                <iframe id="tool-frame" src="videoapi-generator.html" allow="clipboard-write; camera; microphone" class="relative z-10 bg-transparent"></iframe>
+            </div>
         </main>
     </div>
 
-    <!-- 3. Javascript Logika Pindah Tool -->
+    <!-- Javascript Logic -->
     <script>
-        function loadTool(url, element) {
-            // 1. Ubah sumber iframe
-            document.getElementById('tool-frame').src = url;
-
-            // 2. Update tampilan tombol aktif di sidebar
-            // Hapus class active dari semua tombol
-            const buttons = document.querySelectorAll('.tool-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-
-            // Tambah class active ke tombol yang diklik
-            element.classList.add('active');
+        // 1. Generate Background Stars (Efek Visual)
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.width = Math.random() * 2 + 1 + 'px';
+            star.style.height = star.style.width;
+            starsContainer.appendChild(star);
         }
-    </script>
 
+        // 2. Fungsi Pindah Tool
+        function loadTool(url, btnElement, isMobile = false) {
+            const iframe = document.getElementById('tool-frame');
+            
+            // Jangan reload jika URL sama
+            if(iframe.contentWindow.location.href.includes(url)) return;
+
+            // Efek Loading (opsional, jika loading lama)
+            // iframe.style.opacity = '0';
+            
+            iframe.src = url;
+
+            // Handle Active State untuk Desktop Sidebar
+            if (!isMobile && btnElement) {
+                // Hapus class active dari semua tombol sidebar
+                document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+                // Tambah class active ke tombol yang diklik
+                btnElement.classList.add('active');
+                
+                // Sinkronkan dropdown mobile juga (jika user resize browser)
+                const mobileSelect = document.getElementById('mobileToolSelect');
+                if(mobileSelect) mobileSelect.value = url;
+            }
+
+            // Handle Active State jika diganti dari Mobile Dropdown
+            if (isMobile) {
+                // Cari tombol desktop yang sesuai URL dan aktifkan
+                document.querySelectorAll('.tool-btn').forEach(btn => {
+                    // Cek onclick attribute untuk mencocokkan URL (cara sederhana)
+                    if(btn.getAttribute('onclick').includes(url)) {
+                        document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            // Fade in effect
+            iframe.onload = function() {
+                // iframe.style.opacity = '1';
+                // Sembunyikan loader jika ada logika loader complex
+            };
+        }
+
+        // 3. Mobile Menu Toggle (Navbar atas)
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            alert("Menu navigasi utama (Home, Showcase, dll) akan muncul di sini. \n(Kamu bisa copy logika mobile menu dari file index.html jika perlu)");
+        });
+
+    </script>
 </body>
 </html>
