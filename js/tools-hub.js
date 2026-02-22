@@ -1,5 +1,13 @@
 // ============================================
-// TOOLS HUB V2 - WITH UGC GENERATOR
+// TOOLS HUB V2 - OPTIMIZED VERSION
+// ============================================
+// Fitur Optimasi:
+// 1. Cache-First Loading (instant load dari localStorage)
+// 2. Smart Polling (adaptive interval, pause saat idle)
+// 3. Incremental Updates (hanya fetch yang berubah)
+// 4. Request Deduplication (hindari request bersamaan)
+// 5. Visibility API (pause saat tab tidak aktif)
+// 6. Connection-aware (hemat data saat koneksi lambat)
 // ============================================
 
 // ==========================================
@@ -13,7 +21,7 @@ const TOOLS = {
         icon: '🖼️',
         service: 'image',
         color: 'primary',
-        type: 'chat', // chat | form
+        type: 'chat',
         enabled: true,
         ratios: ['1:1', '9:16', '16:9', '4:3'],
         defaultRatio: '1:1',
@@ -56,7 +64,7 @@ const TOOLS = {
         icon: '📽️',
         service: 'ugc',
         color: 'ugc',
-        type: 'form', // UGC menggunakan form kompleks
+        type: 'form',
         enabled: true,
         totalSteps: 8,
         stylePresets: [
@@ -90,18 +98,159 @@ const state = {
     leftCollapsed: false,
     rightCollapsed: false,
     tools: {},
-    jobs: {}
+    jobs: {},
+    // Performance state
+    isLoading: false,
+    lastFetch: {},
+    pendingRequests: new Map(),
+    pollingTimer: null,
+    pollCount: 0,
+    isTabVisible: true,
+    connectionType: 'unknown'
 };
 
 Object.keys(TOOLS).forEach(id => {
     state.tools[id] = {
         base64: null,
-        modelBase64: null, // untuk UGC
+        modelBase64: null,
         dimensions: { width: 0, height: 0 },
         ratio: TOOLS[id].defaultRatio || '1:1'
     };
     state.jobs[id] = [];
+    state.lastFetch[id] = 0;
 });
+
+// ==========================================
+// CACHE SYSTEM
+// ==========================================
+
+const CACHE = {
+    KEYS: {
+        JOBS: 'orbitbot_jobs_v2',
+        STATS: 'orbitbot_stats_v2',
+        USER: 'orbitbot_user_v2',
+        LAST_SYNC: 'orbitbot_lastsync_v2'
+    },
+    TTL: {
+        JOBS: 5 * 60 * 1000,      // 5 menit
+        STATS: 2 * 60 * 1000,     // 2 menit
+        USER: 10 * 60 * 1000      // 10 menit
+    },
+    
+    save(key, data) {
+        try {
+            const payload = {
+                data,
+                timestamp: Date.now(),
+                version: '2.0'
+            };
+            localStorage.setItem(key, JSON.stringify(payload));
+            return true;
+        } catch (e) {
+            console.warn('💾 Cache save failed:', e.message);
+            // Clear old cache if storage full
+            if (e.name === 'QuotaExceededError') {
+                this.clearOld();
+            }
+            return false;
+        }
+    },
+    
+    load(key, maxAge = this.TTL.JOBS) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (!raw) return null;
+            
+            const { data, timestamp, version } = JSON.parse(raw);
+            
+            // Invalidate old version cache
+            if (version !== '2.0') {
+                localStorage.removeItem(key);
+                return null;
+            }
+            
+            // Check expiry
+            if (Date.now() - timestamp > maxAge) {
+                return { data, expired: true };
+            }
+            
+            return { data, expired: false };
+        } catch (e) {
+            return null;
+        }
+    },
+    
+    clearOld() {
+        const keysToCheck = Object.values(this.KEYS);
+        keysToCheck.forEach(key => {
+            const cached = this.load(key, Infinity);
+            if (cached?.expired) {
+                localStorage.removeItem(key);
+            }
+        });
+    },
+    
+    clear() {
+        Object.values(this.KEYS).forEach(key => localStorage.removeItem(key));
+    }
+};
+
+// ==========================================
+// REQUEST DEDUPLICATION
+// ==========================================
+
+async function deduplicatedRequest(key, requestFn) {
+    // Jika request dengan key yang sama sedang berjalan, tunggu hasilnya
+    if (state.pendingRequests.has(key)) {
+        console.log(`⏳ Waiting for pending request: ${key}`);
+        return state.pendingRequests.get(key);
+    }
+    
+    // Buat promise baru
+    const promise = requestFn().finally(() => {
+        state.pendingRequests.delete(key);
+    });
+    
+    state.pendingRequests.set(key, promise);
+    return promise;
+}
+
+// ==========================================
+// CONNECTION & VISIBILITY DETECTION
+// ==========================================
+
+function detectConnection() {
+    if ('connection' in navigator) {
+        const conn = navigator.connection;
+        state.connectionType = conn.effectiveType || 'unknown';
+        
+        // Listen for changes
+        conn.addEventListener('change', () => {
+            state.connectionType = conn.effectiveType;
+            console.log(`📶 Connection changed: ${state.connectionType}`);
+        });
+    }
+}
+
+function isSlowConnection() {
+    return ['slow-2g', '2g'].includes(state.connectionType);
+}
+
+function setupVisibilityHandler() {
+    document.addEventListener('visibilitychange', () => {
+        state.isTabVisible = !document.hidden;
+        
+        if (state.isTabVisible) {
+            console.log('👁️ Tab visible - resuming');
+            // Resume dengan refresh cepat
+            loadAllJobsOptimized(true);
+            startSmartPolling();
+        } else {
+            console.log('😴 Tab hidden - pausing');
+            stopPolling();
+        }
+    });
+}
 
 // ==========================================
 // VIEWPORT FIX
@@ -115,25 +264,63 @@ window.addEventListener('resize', setVH);
 window.addEventListener('orientationchange', () => setTimeout(setVH, 100));
 
 // ==========================================
-// INITIALIZATION
+// INITIALIZATION - OPTIMIZED
 // ==========================================
 
 async function init() {
-    console.log('🛰️ Tools Hub V2 initializing...');
+    console.log('🛰️ Tools Hub V2 Optimized initializing...');
     
+    // Setup handlers
+    detectConnection();
+    setupVisibilityHandler();
+    
+    // Render UI segera (tanpa data)
     renderToolsNav();
     renderToolPanels();
     renderHistoryTabs();
     
+    // Load dari cache DULU (instant)
+    loadFromCacheInstant();
+    
+    // Check auth
     const loggedIn = await checkAuth();
     
     if (loggedIn) {
         showApp();
-        await loadUserData();
-        await loadAllJobs();
-        startPolling();
+        
+        // Fetch fresh data di background
+        Promise.all([
+            loadUserDataOptimized(),
+            loadAllJobsOptimized()
+        ]).then(() => {
+            startSmartPolling();
+        });
     } else {
         showLogin();
+    }
+}
+
+function loadFromCacheInstant() {
+    console.log('📦 Loading from cache...');
+    
+    // Load jobs dari cache
+    const cachedJobs = CACHE.load(CACHE.KEYS.JOBS, Infinity); // Load even if expired
+    if (cachedJobs?.data) {
+        Object.keys(TOOLS).forEach(toolId => {
+            const tool = TOOLS[toolId];
+            if (tool.service) {
+                state.jobs[toolId] = cachedJobs.data.filter(j => j.service === tool.service);
+            }
+        });
+        renderHistory();
+        console.log(`✅ Loaded ${cachedJobs.data.length} jobs from cache${cachedJobs.expired ? ' (expired)' : ''}`);
+    }
+    
+    // Load stats dari cache
+    const cachedStats = CACHE.load(CACHE.KEYS.STATS, Infinity);
+    if (cachedStats?.data) {
+        updateCreditsUI(cachedStats.data);
+        console.log('✅ Loaded stats from cache');
     }
 }
 
@@ -156,6 +343,291 @@ function showApp() {
 }
 
 // ==========================================
+// OPTIMIZED DATA LOADING
+// ==========================================
+
+async function loadUserDataOptimized() {
+    return deduplicatedRequest('loadUserData', async () => {
+        try {
+            const statsData = {};
+            
+            for (const toolId of Object.keys(TOOLS)) {
+                const tool = TOOLS[toolId];
+                if (!tool.service) continue;
+                
+                let result;
+                if (toolId === 'ugc') {
+                    result = await supabaseClient.rpc('check_limit');
+                } else {
+                    result = await supabaseClient.rpc('check_service_limit', { p_service: tool.service });
+                }
+                
+                if (result.data?.[0]) {
+                    statsData[toolId] = result.data[0];
+                }
+            }
+            
+            // Save to cache
+            CACHE.save(CACHE.KEYS.STATS, statsData);
+            
+            // Update UI
+            updateCreditsUI(statsData);
+            
+            return statsData;
+        } catch (e) {
+            console.error('Load user data error:', e);
+            return null;
+        }
+    });
+}
+
+function updateCreditsUI(statsData) {
+    Object.keys(statsData).forEach(toolId => {
+        const data = statsData[toolId];
+        if (!data) return;
+        
+        const remaining = data.daily_limit === -1 ? '∞' : data.remaining;
+        const el = document.getElementById(`credits-${toolId}`);
+        if (el) el.textContent = remaining;
+        
+        if (toolId === 'image' || toolId === 'ugc') {
+            document.getElementById('sidebar-plan').textContent = data.plan_name || 'Free';
+        }
+        
+        // UGC specific
+        if (toolId === 'ugc') {
+            const isFree = data.daily_limit === 1 || (data.plan_name || '').toLowerCase() === 'free';
+            const hintEl = document.getElementById('ugc-animation-hint');
+            const selectEl = document.getElementById('ugc-animation-order');
+            
+            if (hintEl && isFree) {
+                hintEl.innerHTML = '⚠️ <strong>Free plan hanya menggunakan Seedance</strong>';
+                hintEl.classList.add('warning');
+            }
+            if (selectEl && isFree) {
+                selectEl.value = 'grok_first';
+                selectEl.disabled = true;
+            }
+        }
+    });
+}
+
+async function loadAllJobsOptimized(forceRefresh = false) {
+    return deduplicatedRequest('loadAllJobs', async () => {
+        const user = getCurrentUser();
+        if (!user) return;
+        
+        // Check apakah perlu fetch
+        const lastSync = state.lastFetch.global || 0;
+        const timeSinceLastSync = Date.now() - lastSync;
+        
+        // Skip jika baru saja fetch (< 2 detik) kecuali force
+        if (!forceRefresh && timeSinceLastSync < 2000) {
+            console.log('⏭️ Skipping fetch - too recent');
+            return;
+        }
+        
+        // Gunakan incremental fetch jika ada active jobs
+        const hasActiveJobs = Object.values(state.jobs)
+            .flat()
+            .some(j => ['pending', 'processing'].includes(j.status));
+        
+        let query = supabaseClient
+            .from('jobs')
+            .select('id, service, status, progress_percent, step_name, current_step, total_steps, input_data, results, error_message, created_at, updated_at')
+            .order('created_at', { ascending: false });
+        
+        // Optimasi: jika tidak ada active jobs, limit lebih kecil
+        if (!hasActiveJobs && !forceRefresh) {
+            query = query.limit(20);
+        } else {
+            query = query.limit(50);
+        }
+        
+        const { data: jobs, error } = await query;
+        
+        if (error) {
+            console.error('Load jobs error:', error);
+            return;
+        }
+        
+        if (jobs) {
+            // Distribute to tools
+            Object.keys(TOOLS).forEach(toolId => {
+                const tool = TOOLS[toolId];
+                if (tool.service) {
+                    state.jobs[toolId] = jobs.filter(j => j.service === tool.service);
+                }
+            });
+            
+            // Save to cache
+            CACHE.save(CACHE.KEYS.JOBS, jobs);
+            state.lastFetch.global = Date.now();
+            
+            renderHistory();
+            console.log(`✅ Loaded ${jobs.length} jobs from server`);
+        }
+    });
+}
+
+// ==========================================
+// SMART POLLING SYSTEM
+// ==========================================
+
+function getPollingInterval() {
+    // Dasar interval berdasarkan koneksi
+    let baseInterval = isSlowConnection() ? 10000 : 5000;
+    
+    // Adaptive: semakin lama tidak ada perubahan, semakin jarang poll
+    if (state.pollCount < 3) return baseInterval;          // 0-15 detik: normal
+    if (state.pollCount < 6) return baseInterval * 1.5;    // 15-45 detik: 1.5x
+    if (state.pollCount < 12) return baseInterval * 2;     // 45-120 detik: 2x
+    return baseInterval * 3;                               // >120 detik: 3x
+}
+
+function hasActiveJobs() {
+    return Object.values(state.jobs)
+        .flat()
+        .some(j => ['pending', 'processing'].includes(j.status));
+}
+
+function startSmartPolling() {
+    if (state.pollingTimer) return;
+    if (!state.isTabVisible) return;
+    
+    console.log('🔄 Starting smart polling...');
+    
+    const poll = async () => {
+        if (!state.isTabVisible) {
+            stopPolling();
+            return;
+        }
+        
+        if (!hasActiveJobs()) {
+            console.log('💤 No active jobs - stopping poll');
+            stopPolling();
+            return;
+        }
+        
+        // Fetch hanya active jobs untuk hemat bandwidth
+        await fetchActiveJobsOnly();
+        
+        state.pollCount++;
+        
+        // Schedule next poll
+        const interval = getPollingInterval();
+        console.log(`⏱️ Next poll in ${interval/1000}s (count: ${state.pollCount})`);
+        state.pollingTimer = setTimeout(poll, interval);
+    };
+    
+    // Start immediately
+    poll();
+}
+
+function stopPolling() {
+    if (state.pollingTimer) {
+        clearTimeout(state.pollingTimer);
+        state.pollingTimer = null;
+        state.pollCount = 0;
+        console.log('⏹️ Polling stopped');
+    }
+}
+
+async function fetchActiveJobsOnly() {
+    // Hanya fetch jobs yang masih active - sangat hemat bandwidth
+    const activeJobIds = Object.values(state.jobs)
+        .flat()
+        .filter(j => ['pending', 'processing'].includes(j.status))
+        .map(j => j.id);
+    
+    if (activeJobIds.length === 0) return;
+    
+    console.log(`🔍 Polling ${activeJobIds.length} active jobs...`);
+    
+    const { data: updatedJobs, error } = await supabaseClient
+        .from('jobs')
+        .select('id, service, status, progress_percent, step_name, current_step, total_steps, results, error_message, updated_at')
+        .in('id', activeJobIds);
+    
+    if (error || !updatedJobs) return;
+    
+    let hasChanges = false;
+    
+    // Update state dengan data baru
+    updatedJobs.forEach(updated => {
+        Object.keys(state.jobs).forEach(toolId => {
+            const idx = state.jobs[toolId].findIndex(j => j.id === updated.id);
+            if (idx >= 0) {
+                const old = state.jobs[toolId][idx];
+                
+                // Check apakah ada perubahan signifikan
+                if (old.status !== updated.status || 
+                    old.progress_percent !== updated.progress_percent) {
+                    hasChanges = true;
+                    
+                    // Merge update
+                    state.jobs[toolId][idx] = { ...old, ...updated };
+                    
+                    // Handle completion
+                    if (updated.status === 'completed' || updated.status === 'failed') {
+                        handleJobCompletion(toolId, updated);
+                    }
+                }
+            }
+        });
+    });
+    
+    if (hasChanges) {
+        state.pollCount = 0; // Reset poll count saat ada perubahan
+        renderHistory();
+        updateActiveMessages();
+        
+        // Save updated cache
+        const allJobs = Object.values(state.jobs).flat();
+        CACHE.save(CACHE.KEYS.JOBS, allJobs);
+    }
+}
+
+function handleJobCompletion(toolId, job) {
+    console.log(`✅ Job ${job.id} completed with status: ${job.status}`);
+    
+    // Update message di chat jika ada
+    const msgEl = document.getElementById(`msg-${job.id}`);
+    if (msgEl) {
+        if (job.status === 'completed') {
+            let results = job.results;
+            if (typeof results === 'string') {
+                try { results = JSON.parse(results); } catch(e) {}
+            }
+            
+            const tool = TOOLS[toolId];
+            const isVideo = tool.color === 'video';
+            const url = isVideo ? results?.video_url : results?.image_url;
+            
+            if (url) {
+                completeBotMsg(toolId, job.id, url, results?.aspect_ratio || tool.defaultRatio);
+            }
+        } else {
+            errorBotMsg(toolId, job.id, job.error_message);
+        }
+    }
+    
+    // Refresh stats (kuota mungkin dikembalikan jika gagal)
+    if (job.status === 'failed') {
+        loadUserDataOptimized();
+    }
+}
+
+function updateActiveMessages() {
+    // Update semua loading messages dengan progress terbaru
+    Object.values(state.jobs).flat().forEach(job => {
+        if (['pending', 'processing'].includes(job.status)) {
+            updateBotProgress(job.id, job.progress_percent || 0, job.step_name);
+        }
+    });
+}
+
+// ==========================================
 // RENDER NAVIGATION
 // ==========================================
 
@@ -171,7 +643,7 @@ function renderToolsNav() {
             <button class="nav-item ${isActive ? 'active' : ''}" data-tool="${tool.id}">
                 <span class="nav-icon">${tool.icon}</span>
                 <span class="nav-text">${tool.name}</span>
-                <span class="nav-badge" id="credits-${tool.id}">0</span>
+                <span class="nav-badge" id="credits-${tool.id}">-</span>
             </button>
         `;
     });
@@ -192,10 +664,8 @@ function renderToolPanels() {
         const isActive = tool.id === state.currentTool;
         
         if (tool.type === 'form') {
-            // UGC Form Panel
             html += renderUGCPanel(tool, isActive);
         } else {
-            // Chat Panel (Image/Video)
             html += renderChatPanel(tool, isActive);
         }
     });
@@ -400,6 +870,134 @@ function renderHistoryTabs() {
 }
 
 // ==========================================
+// HISTORY - WITH ACTIVE JOBS PROGRESS
+// ==========================================
+
+function renderHistory() {
+    const toolId = state.currentTool;
+    const jobs = state.jobs[toolId] || [];
+    const container = document.getElementById('history-list');
+    const tool = TOOLS[toolId];
+    
+    const activeJobs = jobs.filter(j => ['pending', 'processing'].includes(j.status));
+    const completedJobs = jobs.filter(j => ['completed', 'failed'].includes(j.status));
+    
+    let html = '';
+    
+    // Section: Sedang Proses
+    if (activeJobs.length > 0) {
+        html += `<div class="history-section-label active">⚡ Sedang Proses (${activeJobs.length})</div>`;
+        html += activeJobs.map(job => createHistoryItem(job, toolId, tool)).join('');
+    }
+    
+    // Section: Selesai
+    if (completedJobs.length > 0) {
+        if (activeJobs.length > 0) {
+            html += `<div class="history-section-label">📁 Riwayat (${completedJobs.length})</div>`;
+        }
+        html += completedJobs.map(job => createHistoryItem(job, toolId, tool)).join('');
+    }
+    
+    // Empty state
+    if (jobs.length === 0) {
+        html = '<div class="empty-history"><span>📁</span><p>Belum ada riwayat</p></div>';
+    } else if (activeJobs.length > 0 && completedJobs.length === 0) {
+        html += `
+            <div class="history-section-label">📁 Riwayat</div>
+            <div class="empty-active"><span>⏳</span><p>Job selesai akan muncul di sini</p></div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+function createHistoryItem(job, toolId, tool) {
+    const input = job.input_data || {};
+    let results = job.results || {};
+    if (typeof results === 'string') try { results = JSON.parse(results); } catch(e) {}
+    
+    const date = new Date(job.created_at).toLocaleDateString('id-ID', { 
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+    });
+    
+    let thumb = '';
+    if (toolId === 'ugc') {
+        thumb = results.images?.[0] || input.product_image_url || '';
+    } else if (toolId === 'video') {
+        thumb = results.video_url || '';
+    } else {
+        thumb = results.image_url || '';
+    }
+    
+    const title = toolId === 'ugc' ? (input.product_name || 'UGC') : (input.prompt || 'Item');
+    const isActive = ['pending', 'processing'].includes(job.status);
+    
+    let thumbHtml = '';
+    if (thumb && !isActive) {
+        if (toolId === 'video') {
+            thumbHtml = `<video src="${thumb}" class="history-thumb" muted></video>`;
+        } else {
+            thumbHtml = `<img src="${thumb}" class="history-thumb" alt="">`;
+        }
+    } else if (thumb && isActive) {
+        thumbHtml = `<img src="${thumb}" class="history-thumb" alt="" style="opacity: 0.7;">`;
+    } else {
+        const icon = job.status === 'failed' ? '❌' : (isActive ? '⏳' : tool.icon);
+        thumbHtml = `<div class="history-thumb-placeholder">${icon}</div>`;
+    }
+    
+    let progressHtml = '';
+    if (isActive) {
+        const percent = job.progress_percent || 0;
+        const stepName = job.step_name || 'Menunggu...';
+        progressHtml = `
+            <div class="history-progress">
+                <div class="history-progress-track">
+                    <div class="history-progress-bar" style="width: ${percent}%"></div>
+                </div>
+                <div class="history-progress-text">
+                    <span>${stepName}</span>
+                    <span>${percent}%</span>
+                </div>
+            </div>
+        `;
+    }
+    
+    let statusHtml = '';
+    if (isActive) {
+        statusHtml = `
+            <span style="color: var(--warning);">
+                ${job.status === 'processing' ? '🔄' : '⏳'} 
+                ${job.status === 'processing' ? 'Memproses' : 'Menunggu'}
+                <span class="history-loading-dots"><span></span><span></span><span></span></span>
+            </span>
+        `;
+    } else {
+        statusHtml = `
+            <span>
+                <span class="status-dot ${job.status}"></span>
+                ${job.status === 'completed' ? 'Selesai' : 'Gagal'}
+            </span>
+        `;
+    }
+    
+    return `
+        <div class="history-item ${job.status}" data-tool="${toolId}" data-job="${job.id}">
+            ${thumbHtml}
+            <div class="history-info">
+                <div class="history-prompt">${escapeHtml(title.substring(0, 30))}</div>
+                <div class="history-meta">
+                    ${statusHtml}
+                    <span>•</span>
+                    <span>${date}</span>
+                </div>
+                ${progressHtml}
+            </div>
+        </div>
+    `;
+}
+
+// ==========================================
 // TOOL SWITCHING
 // ==========================================
 
@@ -456,218 +1054,6 @@ function closeMobileSidebars() {
     document.getElementById('sidebar-left').classList.remove('open');
     document.getElementById('sidebar-right').classList.remove('open');
     document.getElementById('sidebar-overlay').classList.remove('active');
-}
-
-// ==========================================
-// LOAD DATA
-// ==========================================
-
-async function loadUserData() {
-    try {
-        for (const toolId of Object.keys(TOOLS)) {
-            const tool = TOOLS[toolId];
-            if (!tool.service) continue;
-            
-            let result;
-            if (toolId === 'ugc') {
-                result = await supabaseClient.rpc('check_limit');
-            } else {
-                result = await supabaseClient.rpc('check_service_limit', { p_service: tool.service });
-            }
-            
-            if (result.data?.[0]) {
-                const remaining = result.data[0].daily_limit === -1 ? '∞' : result.data[0].remaining;
-                const el = document.getElementById(`credits-${toolId}`);
-                if (el) el.textContent = remaining;
-                
-                if (toolId === 'image' || toolId === 'ugc') {
-                    document.getElementById('sidebar-plan').textContent = result.data[0].plan_name || 'Free';
-                }
-                
-                // UGC specific: update animation hint for free users
-                if (toolId === 'ugc') {
-                    const isFree = result.data[0].daily_limit === 1 || (result.data[0].plan_name || '').toLowerCase() === 'free';
-                    const hintEl = document.getElementById('ugc-animation-hint');
-                    const selectEl = document.getElementById('ugc-animation-order');
-                    
-                    if (hintEl && isFree) {
-                        hintEl.innerHTML = '⚠️ <strong>Free plan hanya menggunakan Seedance</strong>';
-                        hintEl.classList.add('warning');
-                    }
-                    if (selectEl && isFree) {
-                        selectEl.value = 'grok_first';
-                        selectEl.disabled = true;
-                    }
-                }
-            }
-        }
-    } catch (e) {
-        console.error('Load user data error:', e);
-    }
-}
-
-async function loadAllJobs() {
-    const user = getCurrentUser();
-    if (!user) return;
-    
-    const { data: jobs } = await supabaseClient
-        .from('jobs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
-    
-    if (jobs) {
-        Object.keys(TOOLS).forEach(toolId => {
-            const tool = TOOLS[toolId];
-            if (tool.service) {
-                state.jobs[toolId] = jobs.filter(j => j.service === tool.service);
-            }
-        });
-        renderHistory();
-    }
-}
-
-// ==========================================
-// HISTORY - DENGAN ACTIVE JOBS (FIX 3)
-// ==========================================
-
-function renderHistory() {
-    const toolId = state.currentTool;
-    const jobs = state.jobs[toolId] || [];
-    const container = document.getElementById('history-list');
-    const tool = TOOLS[toolId];
-    
-    // Pisahkan active dan completed jobs
-    const activeJobs = jobs.filter(j => ['pending', 'processing'].includes(j.status));
-    const completedJobs = jobs.filter(j => ['completed', 'failed'].includes(j.status));
-    
-    let html = '';
-    
-    // Section: Sedang Proses
-    if (activeJobs.length > 0) {
-        html += `
-            <div class="history-section-label active">
-                ⚡ Sedang Proses (${activeJobs.length})
-            </div>
-        `;
-        html += activeJobs.map(job => createHistoryItem(job, toolId, tool)).join('');
-    }
-    
-    // Section: Selesai
-    if (completedJobs.length > 0) {
-        if (activeJobs.length > 0) {
-            html += `<div class="history-section-label">📁 Riwayat (${completedJobs.length})</div>`;
-        }
-        html += completedJobs.map(job => createHistoryItem(job, toolId, tool)).join('');
-    }
-    
-    // Empty state
-    if (jobs.length === 0) {
-        html = '<div class="empty-history"><span>📁</span><p>Belum ada riwayat</p></div>';
-    } else if (activeJobs.length > 0 && completedJobs.length === 0) {
-        html += `
-            <div class="history-section-label">📁 Riwayat</div>
-            <div class="empty-active">
-                <span>⏳</span>
-                <p>Job selesai akan muncul di sini</p>
-            </div>
-        `;
-    }
-    
-    container.innerHTML = html;
-}
-
-function createHistoryItem(job, toolId, tool) {
-    const input = job.input_data || {};
-    let results = job.results || {};
-    if (typeof results === 'string') try { results = JSON.parse(results); } catch(e) {}
-    
-    const date = new Date(job.created_at).toLocaleDateString('id-ID', { 
-        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-    });
-    
-    // Get thumbnail
-    let thumb = '';
-    if (toolId === 'ugc') {
-        thumb = results.images?.[0] || input.product_image_url || '';
-    } else if (toolId === 'video') {
-        thumb = results.video_url || '';
-    } else {
-        thumb = results.image_url || '';
-    }
-    
-    const title = toolId === 'ugc' ? (input.product_name || 'UGC') : (input.prompt || 'Item');
-    const isActive = ['pending', 'processing'].includes(job.status);
-    
-    // Thumbnail HTML
-    let thumbHtml = '';
-    if (thumb && !isActive) {
-        if (toolId === 'video') {
-            thumbHtml = `<video src="${thumb}" class="history-thumb" muted></video>`;
-        } else {
-            thumbHtml = `<img src="${thumb}" class="history-thumb" alt="">`;
-        }
-    } else if (thumb && isActive) {
-        // Show product image for active UGC jobs
-        thumbHtml = `<img src="${thumb}" class="history-thumb" alt="" style="opacity: 0.7;">`;
-    } else {
-        const icon = job.status === 'failed' ? '❌' : (isActive ? '⏳' : tool.icon);
-        thumbHtml = `<div class="history-thumb-placeholder">${icon}</div>`;
-    }
-    
-    // Progress HTML untuk active jobs
-    let progressHtml = '';
-    if (isActive) {
-        const percent = job.progress_percent || 0;
-        const stepName = job.step_name || 'Menunggu...';
-        progressHtml = `
-            <div class="history-progress">
-                <div class="history-progress-track">
-                    <div class="history-progress-bar" style="width: ${percent}%"></div>
-                </div>
-                <div class="history-progress-text">
-                    <span>${stepName}</span>
-                    <span>${percent}%</span>
-                </div>
-            </div>
-        `;
-    }
-    
-    // Status text
-    let statusHtml = '';
-    if (isActive) {
-        statusHtml = `
-            <span style="color: var(--warning);">
-                ${job.status === 'processing' ? '🔄' : '⏳'} 
-                ${job.status === 'processing' ? 'Memproses' : 'Menunggu'}
-                <span class="history-loading-dots">
-                    <span></span><span></span><span></span>
-                </span>
-            </span>
-        `;
-    } else {
-        statusHtml = `
-            <span>
-                <span class="status-dot ${job.status}"></span>
-                ${job.status === 'completed' ? 'Selesai' : 'Gagal'}
-            </span>
-        `;
-    }
-    
-    return `
-        <div class="history-item ${job.status}" data-tool="${toolId}" data-job="${job.id}">
-            ${thumbHtml}
-            <div class="history-info">
-                <div class="history-prompt">${escapeHtml(title.substring(0, 30))}</div>
-                <div class="history-meta">
-                    ${statusHtml}
-                    <span>•</span>
-                    <span>${date}</span>
-                </div>
-                ${progressHtml}
-            </div>
-        </div>
-    `;
 }
 
 // ==========================================
@@ -843,8 +1229,25 @@ async function submitJob(toolId) {
         if (!result?.success) throw new Error(result?.message || 'Gagal');
         
         addBotLoading(toolId, result.job_id);
-        pollJob(toolId, result.job_id);
-        await loadUserData();
+        
+        // Add to local state immediately
+        const newJob = {
+            id: result.job_id,
+            service: tool.service,
+            status: 'pending',
+            progress_percent: 0,
+            step_name: 'Menunggu...',
+            input_data: inputData,
+            created_at: new Date().toISOString()
+        };
+        state.jobs[toolId].unshift(newJob);
+        renderHistory();
+        
+        // Start polling if not already
+        startSmartPolling();
+        
+        // Refresh user data
+        loadUserDataOptimized();
         
     } catch (error) {
         const tempId = 'err-' + Date.now();
@@ -854,7 +1257,7 @@ async function submitJob(toolId) {
 }
 
 // ==========================================
-// SUBMIT UGC JOB - DENGAN ANIMASI (FIX 1)
+// SUBMIT UGC JOB - WITH ANIMATION
 // ==========================================
 
 async function submitUGCJob(event) {
@@ -882,18 +1285,15 @@ async function submitUGCJob(event) {
     const submitBtn = document.getElementById('ugc-submit-btn');
     const originalText = submitBtn.innerHTML;
     
-    // Animasi loading
     submitBtn.disabled = true;
     submitBtn.classList.add('loading');
     submitBtn.innerHTML = '<span style="opacity:0">Loading...</span>';
     
-    // Helper untuk update text
     const updateBtnText = (text) => {
         submitBtn.innerHTML = `<span style="color: white; position: relative; z-index: 1;">${text}</span>`;
     };
     
     try {
-        // Check limit
         updateBtnText('🔍 Memeriksa kuota...');
         const { data: limitData, error: limitError } = await supabaseClient.rpc('check_limit');
         
@@ -906,7 +1306,6 @@ async function submitUGCJob(event) {
             return;
         }
         
-        // Upload product image
         updateBtnText('📤 Mengupload gambar...');
         
         const fileExt = productFile.name.split('.').pop().toLowerCase();
@@ -922,7 +1321,6 @@ async function submitUGCJob(event) {
             .from('results')
             .getPublicUrl(productPath);
         
-        // Upload model image if exists
         let modelUrl = null;
         const modelFile = document.getElementById('ugc-file-model').files[0];
         if (modelFile) {
@@ -942,7 +1340,6 @@ async function submitUGCJob(event) {
             }
         }
         
-        // Create job
         updateBtnText('🚀 Membuat job...');
         
         const generateMode = document.getElementById('ugc-generate-mode').value;
@@ -978,7 +1375,19 @@ async function submitUGCJob(event) {
         submitBtn.classList.add('success');
         submitBtn.innerHTML = '✅ Berhasil!';
         
-        // Reset form after delay
+        // Add to local state immediately
+        const newJob = {
+            id: result.job_id,
+            service: 'ugc',
+            status: 'pending',
+            progress_percent: 0,
+            step_name: 'Menunggu...',
+            input_data: inputData,
+            created_at: new Date().toISOString()
+        };
+        state.jobs.ugc.unshift(newJob);
+        renderHistory();
+        
         setTimeout(() => {
             document.getElementById('ugc-form').reset();
             document.querySelectorAll('.ugc-upload-box').forEach(box => box.classList.remove('has-preview'));
@@ -989,10 +1398,13 @@ async function submitUGCJob(event) {
             submitBtn.disabled = false;
         }, 1500);
         
-        // Reload data dan pindah ke riwayat
-        await Promise.all([loadAllJobs(), loadUserData()]);
+        // Start polling
+        startSmartPolling();
         
-        // Buka sidebar riwayat jika tertutup
+        // Refresh user data
+        loadUserDataOptimized();
+        
+        // Open sidebar if collapsed
         if (state.rightCollapsed) {
             state.rightCollapsed = false;
             document.getElementById('main-app').classList.remove('right-collapsed');
@@ -1009,57 +1421,6 @@ async function submitUGCJob(event) {
             submitBtn.disabled = false;
             submitBtn.classList.remove('loading');
             submitBtn.innerHTML = originalText;
-        }
-    }
-}
-
-// ==========================================
-// POLLING
-// ==========================================
-
-async function pollJob(toolId, jobId) {
-    const tool = TOOLS[toolId];
-    const isVideo = tool.color === 'video';
-    
-    const poll = async () => {
-        const { data: job } = await supabaseClient.from('jobs').select('*').eq('id', jobId).single();
-        if (!job) return;
-        
-        updateBotProgress(jobId, job.progress_percent, job.step_name);
-        
-        if (job.status === 'completed') {
-            let results = typeof job.results === 'string' ? JSON.parse(job.results) : job.results;
-            const url = isVideo ? results.video_url : results.image_url;
-            completeBotMsg(toolId, jobId, url, results.aspect_ratio || tool.defaultRatio);
-            await loadAllJobs();
-        } else if (job.status === 'failed') {
-            errorBotMsg(toolId, jobId, job.error_message);
-            await loadAllJobs();
-            await loadUserData();
-        } else {
-            setTimeout(poll, isVideo ? 3000 : 2000);
-        }
-    };
-    poll();
-}
-
-function startPolling() {
-    setInterval(async () => {
-        const allJobs = Object.values(state.jobs).flat();
-        if (allJobs.some(j => ['pending', 'processing'].includes(j.status))) {
-            await loadAllJobs();
-        }
-    }, 5000);
-}
-
-function retryJob(toolId, jobId) {
-    const jobs = state.jobs[toolId] || [];
-    const job = jobs.find(j => j.id === jobId);
-    if (job?.input_data?.prompt) {
-        const promptEl = document.getElementById(`prompt-${toolId}`);
-        if (promptEl) {
-            promptEl.value = job.input_data.prompt;
-            document.getElementById(`send-${toolId}`).disabled = false;
         }
     }
 }
@@ -1139,6 +1500,18 @@ function useAsSource(toolId, url) {
     });
 }
 
+function retryJob(toolId, jobId) {
+    const jobs = state.jobs[toolId] || [];
+    const job = jobs.find(j => j.id === jobId);
+    if (job?.input_data?.prompt) {
+        const promptEl = document.getElementById(`prompt-${toolId}`);
+        if (promptEl) {
+            promptEl.value = job.input_data.prompt;
+            document.getElementById(`send-${toolId}`).disabled = false;
+        }
+    }
+}
+
 // ==========================================
 // MODALS
 // ==========================================
@@ -1210,7 +1583,6 @@ function openUGCModal(jobId) {
         resultsSection.style.display = 'block';
         errorSection.style.display = 'none';
         
-        // Render images
         const imagesContainer = document.getElementById('ugc-result-images');
         if (results.images?.length) {
             imagesContainer.innerHTML = results.images.map((url, i) => `
@@ -1224,7 +1596,6 @@ function openUGCModal(jobId) {
             imagesContainer.parentElement.style.display = 'none';
         }
         
-        // Render videos
         const videosContainer = document.getElementById('ugc-result-videos');
         if (results.videos?.length) {
             videosContainer.innerHTML = results.videos.map((url, i) => `
@@ -1238,7 +1609,6 @@ function openUGCModal(jobId) {
             videosContainer.parentElement.style.display = 'none';
         }
         
-        // Final video
         const finalGroup = document.getElementById('ugc-final-video-group');
         if (results.final_video) {
             document.getElementById('ugc-result-final').src = results.final_video;
@@ -1248,7 +1618,6 @@ function openUGCModal(jobId) {
             finalGroup.style.display = 'none';
         }
         
-        // Audio
         const audioGroup = document.getElementById('ugc-audio-group');
         if (results.audio) {
             document.getElementById('ugc-result-audio').src = results.audio;
@@ -1258,7 +1627,6 @@ function openUGCModal(jobId) {
             audioGroup.style.display = 'none';
         }
         
-        // Script
         const scriptGroup = document.getElementById('ugc-script-group');
         if (results.script) {
             document.getElementById('ugc-result-script').textContent = results.script;
@@ -1310,6 +1678,24 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function handleUGCFile(type, file) {
+    if (!file?.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
+        alert('File tidak valid atau > 10MB');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const preview = document.getElementById(`ugc-preview-${type}`);
+        const box = document.getElementById(`ugc-upload-${type}`);
+        
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        box.classList.add('has-preview');
+    };
+    reader.readAsDataURL(file);
+}
+
 // ==========================================
 // EVENT LISTENERS
 // ==========================================
@@ -1334,7 +1720,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-open-left').addEventListener('click', openMobileLeft);
     document.getElementById('btn-open-right').addEventListener('click', openMobileRight);
     document.getElementById('sidebar-overlay').addEventListener('click', closeMobileSidebars);
-        // FIX 2: Tombol expand sidebar kanan
+    
+    // Expand right button
     const btnExpandRight = document.getElementById('btn-expand-right');
     if (btnExpandRight) {
         btnExpandRight.addEventListener('click', () => {
@@ -1364,61 +1751,47 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Delegated events
     document.addEventListener('click', e => {
-        // Tool nav
         if (e.target.closest('.nav-item[data-tool]')) {
             const btn = e.target.closest('.nav-item');
             if (!btn.disabled) switchTool(btn.dataset.tool);
         }
         
-        // History tabs
         if (e.target.closest('.history-tab')) {
-            const tab = e.target.closest('.history-tab');
-            switchTool(tab.dataset.tool);
+            switchTool(e.target.closest('.history-tab').dataset.tool);
         }
         
-        // History items
         if (e.target.closest('.history-item')) {
             const item = e.target.closest('.history-item');
             loadHistoryItem(item.dataset.tool, item.dataset.job);
         }
         
-        // Chips
         if (e.target.closest('.chip')) {
             const chip = e.target.closest('.chip');
             const toolId = chip.dataset.tool;
-            const prompt = chip.dataset.prompt;
             const promptEl = document.getElementById(`prompt-${toolId}`);
             if (promptEl) {
-                promptEl.value = prompt;
+                promptEl.value = chip.dataset.prompt;
                 document.getElementById(`send-${toolId}`).disabled = false;
                 promptEl.focus();
             }
         }
         
-        // Ratio buttons
         if (e.target.closest('.ratio-btn')) {
             const btn = e.target.closest('.ratio-btn');
             const toolId = btn.dataset.tool;
-            const ratio = btn.dataset.ratio;
-            
             document.querySelectorAll(`#ratios-${toolId} .ratio-btn`).forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            state.tools[toolId].ratio = ratio;
+            state.tools[toolId].ratio = btn.dataset.ratio;
         }
         
-        // Attach buttons
         if (e.target.closest('.btn-attach')) {
-            const btn = e.target.closest('.btn-attach');
-            document.getElementById(`file-${btn.dataset.tool}`).click();
+            document.getElementById(`file-${e.target.closest('.btn-attach').dataset.tool}`).click();
         }
         
-        // Remove preview
         if (e.target.closest('.btn-remove-preview')) {
-            const btn = e.target.closest('.btn-remove-preview');
-            clearPreview(btn.dataset.tool);
+            clearPreview(e.target.closest('.btn-remove-preview').dataset.tool);
         }
         
-        // UGC Upload boxes
         if (e.target.closest('#ugc-upload-product')) {
             document.getElementById('ugc-file-product').click();
         }
@@ -1436,7 +1809,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById(`send-${toolId}`).disabled = !e.target.value.trim();
         }
         
-        // UGC style change
         if (e.target.id === 'ugc-style') {
             const customGroup = document.getElementById('ugc-custom-style-group');
             if (customGroup) {
@@ -1456,20 +1828,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Send buttons
     document.addEventListener('click', e => {
         if (e.target.closest('.btn-send')) {
-            const btn = e.target.closest('.btn-send');
-            const toolId = btn.id.replace('send-', '');
-            submitJob(toolId);
+            submitJob(e.target.closest('.btn-send').id.replace('send-', ''));
         }
     });
     
-    // File inputs (Image/Video)
+    // File inputs
     document.addEventListener('change', e => {
         if (e.target.type === 'file' && e.target.id.startsWith('file-')) {
-            const toolId = e.target.id.replace('file-', '');
-            if (e.target.files?.[0]) handleFile(toolId, e.target.files[0]);
+            if (e.target.files?.[0]) handleFile(e.target.id.replace('file-', ''), e.target.files[0]);
         }
         
-        // UGC file inputs
         if (e.target.id === 'ugc-file-product' && e.target.files?.[0]) {
             handleUGCFile('product', e.target.files[0]);
         }
@@ -1486,34 +1854,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function handleUGCFile(type, file) {
-    if (!file?.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
-        alert('File tidak valid atau > 10MB');
-        return;
-    }
-    
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const preview = document.getElementById(`ugc-preview-${type}`);
-        const box = document.getElementById(`ugc-upload-${type}`);
-        
-        preview.src = e.target.result;
-        preview.style.display = 'block';
-        box.classList.add('has-preview');
-    };
-    reader.readAsDataURL(file);
-}
-
 // Auth listener
 supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
         currentUser = session.user;
         showApp();
-        loadUserData();
-        loadAllJobs();
+        loadUserDataOptimized();
+        loadAllJobsOptimized();
+        startSmartPolling();
     } else if (event === 'SIGNED_OUT') {
+        stopPolling();
+        CACHE.clear();
         showLogin();
     }
 });
 
-console.log('✅ Tools Hub V2 with UGC loaded');
+// Cleanup
+window.addEventListener('beforeunload', () => {
+    stopPolling();
+});
+
+console.log('✅ Tools Hub V2 Optimized loaded');
