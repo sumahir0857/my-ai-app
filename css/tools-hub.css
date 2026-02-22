@@ -1275,3 +1275,230 @@ body {
     
     .ugc-gallery { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ============================================
+   FIX 1: ANIMASI TOMBOL GENERATE UGC
+   ============================================ */
+
+.ugc-submit-btn {
+    position: relative;
+    overflow: hidden;
+    transform: translateY(0);
+}
+
+.ugc-submit-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.5s ease, height 0.5s ease;
+}
+
+.ugc-submit-btn:not(:disabled):hover::before {
+    width: 400px;
+    height: 400px;
+}
+
+.ugc-submit-btn:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+/* Loading State */
+.ugc-submit-btn.loading {
+    color: transparent;
+    pointer-events: none;
+}
+
+.ugc-submit-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: btnSpin 0.8s linear infinite;
+}
+
+@keyframes btnSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* Success State */
+.ugc-submit-btn.success {
+    background: linear-gradient(135deg, var(--success), #16a34a) !important;
+    animation: successPulse 0.5s ease;
+}
+
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* ============================================
+   FIX 2: TOMBOL UNTUK MEMBUKA SIDEBAR RIWAYAT
+   ============================================ */
+
+.btn-expand-right {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 70px;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border-color);
+    border-right: none;
+    border-radius: 8px 0 0 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    transition: all 0.2s;
+}
+
+.btn-expand-right:hover {
+    background: var(--bg-card);
+    color: var(--text-primary);
+    width: 36px;
+}
+
+.btn-expand-right svg {
+    width: 16px;
+    height: 16px;
+}
+
+.main-app.right-collapsed .btn-expand-right {
+    display: flex;
+}
+
+/* ============================================
+   FIX 3: HISTORY DENGAN PROGRESS UNTUK UGC
+   ============================================ */
+
+/* Section divider untuk Active vs Completed */
+.history-section-label {
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.history-section-label.active {
+    color: var(--warning);
+    background: rgba(245, 158, 11, 0.08);
+    border-radius: 8px 8px 0 0;
+}
+
+/* Active Job Card dengan Progress */
+.history-item.processing {
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), transparent);
+    animation: processingGlow 2s ease-in-out infinite;
+}
+
+@keyframes processingGlow {
+    0%, 100% { box-shadow: 0 0 0 rgba(245, 158, 11, 0); }
+    50% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.15); }
+}
+
+.history-item.pending {
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), transparent);
+}
+
+/* Progress bar dalam history item */
+.history-progress {
+    margin-top: 8px;
+}
+
+.history-progress-track {
+    height: 4px;
+    background: var(--bg-input);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.history-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--warning), var(--accent));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+    animation: progressShimmer 1.5s infinite;
+}
+
+@keyframes progressShimmer {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.history-progress-text {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 0.65rem;
+    color: var(--warning);
+}
+
+/* Loading dots animation untuk pending */
+.history-loading-dots {
+    display: inline-flex;
+    gap: 3px;
+    margin-left: 5px;
+}
+
+.history-loading-dots span {
+    width: 4px;
+    height: 4px;
+    background: var(--warning);
+    border-radius: 50%;
+    animation: historyDotBounce 1.4s infinite;
+}
+
+.history-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.history-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes historyDotBounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Empty state untuk active jobs */
+.empty-active {
+    padding: 20px 15px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.empty-active span {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Responsive: Hide expand button on mobile */
+@media (max-width: 900px) {
+    .btn-expand-right {
+        display: none !important;
+    }
+}
