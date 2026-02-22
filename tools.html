@@ -25,7 +25,7 @@
             <div class="login-features">
                 <div class="feature-item"><span class="feature-icon">🎬</span><span>Video Generator - VEO 3.1</span></div>
                 <div class="feature-item"><span class="feature-icon">🖼️</span><span>Image Generator - Nano Banana</span></div>
-                <div class="feature-item"><span class="feature-icon">✨</span><span>Semua tools dalam satu tempat</span></div>
+                <div class="feature-item"><span class="feature-icon">📽️</span><span>UGC Affiliate Generator</span></div>
             </div>
             <button id="btn-login-google" class="btn-google">
                 <svg width="20" height="20" viewBox="0 0 24 24">
@@ -42,9 +42,8 @@
     <!-- Main App Container -->
     <div id="main-app" class="main-app" style="display: none;">
         
-        <!-- ==================== LEFT SIDEBAR ==================== -->
+        <!-- LEFT SIDEBAR -->
         <aside id="sidebar-left" class="sidebar-left">
-            <!-- Logo -->
             <div class="sidebar-header">
                 <a href="/" class="logo">
                     <span class="logo-icon">🛰️</span>
@@ -57,7 +56,6 @@
                 </button>
             </div>
 
-            <!-- User Info -->
             <div class="sidebar-user">
                 <img id="sidebar-avatar" src="" alt="Avatar">
                 <div class="user-info">
@@ -66,12 +64,8 @@
                 </div>
             </div>
 
-            <!-- Navigation - TOOLS DIREGISTER DI SINI -->
-            <nav class="sidebar-nav" id="tools-nav">
-                <!-- Tools akan di-render otomatis oleh JavaScript -->
-            </nav>
+            <nav class="sidebar-nav" id="tools-nav"></nav>
 
-            <!-- Footer -->
             <div class="sidebar-footer">
                 <a href="pricing.html" class="upgrade-btn">
                     <span>⚡</span><span class="btn-label">Upgrade</span>
@@ -85,7 +79,7 @@
             </div>
         </aside>
 
-        <!-- ==================== MOBILE HEADER ==================== -->
+        <!-- MOBILE HEADER -->
         <header class="mobile-header">
             <button id="btn-open-left" class="btn-header">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -106,15 +100,12 @@
             </button>
         </header>
 
-        <!-- Overlay for mobile sidebars -->
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
-        <!-- ==================== MAIN CONTENT ==================== -->
-        <main class="main-content" id="main-content">
-            <!-- Tool panels akan di-render otomatis oleh JavaScript -->
-        </main>
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="main-content"></main>
 
-        <!-- ==================== RIGHT SIDEBAR (HISTORY) ==================== -->
+        <!-- RIGHT SIDEBAR (HISTORY) -->
         <aside id="sidebar-right" class="sidebar-right">
             <div class="sidebar-header">
                 <h3>📁 Riwayat</h3>
@@ -124,29 +115,15 @@
                     </svg>
                 </button>
             </div>
-
-            <!-- History Tabs -->
-            <div class="history-tabs" id="history-tabs">
-                <!-- Tabs akan di-render otomatis -->
-            </div>
-
-            <!-- Warning -->
-            <div class="history-warning">
-                ⚠️ Dihapus otomatis setelah 3 jam
-            </div>
-
-            <!-- History List -->
+            <div class="history-tabs" id="history-tabs"></div>
+            <div class="history-warning">⚠️ Dihapus otomatis setelah 3 jam</div>
             <div class="history-list" id="history-list">
-                <div class="empty-history">
-                    <span>📁</span>
-                    <p>Belum ada riwayat</p>
-                </div>
+                <div class="empty-history"><span>📁</span><p>Belum ada riwayat</p></div>
             </div>
         </aside>
-
     </div>
 
-    <!-- ==================== MEDIA MODAL ==================== -->
+    <!-- MEDIA MODAL -->
     <div id="media-modal" class="media-modal">
         <div class="modal-backdrop"></div>
         <div class="modal-content">
@@ -171,6 +148,62 @@
                     </svg>
                     Edit
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UGC RESULT MODAL -->
+    <div id="ugc-modal" class="media-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content ugc-modal-content">
+            <button class="modal-close" id="btn-close-ugc-modal">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+            <div class="ugc-modal-body">
+                <h2 id="ugc-modal-title">Detail Job</h2>
+                <div id="ugc-modal-status" class="ugc-status-badge">pending</div>
+                
+                <!-- Progress -->
+                <div id="ugc-modal-progress" class="ugc-progress-section">
+                    <div class="progress-track"><div id="ugc-progress-bar" class="progress-bar"></div></div>
+                    <div class="progress-meta">
+                        <span id="ugc-progress-step">Menunggu...</span>
+                        <span id="ugc-progress-pct">0%</span>
+                    </div>
+                </div>
+                
+                <!-- Results -->
+                <div id="ugc-modal-results" class="ugc-results-section" style="display:none;">
+                    <div class="ugc-result-group">
+                        <h4>📸 Gambar</h4>
+                        <div id="ugc-result-images" class="ugc-gallery"></div>
+                    </div>
+                    <div class="ugc-result-group">
+                        <h4>🎬 Video Clips</h4>
+                        <div id="ugc-result-videos" class="ugc-gallery"></div>
+                    </div>
+                    <div class="ugc-result-group" id="ugc-final-video-group" style="display:none;">
+                        <h4>🎥 Video Final</h4>
+                        <video id="ugc-result-final" controls class="ugc-final-video"></video>
+                        <a id="ugc-download-final" class="ugc-download-btn" download>⬇️ Download Video</a>
+                    </div>
+                    <div class="ugc-result-group" id="ugc-audio-group" style="display:none;">
+                        <h4>🎵 Audio</h4>
+                        <audio id="ugc-result-audio" controls class="ugc-audio"></audio>
+                        <a id="ugc-download-audio" class="ugc-download-btn" download>⬇️ Download Audio</a>
+                    </div>
+                    <div class="ugc-result-group" id="ugc-script-group" style="display:none;">
+                        <h4>📝 Script</h4>
+                        <p id="ugc-result-script" class="ugc-script"></p>
+                    </div>
+                </div>
+                
+                <!-- Error -->
+                <div id="ugc-modal-error" class="ugc-error-section" style="display:none;">
+                    <p id="ugc-error-msg"></p>
+                </div>
             </div>
         </div>
     </div>
