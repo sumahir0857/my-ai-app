@@ -1,9 +1,9 @@
 // ============================================
-// TOOLS HUB V2 - MODULAR ARCHITECTURE
+// TOOLS HUB V2 - WITH UGC GENERATOR
 // ============================================
 
 // ==========================================
-// TOOL REGISTRY - TAMBAH/HAPUS TOOL DI SINI
+// TOOL REGISTRY
 // ==========================================
 
 const TOOLS = {
@@ -12,7 +12,8 @@ const TOOLS = {
         name: 'Image Generator',
         icon: '🖼️',
         service: 'image',
-        color: 'primary', // primary | video
+        color: 'primary',
+        type: 'chat', // chat | form
         enabled: true,
         ratios: ['1:1', '9:16', '16:9', '4:3'],
         defaultRatio: '1:1',
@@ -33,6 +34,7 @@ const TOOLS = {
         icon: '🎬',
         service: 'video',
         color: 'video',
+        type: 'chat',
         enabled: true,
         ratios: ['9:16', '16:9', '1:1'],
         defaultRatio: '16:9',
@@ -50,26 +52,37 @@ const TOOLS = {
     },
     ugc: {
         id: 'ugc',
-        name: 'UGC Generator',
+        name: 'UGC Affiliate',
         icon: '📽️',
         service: 'ugc',
-        color: 'primary',
+        color: 'ugc',
+        type: 'form', // UGC menggunakan form kompleks
         enabled: true,
-        comingSoon: false, // Set true jika coming soon
-        externalLink: 'generator.html',
-        features: [
-            '✓ Gambar produk otomatis',
-            '✓ Video animasi',
-            '✓ Voice over AI',
-            '✓ Script marketing'
+        totalSteps: 8,
+        stylePresets: [
+            'Default (Auto)',
+            'Produk Dipakai/Digunakan',
+            'Produk Dipegang Tangan',
+            'Flat Lay / Aesthetic',
+            'Lifestyle / Aktivitas',
+            'Close-up Detail Produk',
+            'Before-After Style',
+            'Selfie / POV Style',
+            'Custom (Tulis Sendiri)'
+        ],
+        animationOrders: [
+            { value: 'veo_first', label: 'VEO 3.1 dulu → Seedance (Kualitas Tinggi)' },
+            { value: 'grok_first', label: 'Seedance dulu → VEO 3.1 (Lebih Cepat)' }
+        ],
+        generateModes: [
+            { value: 'full', label: '🚀 Full Pipeline (Gambar + Video + Audio)' },
+            { value: 'images_only', label: '🖼️ Gambar Saja (3 Foto)' }
         ]
     }
-    // TAMBAH TOOL BARU DI SINI:
-    // music: { id: 'music', name: 'Music Generator', icon: '🎵', ... }
 };
 
 // ==========================================
-// STATE MANAGEMENT
+// STATE
 // ==========================================
 
 const state = {
@@ -80,10 +93,10 @@ const state = {
     jobs: {}
 };
 
-// Initialize tool states
 Object.keys(TOOLS).forEach(id => {
     state.tools[id] = {
         base64: null,
+        modelBase64: null, // untuk UGC
         dimensions: { width: 0, height: 0 },
         ratio: TOOLS[id].defaultRatio || '1:1'
     };
@@ -143,14 +156,12 @@ function showApp() {
 }
 
 // ==========================================
-// RENDER FUNCTIONS
+// RENDER NAVIGATION
 // ==========================================
 
 function renderToolsNav() {
     const nav = document.getElementById('tools-nav');
-    
-    const activeTools = Object.values(TOOLS).filter(t => t.enabled && !t.comingSoon);
-    const comingTools = Object.values(TOOLS).filter(t => t.comingSoon);
+    const activeTools = Object.values(TOOLS).filter(t => t.enabled);
     
     let html = '<div class="nav-section"><div class="nav-section-label">Generators</div>';
     
@@ -166,124 +177,205 @@ function renderToolsNav() {
     });
     html += '</div>';
     
-    if (comingTools.length) {
-        html += '<div class="nav-section"><div class="nav-section-label">Coming Soon</div>';
-        comingTools.forEach(tool => {
-            html += `
-                <button class="nav-item disabled" disabled>
-                    <span class="nav-icon">${tool.icon}</span>
-                    <span class="nav-text">${tool.name}</span>
-                </button>
-            `;
-        });
-        html += '</div>';
-    }
-    
     nav.innerHTML = html;
 }
+
+// ==========================================
+// RENDER TOOL PANELS
+// ==========================================
 
 function renderToolPanels() {
     const main = document.getElementById('main-content');
     let html = '';
     
-    Object.values(TOOLS).filter(t => t.enabled && !t.comingSoon).forEach(tool => {
+    Object.values(TOOLS).filter(t => t.enabled).forEach(tool => {
         const isActive = tool.id === state.currentTool;
-        const isVideo = tool.color === 'video';
         
-        // External link tool (like UGC)
-        if (tool.externalLink) {
-            html += `
-                <div id="panel-${tool.id}" class="tool-panel ${isActive ? 'active' : ''}">
-                    <div class="coming-soon-box">
-                        <div class="icon">${tool.icon}</div>
-                        <h2>${tool.name}</h2>
-                        <p>${tool.welcomeText || ''}</p>
-                        <div class="features-list">
-                            ${(tool.features || []).map(f => `<div class="item">${f}</div>`).join('')}
-                        </div>
-                        <a href="${tool.externalLink}" class="btn-launch">🚀 Launch ${tool.name}</a>
-                    </div>
-                </div>
-            `;
-            return;
+        if (tool.type === 'form') {
+            // UGC Form Panel
+            html += renderUGCPanel(tool, isActive);
+        } else {
+            // Chat Panel (Image/Video)
+            html += renderChatPanel(tool, isActive);
         }
-        
-        // Regular generator tool
-        html += `
-            <div id="panel-${tool.id}" class="tool-panel ${isActive ? 'active' : ''}">
-                <div class="panel-inner">
-                    <div class="chat-area" id="chat-${tool.id}">
-                        <div class="welcome-box" id="welcome-${tool.id}">
-                            <div class="welcome-icon">${tool.icon}</div>
-                            <h2>${tool.name}</h2>
-                            <p>${tool.welcomeText || ''}</p>
-                            <div class="chips-container">
-                                ${tool.suggestions.map(s => `
-                                    <button class="chip" data-tool="${tool.id}" data-prompt="${s.prompt}">
-                                        ${s.icon} ${s.text}
-                                    </button>
-                                `).join('')}
-                            </div>
-                            ${tool.timeNotice ? `<div class="info-notice">⏱️ ${tool.timeNotice}</div>` : ''}
-                        </div>
-                        <div class="messages-list" id="messages-${tool.id}"></div>
-                    </div>
-                    
-                    <div class="input-section">
-                        <div class="preview-bar" id="preview-${tool.id}">
-                            <div class="preview-inner ${isVideo ? 'video' : ''}">
-                                <img id="preview-img-${tool.id}" src="" alt="">
-                                <div class="preview-info">
-                                    <div class="label">${isVideo ? '🎬 Image to Video' : '✏️ Edit Mode'}</div>
-                                    <div class="size" id="preview-size-${tool.id}">-</div>
-                                </div>
-                                <button class="btn-remove-preview" data-tool="${tool.id}">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="ratio-selector" id="ratios-${tool.id}">
-                            ${tool.ratios.map(r => `
-                                <button class="ratio-btn ${r === tool.defaultRatio ? 'active' : ''} ${isVideo ? 'video' : ''}" 
-                                        data-tool="${tool.id}" data-ratio="${r}">
-                                    <svg viewBox="0 0 24 24" fill="currentColor">
-                                        ${getRatioSVG(r)}
-                                    </svg>
-                                    <span>${r}</span>
-                                </button>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="input-row ${isVideo ? 'video' : ''}">
-                            <input type="file" id="file-${tool.id}" accept="image/*" hidden>
-                            <button class="btn-attach ${isVideo ? 'video' : ''}" data-tool="${tool.id}">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                                    <polyline points="21 15 16 10 5 21"/>
-                                </svg>
-                            </button>
-                            <textarea id="prompt-${tool.id}" 
-                                      class="prompt-input" 
-                                      placeholder="${tool.placeholder}" 
-                                      rows="1" 
-                                      maxlength="${tool.maxPromptLength}"></textarea>
-                            <button id="send-${tool.id}" class="btn-send ${isVideo ? 'video' : ''}" disabled>
-                                <svg viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
     });
     
     main.innerHTML = html;
+}
+
+function renderChatPanel(tool, isActive) {
+    const isVideo = tool.color === 'video';
+    
+    return `
+        <div id="panel-${tool.id}" class="tool-panel ${isActive ? 'active' : ''}">
+            <div class="panel-inner">
+                <div class="chat-area" id="chat-${tool.id}">
+                    <div class="welcome-box" id="welcome-${tool.id}">
+                        <div class="welcome-icon">${tool.icon}</div>
+                        <h2>${tool.name}</h2>
+                        <p>${tool.welcomeText || ''}</p>
+                        <div class="chips-container">
+                            ${tool.suggestions.map(s => `
+                                <button class="chip" data-tool="${tool.id}" data-prompt="${s.prompt}">
+                                    ${s.icon} ${s.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                        ${tool.timeNotice ? `<div class="info-notice">⏱️ ${tool.timeNotice}</div>` : ''}
+                    </div>
+                    <div class="messages-list" id="messages-${tool.id}"></div>
+                </div>
+                
+                <div class="input-section">
+                    <div class="preview-bar" id="preview-${tool.id}">
+                        <div class="preview-inner ${isVideo ? 'video' : ''}">
+                            <img id="preview-img-${tool.id}" src="" alt="">
+                            <div class="preview-info">
+                                <div class="label">${isVideo ? '🎬 Image to Video' : '✏️ Edit Mode'}</div>
+                                <div class="size" id="preview-size-${tool.id}">-</div>
+                            </div>
+                            <button class="btn-remove-preview" data-tool="${tool.id}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="ratio-selector" id="ratios-${tool.id}">
+                        ${tool.ratios.map(r => `
+                            <button class="ratio-btn ${r === tool.defaultRatio ? 'active' : ''} ${isVideo ? 'video' : ''}" 
+                                    data-tool="${tool.id}" data-ratio="${r}">
+                                <svg viewBox="0 0 24 24" fill="currentColor">${getRatioSVG(r)}</svg>
+                                <span>${r}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="input-row ${isVideo ? 'video' : ''}">
+                        <input type="file" id="file-${tool.id}" accept="image/*" hidden>
+                        <button class="btn-attach ${isVideo ? 'video' : ''}" data-tool="${tool.id}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </button>
+                        <textarea id="prompt-${tool.id}" class="prompt-input" 
+                                  placeholder="${tool.placeholder}" rows="1" 
+                                  maxlength="${tool.maxPromptLength}"></textarea>
+                        <button id="send-${tool.id}" class="btn-send ${isVideo ? 'video' : ''}" disabled>
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function renderUGCPanel(tool, isActive) {
+    return `
+        <div id="panel-${tool.id}" class="tool-panel ${isActive ? 'active' : ''}">
+            <div class="ugc-form-panel">
+                <form id="ugc-form" class="ugc-form">
+                    <!-- Upload Section -->
+                    <div class="ugc-section">
+                        <h3>📷 Upload Gambar</h3>
+                        <div class="ugc-upload-row">
+                            <div class="ugc-upload-group">
+                                <label>Foto Produk (WAJIB)</label>
+                                <div class="ugc-upload-box" id="ugc-upload-product">
+                                    <input type="file" id="ugc-file-product" accept="image/*" hidden>
+                                    <div class="ugc-upload-placeholder">
+                                        <span class="ugc-upload-icon">📦</span>
+                                        <span class="ugc-upload-text">Klik untuk upload</span>
+                                    </div>
+                                    <img id="ugc-preview-product" class="ugc-upload-preview" src="">
+                                </div>
+                            </div>
+                            <div class="ugc-upload-group">
+                                <label>Foto Model (Opsional)</label>
+                                <div class="ugc-upload-box" id="ugc-upload-model">
+                                    <input type="file" id="ugc-file-model" accept="image/*" hidden>
+                                    <div class="ugc-upload-placeholder">
+                                        <span class="ugc-upload-icon">👤</span>
+                                        <span class="ugc-upload-text">Klik untuk upload</span>
+                                    </div>
+                                    <img id="ugc-preview-model" class="ugc-upload-preview" src="">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Details -->
+                    <div class="ugc-section">
+                        <h3>📝 Detail Produk</h3>
+                        <div class="ugc-form-group">
+                            <label>Nama Produk *</label>
+                            <input type="text" id="ugc-product-name" placeholder="Contoh: Sepatu Sneakers Premium" required>
+                        </div>
+                        <div class="ugc-form-row">
+                            <div class="ugc-form-group">
+                                <label>Harga</label>
+                                <input type="text" id="ugc-price" placeholder="Contoh: Rp 299.000">
+                            </div>
+                            <div class="ugc-form-group">
+                                <label>Kelebihan</label>
+                                <input type="text" id="ugc-pros" placeholder="Contoh: Ringan, anti air">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Style Options -->
+                    <div class="ugc-section">
+                        <h3>🎨 Pengaturan Gaya</h3>
+                        <div class="ugc-form-group">
+                            <label>Preset Gaya Foto</label>
+                            <select id="ugc-style">
+                                ${tool.stylePresets.map(s => `<option value="${s}">${s}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="ugc-form-group" id="ugc-custom-style-group" style="display:none;">
+                            <label>Instruksi Custom</label>
+                            <textarea id="ugc-custom-style" placeholder="Contoh: Model memakai sepatu sambil jogging"></textarea>
+                        </div>
+                        <div class="ugc-form-group">
+                            <label>Urutan Video Generator</label>
+                            <select id="ugc-animation-order">
+                                ${tool.animationOrders.map(o => `<option value="${o.value}">${o.label}</option>`).join('')}
+                            </select>
+                            <p class="ugc-form-hint" id="ugc-animation-hint">VEO 3.1 menghasilkan kualitas lebih bagus tapi lebih lambat</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Generate Mode -->
+                    <div class="ugc-section">
+                        <h3>⚡ Mode Generate</h3>
+                        <div class="ugc-form-group">
+                            <label>Pilih apa yang ingin digenerate</label>
+                            <select id="ugc-generate-mode">
+                                ${tool.generateModes.map(m => `<option value="${m.value}">${m.label}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit -->
+                    <div class="ugc-submit-section">
+                        <button type="submit" id="ugc-submit-btn" class="ugc-submit-btn">
+                            🚀 Generate Sekarang
+                        </button>
+                        <p class="ugc-form-note">
+                            Proses generate membutuhkan waktu 5-20 menit.<br>
+                            Kamu bisa menutup halaman dan kembali nanti.
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
 }
 
 function getRatioSVG(ratio) {
@@ -291,19 +383,18 @@ function getRatioSVG(ratio) {
         '1:1': '<rect x="4" y="4" width="16" height="16" rx="2"/>',
         '9:16': '<rect x="6" y="2" width="12" height="20" rx="2"/>',
         '16:9': '<rect x="2" y="6" width="20" height="12" rx="2"/>',
-        '4:3': '<rect x="3" y="5" width="18" height="14" rx="2"/>',
-        '3:4': '<rect x="5" y="3" width="14" height="18" rx="2"/>'
+        '4:3': '<rect x="3" y="5" width="18" height="14" rx="2"/>'
     };
     return svgs[ratio] || svgs['1:1'];
 }
 
 function renderHistoryTabs() {
     const tabs = document.getElementById('history-tabs');
-    const generatorTools = Object.values(TOOLS).filter(t => t.enabled && !t.comingSoon && !t.externalLink);
+    const tools = Object.values(TOOLS).filter(t => t.enabled);
     
-    tabs.innerHTML = generatorTools.map(tool => `
+    tabs.innerHTML = tools.map(tool => `
         <button class="history-tab ${tool.id === state.currentTool ? 'active' : ''}" data-tool="${tool.id}">
-            ${tool.icon} ${tool.name.replace(' Generator', '')}
+            ${tool.icon}
         </button>
     `).join('');
 }
@@ -313,26 +404,22 @@ function renderHistoryTabs() {
 // ==========================================
 
 function switchTool(toolId) {
-    if (!TOOLS[toolId] || TOOLS[toolId].comingSoon) return;
+    if (!TOOLS[toolId]) return;
     
     state.currentTool = toolId;
     const tool = TOOLS[toolId];
     
-    // Update nav
     document.querySelectorAll('.nav-item').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tool === toolId);
     });
     
-    // Update panels
     document.querySelectorAll('.tool-panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === `panel-${toolId}`);
     });
     
-    // Update mobile header
     document.getElementById('mobile-tool-icon').textContent = tool.icon;
     document.getElementById('mobile-tool-name').textContent = tool.name;
     
-    // Update history tabs
     document.querySelectorAll('.history-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tool === toolId);
     });
@@ -379,16 +466,38 @@ async function loadUserData() {
     try {
         for (const toolId of Object.keys(TOOLS)) {
             const tool = TOOLS[toolId];
-            if (!tool.service || tool.externalLink) continue;
+            if (!tool.service) continue;
             
-            const result = await supabaseClient.rpc('check_service_limit', { p_service: tool.service });
+            let result;
+            if (toolId === 'ugc') {
+                result = await supabaseClient.rpc('check_limit');
+            } else {
+                result = await supabaseClient.rpc('check_service_limit', { p_service: tool.service });
+            }
+            
             if (result.data?.[0]) {
                 const remaining = result.data[0].daily_limit === -1 ? '∞' : result.data[0].remaining;
                 const el = document.getElementById(`credits-${toolId}`);
                 if (el) el.textContent = remaining;
                 
-                if (toolId === 'image') {
+                if (toolId === 'image' || toolId === 'ugc') {
                     document.getElementById('sidebar-plan').textContent = result.data[0].plan_name || 'Free';
+                }
+                
+                // UGC specific: update animation hint for free users
+                if (toolId === 'ugc') {
+                    const isFree = result.data[0].daily_limit === 1 || (result.data[0].plan_name || '').toLowerCase() === 'free';
+                    const hintEl = document.getElementById('ugc-animation-hint');
+                    const selectEl = document.getElementById('ugc-animation-order');
+                    
+                    if (hintEl && isFree) {
+                        hintEl.innerHTML = '⚠️ <strong>Free plan hanya menggunakan Seedance</strong>';
+                        hintEl.classList.add('warning');
+                    }
+                    if (selectEl && isFree) {
+                        selectEl.value = 'grok_first';
+                        selectEl.disabled = true;
+                    }
                 }
             }
         }
@@ -427,7 +536,6 @@ function renderHistory() {
     const jobs = state.jobs[toolId] || [];
     const container = document.getElementById('history-list');
     const tool = TOOLS[toolId];
-    const isVideo = tool?.color === 'video';
     
     const completed = jobs.filter(j => ['completed', 'failed'].includes(j.status));
     
@@ -445,25 +553,36 @@ function renderHistory() {
             day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
         });
         
-        const thumb = isVideo ? results.video_url : results.image_url;
-        const status = job.status;
+        // Get thumbnail based on tool type
+        let thumb = '';
+        if (toolId === 'ugc') {
+            thumb = results.images?.[0] || '';
+        } else if (toolId === 'video') {
+            thumb = results.video_url || '';
+        } else {
+            thumb = results.image_url || '';
+        }
+        
+        const title = toolId === 'ugc' ? (input.product_name || 'UGC') : (input.prompt || 'Item');
         
         let thumbHtml = '';
-        if (thumb && status === 'completed') {
-            thumbHtml = isVideo 
-                ? `<video src="${thumb}" class="history-thumb" muted></video>`
-                : `<img src="${thumb}" class="history-thumb" alt="">`;
+        if (thumb && job.status === 'completed') {
+            if (toolId === 'video') {
+                thumbHtml = `<video src="${thumb}" class="history-thumb" muted></video>`;
+            } else {
+                thumbHtml = `<img src="${thumb}" class="history-thumb" alt="">`;
+            }
         } else {
-            thumbHtml = `<div class="history-thumb-placeholder">${status === 'failed' ? '❌' : tool.icon}</div>`;
+            thumbHtml = `<div class="history-thumb-placeholder">${job.status === 'failed' ? '❌' : tool.icon}</div>`;
         }
         
         return `
             <div class="history-item" data-tool="${toolId}" data-job="${job.id}">
                 ${thumbHtml}
                 <div class="history-info">
-                    <div class="history-prompt">${escapeHtml((input.prompt || '').substring(0, 35))}</div>
+                    <div class="history-prompt">${escapeHtml(title.substring(0, 30))}</div>
                     <div class="history-meta">
-                        <span><span class="status-dot ${status}"></span>${status === 'completed' ? 'Selesai' : 'Gagal'}</span>
+                        <span><span class="status-dot ${job.status}"></span>${job.status === 'completed' ? 'Selesai' : 'Gagal'}</span>
                         <span>•</span>
                         <span>${date}</span>
                     </div>
@@ -474,19 +593,20 @@ function renderHistory() {
 }
 
 // ==========================================
-// CHAT MESSAGES
+// CHAT MESSAGES (Image/Video)
 // ==========================================
 
 function addUserMsg(toolId, prompt, sourceImg = null) {
     const container = document.getElementById(`messages-${toolId}`);
+    if (!container) return;
+    
     const tool = TOOLS[toolId];
-    const isVideo = tool.color === 'video';
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const user = getCurrentUser();
     const initial = (user?.user_metadata?.full_name || user?.email || 'U')[0].toUpperCase();
     
-    let srcHtml = sourceImg ? `<img src="${sourceImg}" class="source-thumb ${isVideo ? 'video' : ''}" alt="">` : '';
-    let modeHtml = sourceImg ? `<span class="mode-tag ${isVideo ? 'video' : ''}">✏️ ${isVideo ? 'Image to Video' : 'Edit Mode'}</span>` : '';
+    let srcHtml = sourceImg ? `<img src="${sourceImg}" class="source-thumb ${tool.color}" alt="">` : '';
+    let modeHtml = sourceImg ? `<span class="mode-tag ${tool.color}">✏️ Edit</span>` : '';
     
     container.insertAdjacentHTML('beforeend', `
         <div class="message user">
@@ -498,35 +618,36 @@ function addUserMsg(toolId, prompt, sourceImg = null) {
         </div>
     `);
     
-    document.getElementById(`welcome-${toolId}`).classList.add('hidden');
+    document.getElementById(`welcome-${toolId}`)?.classList.add('hidden');
     scrollToBottom(toolId);
 }
 
 function addBotLoading(toolId, jobId) {
     const container = document.getElementById(`messages-${toolId}`);
+    if (!container) return;
+    
     const tool = TOOLS[toolId];
-    const isVideo = tool.color === 'video';
     
     container.insertAdjacentHTML('beforeend', `
         <div class="message bot" id="msg-${jobId}">
-            <div class="msg-avatar ${isVideo ? 'video' : ''}">${tool.icon}</div>
+            <div class="msg-avatar ${tool.color}">${tool.icon}</div>
             <div class="msg-content">
                 <div class="msg-loading">
                     <div class="loading-top">
                         <div class="dots">
-                            <span class="dot ${isVideo ? 'video' : ''}"></span>
-                            <span class="dot ${isVideo ? 'video' : ''}"></span>
-                            <span class="dot ${isVideo ? 'video' : ''}"></span>
+                            <span class="dot ${tool.color}"></span>
+                            <span class="dot ${tool.color}"></span>
+                            <span class="dot ${tool.color}"></span>
                         </div>
-                        <span class="loading-text">${isVideo ? 'Membuat video...' : 'Membuat gambar...'}</span>
+                        <span class="loading-text">Memproses...</span>
                     </div>
                     <div class="progress-wrap">
                         <div class="progress-track">
-                            <div class="progress-bar ${isVideo ? 'video' : ''}" id="pbar-${jobId}" style="width:0%"></div>
+                            <div class="progress-bar ${tool.color}" id="pbar-${jobId}" style="width:0%"></div>
                         </div>
                         <div class="progress-meta">
                             <span id="ptext-${jobId}">Memulai...</span>
-                            <span class="progress-pct ${isVideo ? 'video' : ''}" id="ppct-${jobId}">0%</span>
+                            <span class="progress-pct ${tool.color}" id="ppct-${jobId}">0%</span>
                         </div>
                     </div>
                 </div>
@@ -578,13 +699,12 @@ function errorBotMsg(toolId, jobId, errMsg) {
     if (!msgEl) return;
     
     const tool = TOOLS[toolId];
-    const isVideo = tool.color === 'video';
     const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     
     msgEl.querySelector('.msg-content').innerHTML = `
         <div class="msg-bubble msg-error">
             <p>❌ ${escapeHtml(errMsg || 'Gagal')}</p>
-            ${isVideo ? '<p class="refund-note">💡 Kuota dikembalikan</p>' : ''}
+            ${tool.color === 'video' || tool.color === 'ugc' ? '<p class="refund-note">💡 Kuota dikembalikan</p>' : ''}
             <button class="retry-btn" onclick="retryJob('${toolId}', '${jobId}')">🔄 Coba Lagi</button>
         </div>
         <span class="msg-time">${time}</span>
@@ -599,7 +719,7 @@ function scrollToBottom(toolId) {
 }
 
 // ==========================================
-// SUBMIT JOB
+// SUBMIT JOB (Image/Video)
 // ==========================================
 
 async function submitJob(toolId) {
@@ -609,10 +729,9 @@ async function submitJob(toolId) {
     const tool = TOOLS[toolId];
     const toolState = state.tools[toolId];
     const imageToSend = toolState.base64;
-    const isEditMode = !!imageToSend;
     
     let ratio = toolState.ratio;
-    if (isEditMode) {
+    if (imageToSend) {
         ratio = detectRatio(toolState.dimensions.width, toolState.dimensions.height).ratio;
     }
     
@@ -656,6 +775,135 @@ async function submitJob(toolId) {
     }
 }
 
+// ==========================================
+// SUBMIT UGC JOB
+// ==========================================
+
+async function submitUGCJob(event) {
+    event.preventDefault();
+    
+    const user = getCurrentUser();
+    if (!user) {
+        alert('Silakan login terlebih dahulu');
+        return;
+    }
+    
+    const productFile = document.getElementById('ugc-file-product').files[0];
+    const productName = document.getElementById('ugc-product-name').value.trim();
+    
+    if (!productFile) {
+        alert('Upload foto produk terlebih dahulu');
+        return;
+    }
+    
+    if (!productName) {
+        alert('Isi nama produk');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('ugc-submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '🔒 Memvalidasi...';
+    
+    try {
+        // Check limit
+        const { data: limitData, error: limitError } = await supabaseClient.rpc('check_limit');
+        
+        if (limitError) throw new Error('Gagal memeriksa kuota');
+        
+        const quota = limitData?.[0];
+        if (!quota?.allowed) {
+            alert(`Limit harian habis! (${quota.current_count}/${quota.daily_limit})`);
+            return;
+        }
+        
+        // Upload product image
+        submitBtn.textContent = '📤 Mengupload gambar...';
+        
+        const fileExt = productFile.name.split('.').pop().toLowerCase();
+        const productPath = `uploads/${user.id}/${Date.now()}_product.${fileExt}`;
+        
+        const { error: uploadError } = await supabaseClient.storage
+            .from('results')
+            .upload(productPath, productFile);
+        
+        if (uploadError) throw new Error('Gagal upload gambar');
+        
+        const { data: { publicUrl: productUrl } } = supabaseClient.storage
+            .from('results')
+            .getPublicUrl(productPath);
+        
+        // Upload model image if exists
+        let modelUrl = null;
+        const modelFile = document.getElementById('ugc-file-model').files[0];
+        if (modelFile) {
+            const modelExt = modelFile.name.split('.').pop().toLowerCase();
+            const modelPath = `uploads/${user.id}/${Date.now()}_model.${modelExt}`;
+            
+            const { error: modelUploadError } = await supabaseClient.storage
+                .from('results')
+                .upload(modelPath, modelFile);
+            
+            if (!modelUploadError) {
+                const { data: { publicUrl } } = supabaseClient.storage
+                    .from('results')
+                    .getPublicUrl(modelPath);
+                modelUrl = publicUrl;
+            }
+        }
+        
+        // Create job
+        submitBtn.textContent = '🚀 Membuat job...';
+        
+        const generateMode = document.getElementById('ugc-generate-mode').value;
+        
+        const inputData = {
+            product_name: productName.substring(0, 200),
+            price: (document.getElementById('ugc-price').value || '').trim().substring(0, 100),
+            pros: (document.getElementById('ugc-pros').value || '').trim().substring(0, 500),
+            style_preset: document.getElementById('ugc-style').value,
+            custom_style: (document.getElementById('ugc-custom-style')?.value || '').trim().substring(0, 500),
+            animation_order: document.getElementById('ugc-animation-order')?.value || 'grok_first',
+            generate_mode: generateMode,
+            product_image_url: productUrl,
+            model_image_url: modelUrl
+        };
+        
+        const { data: jobResult, error: jobError } = await supabaseClient.rpc('create_job_secure', {
+            p_service: 'ugc',
+            p_input_data: inputData,
+            p_total_steps: generateMode === 'images_only' ? 3 : 8
+        });
+        
+        if (jobError) throw jobError;
+        
+        const result = jobResult?.[0];
+        if (!result?.success) {
+            alert(result?.message || 'Gagal membuat job');
+            return;
+        }
+        
+        alert(`✅ Job berhasil dibuat!\n\nSisa kuota: ${result.remaining_quota}`);
+        
+        // Reset form
+        document.getElementById('ugc-form').reset();
+        document.querySelectorAll('.ugc-upload-box').forEach(box => box.classList.remove('has-preview'));
+        document.querySelectorAll('.ugc-upload-preview').forEach(img => { img.style.display = 'none'; img.src = ''; });
+        
+        await Promise.all([loadAllJobs(), loadUserData()]);
+        
+    } catch (error) {
+        alert('Gagal: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 Generate Sekarang';
+    }
+}
+
+// ==========================================
+// POLLING
+// ==========================================
+
 async function pollJob(toolId, jobId) {
     const tool = TOOLS[toolId];
     const isVideo = tool.color === 'video';
@@ -682,15 +930,6 @@ async function pollJob(toolId, jobId) {
     poll();
 }
 
-function retryJob(toolId, jobId) {
-    const jobs = state.jobs[toolId] || [];
-    const job = jobs.find(j => j.id === jobId);
-    if (job?.input_data?.prompt) {
-        document.getElementById(`prompt-${toolId}`).value = job.input_data.prompt;
-        document.getElementById(`send-${toolId}`).disabled = false;
-    }
-}
-
 function startPolling() {
     setInterval(async () => {
         const allJobs = Object.values(state.jobs).flat();
@@ -698,6 +937,18 @@ function startPolling() {
             await loadAllJobs();
         }
     }, 5000);
+}
+
+function retryJob(toolId, jobId) {
+    const jobs = state.jobs[toolId] || [];
+    const job = jobs.find(j => j.id === jobId);
+    if (job?.input_data?.prompt) {
+        const promptEl = document.getElementById(`prompt-${toolId}`);
+        if (promptEl) {
+            promptEl.value = job.input_data.prompt;
+            document.getElementById(`send-${toolId}`).disabled = false;
+        }
+    }
 }
 
 // ==========================================
@@ -767,7 +1018,7 @@ function useAsSource(toolId, url) {
                 showPreview(toolId, toolState.base64, `${img.width}×${img.height}px • ${detected.ratio}`);
                 closeModal();
                 switchTool(toolId);
-                document.getElementById(`prompt-${toolId}`).focus();
+                document.getElementById(`prompt-${toolId}`)?.focus();
             };
             img.src = toolState.base64;
         };
@@ -776,7 +1027,7 @@ function useAsSource(toolId, url) {
 }
 
 // ==========================================
-// MODAL
+// MODALS
 // ==========================================
 
 function openModal(url, toolId) {
@@ -812,17 +1063,128 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
-function loadHistoryItem(toolId, jobId) {
-    const jobs = state.jobs[toolId] || [];
-    const job = jobs.find(j => j.id === jobId);
-    if (!job || job.status !== 'completed') return;
+function openUGCModal(jobId) {
+    const job = state.jobs.ugc.find(j => j.id === jobId);
+    if (!job) return;
     
-    let results = job.results;
+    const modal = document.getElementById('ugc-modal');
+    const input = job.input_data || {};
+    let results = job.results || {};
     if (typeof results === 'string') try { results = JSON.parse(results); } catch(e) {}
     
-    const isVideo = TOOLS[toolId]?.color === 'video';
-    const url = isVideo ? results.video_url : results.image_url;
-    if (url) openModal(url, toolId);
+    document.getElementById('ugc-modal-title').textContent = input.product_name || 'Detail Job';
+    
+    const statusEl = document.getElementById('ugc-modal-status');
+    const statusLabels = { pending: 'Menunggu', processing: 'Diproses', completed: 'Selesai', failed: 'Gagal' };
+    statusEl.textContent = statusLabels[job.status] || job.status;
+    statusEl.className = `ugc-status-badge ${job.status}`;
+    
+    const progressSection = document.getElementById('ugc-modal-progress');
+    const resultsSection = document.getElementById('ugc-modal-results');
+    const errorSection = document.getElementById('ugc-modal-error');
+    
+    if (['pending', 'processing'].includes(job.status)) {
+        progressSection.style.display = 'block';
+        resultsSection.style.display = 'none';
+        errorSection.style.display = 'none';
+        
+        document.getElementById('ugc-progress-bar').style.width = `${job.progress_percent || 0}%`;
+        document.getElementById('ugc-progress-step').textContent = job.step_name || 'Menunggu...';
+        document.getElementById('ugc-progress-pct').textContent = `${job.progress_percent || 0}%`;
+        
+    } else if (job.status === 'completed') {
+        progressSection.style.display = 'none';
+        resultsSection.style.display = 'block';
+        errorSection.style.display = 'none';
+        
+        // Render images
+        const imagesContainer = document.getElementById('ugc-result-images');
+        if (results.images?.length) {
+            imagesContainer.innerHTML = results.images.map((url, i) => `
+                <div class="ugc-gallery-item">
+                    <img src="${url}" alt="Image ${i+1}">
+                    <a href="${url}" download>⬇️</a>
+                </div>
+            `).join('');
+            imagesContainer.parentElement.style.display = 'block';
+        } else {
+            imagesContainer.parentElement.style.display = 'none';
+        }
+        
+        // Render videos
+        const videosContainer = document.getElementById('ugc-result-videos');
+        if (results.videos?.length) {
+            videosContainer.innerHTML = results.videos.map((url, i) => `
+                <div class="ugc-gallery-item">
+                    <video src="${url}" muted loop onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+                    <a href="${url}" download>⬇️</a>
+                </div>
+            `).join('');
+            videosContainer.parentElement.style.display = 'block';
+        } else {
+            videosContainer.parentElement.style.display = 'none';
+        }
+        
+        // Final video
+        const finalGroup = document.getElementById('ugc-final-video-group');
+        if (results.final_video) {
+            document.getElementById('ugc-result-final').src = results.final_video;
+            document.getElementById('ugc-download-final').href = results.final_video;
+            finalGroup.style.display = 'block';
+        } else {
+            finalGroup.style.display = 'none';
+        }
+        
+        // Audio
+        const audioGroup = document.getElementById('ugc-audio-group');
+        if (results.audio) {
+            document.getElementById('ugc-result-audio').src = results.audio;
+            document.getElementById('ugc-download-audio').href = results.audio;
+            audioGroup.style.display = 'block';
+        } else {
+            audioGroup.style.display = 'none';
+        }
+        
+        // Script
+        const scriptGroup = document.getElementById('ugc-script-group');
+        if (results.script) {
+            document.getElementById('ugc-result-script').textContent = results.script;
+            scriptGroup.style.display = 'block';
+        } else {
+            scriptGroup.style.display = 'none';
+        }
+        
+    } else if (job.status === 'failed') {
+        progressSection.style.display = 'none';
+        resultsSection.style.display = 'none';
+        errorSection.style.display = 'block';
+        document.getElementById('ugc-error-msg').textContent = job.error_message || 'Terjadi kesalahan';
+    }
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeUGCModal() {
+    document.getElementById('ugc-modal').classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+function loadHistoryItem(toolId, jobId) {
+    if (toolId === 'ugc') {
+        openUGCModal(jobId);
+    } else {
+        const jobs = state.jobs[toolId] || [];
+        const job = jobs.find(j => j.id === jobId);
+        if (!job || job.status !== 'completed') return;
+        
+        let results = job.results;
+        if (typeof results === 'string') try { results = JSON.parse(results); } catch(e) {}
+        
+        const isVideo = TOOLS[toolId]?.color === 'video';
+        const url = isVideo ? results.video_url : results.image_url;
+        if (url) openModal(url, toolId);
+    }
 }
 
 // ==========================================
@@ -860,14 +1222,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-open-right').addEventListener('click', openMobileRight);
     document.getElementById('sidebar-overlay').addEventListener('click', closeMobileSidebars);
     
-    // Modal
+    // Modals
     document.getElementById('btn-close-modal').addEventListener('click', closeModal);
-    document.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+    document.getElementById('btn-close-ugc-modal').addEventListener('click', closeUGCModal);
+    document.querySelectorAll('.modal-backdrop').forEach(el => {
+        el.addEventListener('click', () => {
+            closeModal();
+            closeUGCModal();
+        });
+    });
     
     // Keyboard
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             closeModal();
+            closeUGCModal();
             closeMobileSidebars();
         }
     });
@@ -897,9 +1266,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const chip = e.target.closest('.chip');
             const toolId = chip.dataset.tool;
             const prompt = chip.dataset.prompt;
-            document.getElementById(`prompt-${toolId}`).value = prompt;
-            document.getElementById(`send-${toolId}`).disabled = false;
-            document.getElementById(`prompt-${toolId}`).focus();
+            const promptEl = document.getElementById(`prompt-${toolId}`);
+            if (promptEl) {
+                promptEl.value = prompt;
+                document.getElementById(`send-${toolId}`).disabled = false;
+                promptEl.focus();
+            }
         }
         
         // Ratio buttons
@@ -924,6 +1296,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = e.target.closest('.btn-remove-preview');
             clearPreview(btn.dataset.tool);
         }
+        
+        // UGC Upload boxes
+        if (e.target.closest('#ugc-upload-product')) {
+            document.getElementById('ugc-file-product').click();
+        }
+        if (e.target.closest('#ugc-upload-model')) {
+            document.getElementById('ugc-file-model').click();
+        }
     });
     
     // Input events
@@ -933,6 +1313,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.style.height = 'auto';
             e.target.style.height = Math.min(e.target.scrollHeight, 90) + 'px';
             document.getElementById(`send-${toolId}`).disabled = !e.target.value.trim();
+        }
+        
+        // UGC style change
+        if (e.target.id === 'ugc-style') {
+            const customGroup = document.getElementById('ugc-custom-style-group');
+            if (customGroup) {
+                customGroup.style.display = e.target.value === 'Custom (Tulis Sendiri)' ? 'block' : 'none';
+            }
         }
     });
     
@@ -953,14 +1341,47 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // File inputs
+    // File inputs (Image/Video)
     document.addEventListener('change', e => {
         if (e.target.type === 'file' && e.target.id.startsWith('file-')) {
             const toolId = e.target.id.replace('file-', '');
             if (e.target.files?.[0]) handleFile(toolId, e.target.files[0]);
         }
+        
+        // UGC file inputs
+        if (e.target.id === 'ugc-file-product' && e.target.files?.[0]) {
+            handleUGCFile('product', e.target.files[0]);
+        }
+        if (e.target.id === 'ugc-file-model' && e.target.files?.[0]) {
+            handleUGCFile('model', e.target.files[0]);
+        }
+    });
+    
+    // UGC Form submit
+    document.addEventListener('submit', e => {
+        if (e.target.id === 'ugc-form') {
+            submitUGCJob(e);
+        }
     });
 });
+
+function handleUGCFile(type, file) {
+    if (!file?.type.startsWith('image/') || file.size > 10 * 1024 * 1024) {
+        alert('File tidak valid atau > 10MB');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const preview = document.getElementById(`ugc-preview-${type}`);
+        const box = document.getElementById(`ugc-upload-${type}`);
+        
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        box.classList.add('has-preview');
+    };
+    reader.readAsDataURL(file);
+}
 
 // Auth listener
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -974,4 +1395,4 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     }
 });
 
-console.log('✅ Tools Hub V2 loaded');
+console.log('✅ Tools Hub V2 with UGC loaded');
