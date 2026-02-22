@@ -528,7 +528,7 @@ async function loadAllJobs() {
 }
 
 // ==========================================
-// HISTORY
+// HISTORY - DENGAN ACTIVE JOBS (FIX 3)
 // ==========================================
 
 function renderHistory() {
@@ -537,59 +537,137 @@ function renderHistory() {
     const container = document.getElementById('history-list');
     const tool = TOOLS[toolId];
     
-    const completed = jobs.filter(j => ['completed', 'failed'].includes(j.status));
+    // Pisahkan active dan completed jobs
+    const activeJobs = jobs.filter(j => ['pending', 'processing'].includes(j.status));
+    const completedJobs = jobs.filter(j => ['completed', 'failed'].includes(j.status));
     
-    if (!completed.length) {
-        container.innerHTML = '<div class="empty-history"><span>📁</span><p>Belum ada riwayat</p></div>';
-        return;
+    let html = '';
+    
+    // Section: Sedang Proses
+    if (activeJobs.length > 0) {
+        html += `
+            <div class="history-section-label active">
+                ⚡ Sedang Proses (${activeJobs.length})
+            </div>
+        `;
+        html += activeJobs.map(job => createHistoryItem(job, toolId, tool)).join('');
     }
     
-    container.innerHTML = completed.map(job => {
-        const input = job.input_data || {};
-        let results = job.results || {};
-        if (typeof results === 'string') try { results = JSON.parse(results); } catch(e) {}
-        
-        const date = new Date(job.created_at).toLocaleDateString('id-ID', { 
-            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
-        });
-        
-        // Get thumbnail based on tool type
-        let thumb = '';
-        if (toolId === 'ugc') {
-            thumb = results.images?.[0] || '';
-        } else if (toolId === 'video') {
-            thumb = results.video_url || '';
-        } else {
-            thumb = results.image_url || '';
+    // Section: Selesai
+    if (completedJobs.length > 0) {
+        if (activeJobs.length > 0) {
+            html += `<div class="history-section-label">📁 Riwayat (${completedJobs.length})</div>`;
         }
-        
-        const title = toolId === 'ugc' ? (input.product_name || 'UGC') : (input.prompt || 'Item');
-        
-        let thumbHtml = '';
-        if (thumb && job.status === 'completed') {
-            if (toolId === 'video') {
-                thumbHtml = `<video src="${thumb}" class="history-thumb" muted></video>`;
-            } else {
-                thumbHtml = `<img src="${thumb}" class="history-thumb" alt="">`;
-            }
+        html += completedJobs.map(job => createHistoryItem(job, toolId, tool)).join('');
+    }
+    
+    // Empty state
+    if (jobs.length === 0) {
+        html = '<div class="empty-history"><span>📁</span><p>Belum ada riwayat</p></div>';
+    } else if (activeJobs.length > 0 && completedJobs.length === 0) {
+        html += `
+            <div class="history-section-label">📁 Riwayat</div>
+            <div class="empty-active">
+                <span>⏳</span>
+                <p>Job selesai akan muncul di sini</p>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+function createHistoryItem(job, toolId, tool) {
+    const input = job.input_data || {};
+    let results = job.results || {};
+    if (typeof results === 'string') try { results = JSON.parse(results); } catch(e) {}
+    
+    const date = new Date(job.created_at).toLocaleDateString('id-ID', { 
+        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' 
+    });
+    
+    // Get thumbnail
+    let thumb = '';
+    if (toolId === 'ugc') {
+        thumb = results.images?.[0] || input.product_image_url || '';
+    } else if (toolId === 'video') {
+        thumb = results.video_url || '';
+    } else {
+        thumb = results.image_url || '';
+    }
+    
+    const title = toolId === 'ugc' ? (input.product_name || 'UGC') : (input.prompt || 'Item');
+    const isActive = ['pending', 'processing'].includes(job.status);
+    
+    // Thumbnail HTML
+    let thumbHtml = '';
+    if (thumb && !isActive) {
+        if (toolId === 'video') {
+            thumbHtml = `<video src="${thumb}" class="history-thumb" muted></video>`;
         } else {
-            thumbHtml = `<div class="history-thumb-placeholder">${job.status === 'failed' ? '❌' : tool.icon}</div>`;
+            thumbHtml = `<img src="${thumb}" class="history-thumb" alt="">`;
         }
-        
-        return `
-            <div class="history-item" data-tool="${toolId}" data-job="${job.id}">
-                ${thumbHtml}
-                <div class="history-info">
-                    <div class="history-prompt">${escapeHtml(title.substring(0, 30))}</div>
-                    <div class="history-meta">
-                        <span><span class="status-dot ${job.status}"></span>${job.status === 'completed' ? 'Selesai' : 'Gagal'}</span>
-                        <span>•</span>
-                        <span>${date}</span>
-                    </div>
+    } else if (thumb && isActive) {
+        // Show product image for active UGC jobs
+        thumbHtml = `<img src="${thumb}" class="history-thumb" alt="" style="opacity: 0.7;">`;
+    } else {
+        const icon = job.status === 'failed' ? '❌' : (isActive ? '⏳' : tool.icon);
+        thumbHtml = `<div class="history-thumb-placeholder">${icon}</div>`;
+    }
+    
+    // Progress HTML untuk active jobs
+    let progressHtml = '';
+    if (isActive) {
+        const percent = job.progress_percent || 0;
+        const stepName = job.step_name || 'Menunggu...';
+        progressHtml = `
+            <div class="history-progress">
+                <div class="history-progress-track">
+                    <div class="history-progress-bar" style="width: ${percent}%"></div>
+                </div>
+                <div class="history-progress-text">
+                    <span>${stepName}</span>
+                    <span>${percent}%</span>
                 </div>
             </div>
         `;
-    }).join('');
+    }
+    
+    // Status text
+    let statusHtml = '';
+    if (isActive) {
+        statusHtml = `
+            <span style="color: var(--warning);">
+                ${job.status === 'processing' ? '🔄' : '⏳'} 
+                ${job.status === 'processing' ? 'Memproses' : 'Menunggu'}
+                <span class="history-loading-dots">
+                    <span></span><span></span><span></span>
+                </span>
+            </span>
+        `;
+    } else {
+        statusHtml = `
+            <span>
+                <span class="status-dot ${job.status}"></span>
+                ${job.status === 'completed' ? 'Selesai' : 'Gagal'}
+            </span>
+        `;
+    }
+    
+    return `
+        <div class="history-item ${job.status}" data-tool="${toolId}" data-job="${job.id}">
+            ${thumbHtml}
+            <div class="history-info">
+                <div class="history-prompt">${escapeHtml(title.substring(0, 30))}</div>
+                <div class="history-meta">
+                    ${statusHtml}
+                    <span>•</span>
+                    <span>${date}</span>
+                </div>
+                ${progressHtml}
+            </div>
+        </div>
+    `;
 }
 
 // ==========================================
@@ -776,7 +854,7 @@ async function submitJob(toolId) {
 }
 
 // ==========================================
-// SUBMIT UGC JOB
+// SUBMIT UGC JOB - DENGAN ANIMASI (FIX 1)
 // ==========================================
 
 async function submitUGCJob(event) {
@@ -802,23 +880,34 @@ async function submitUGCJob(event) {
     }
     
     const submitBtn = document.getElementById('ugc-submit-btn');
+    const originalText = submitBtn.innerHTML;
+    
+    // Animasi loading
     submitBtn.disabled = true;
-    submitBtn.textContent = '🔒 Memvalidasi...';
+    submitBtn.classList.add('loading');
+    submitBtn.innerHTML = '<span style="opacity:0">Loading...</span>';
+    
+    // Helper untuk update text
+    const updateBtnText = (text) => {
+        submitBtn.innerHTML = `<span style="color: white; position: relative; z-index: 1;">${text}</span>`;
+    };
     
     try {
         // Check limit
+        updateBtnText('🔍 Memeriksa kuota...');
         const { data: limitData, error: limitError } = await supabaseClient.rpc('check_limit');
         
         if (limitError) throw new Error('Gagal memeriksa kuota');
         
         const quota = limitData?.[0];
         if (!quota?.allowed) {
+            submitBtn.classList.remove('loading');
             alert(`Limit harian habis! (${quota.current_count}/${quota.daily_limit})`);
             return;
         }
         
         // Upload product image
-        submitBtn.textContent = '📤 Mengupload gambar...';
+        updateBtnText('📤 Mengupload gambar...');
         
         const fileExt = productFile.name.split('.').pop().toLowerCase();
         const productPath = `uploads/${user.id}/${Date.now()}_product.${fileExt}`;
@@ -837,6 +926,7 @@ async function submitUGCJob(event) {
         let modelUrl = null;
         const modelFile = document.getElementById('ugc-file-model').files[0];
         if (modelFile) {
+            updateBtnText('📤 Mengupload foto model...');
             const modelExt = modelFile.name.split('.').pop().toLowerCase();
             const modelPath = `uploads/${user.id}/${Date.now()}_model.${modelExt}`;
             
@@ -853,7 +943,7 @@ async function submitUGCJob(event) {
         }
         
         // Create job
-        submitBtn.textContent = '🚀 Membuat job...';
+        updateBtnText('🚀 Membuat job...');
         
         const generateMode = document.getElementById('ugc-generate-mode').value;
         
@@ -883,20 +973,43 @@ async function submitUGCJob(event) {
             return;
         }
         
-        alert(`✅ Job berhasil dibuat!\n\nSisa kuota: ${result.remaining_quota}`);
+        // SUCCESS!
+        submitBtn.classList.remove('loading');
+        submitBtn.classList.add('success');
+        submitBtn.innerHTML = '✅ Berhasil!';
         
-        // Reset form
-        document.getElementById('ugc-form').reset();
-        document.querySelectorAll('.ugc-upload-box').forEach(box => box.classList.remove('has-preview'));
-        document.querySelectorAll('.ugc-upload-preview').forEach(img => { img.style.display = 'none'; img.src = ''; });
+        // Reset form after delay
+        setTimeout(() => {
+            document.getElementById('ugc-form').reset();
+            document.querySelectorAll('.ugc-upload-box').forEach(box => box.classList.remove('has-preview'));
+            document.querySelectorAll('.ugc-upload-preview').forEach(img => { img.style.display = 'none'; img.src = ''; });
+            
+            submitBtn.classList.remove('success');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }, 1500);
         
+        // Reload data dan pindah ke riwayat
         await Promise.all([loadAllJobs(), loadUserData()]);
         
+        // Buka sidebar riwayat jika tertutup
+        if (state.rightCollapsed) {
+            state.rightCollapsed = false;
+            document.getElementById('main-app').classList.remove('right-collapsed');
+        }
+        
+        alert(`✅ Job berhasil dibuat!\n\nLihat progress di panel Riwayat →\nSisa kuota: ${result.remaining_quota}`);
+        
     } catch (error) {
+        submitBtn.classList.remove('loading');
+        submitBtn.innerHTML = originalText;
         alert('Gagal: ' + error.message);
     } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '🚀 Generate Sekarang';
+        if (!submitBtn.classList.contains('success')) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.innerHTML = originalText;
+        }
     }
 }
 
@@ -1221,6 +1334,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-open-left').addEventListener('click', openMobileLeft);
     document.getElementById('btn-open-right').addEventListener('click', openMobileRight);
     document.getElementById('sidebar-overlay').addEventListener('click', closeMobileSidebars);
+        // FIX 2: Tombol expand sidebar kanan
+    const btnExpandRight = document.getElementById('btn-expand-right');
+    if (btnExpandRight) {
+        btnExpandRight.addEventListener('click', () => {
+            state.rightCollapsed = false;
+            document.getElementById('main-app').classList.remove('right-collapsed');
+        });
+    }
     
     // Modals
     document.getElementById('btn-close-modal').addEventListener('click', closeModal);
