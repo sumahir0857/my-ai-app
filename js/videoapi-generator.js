@@ -793,9 +793,7 @@ function setupVideoUrlInput(inputId, urlKey) {
 // ============================================================
 // UPLOAD FUNCTIONS
 // ============================================================
-
-const SUPABASE_URL   = typeof window !== 'undefined' && window.SUPABASE_URL   || '';
-const SUPABASE_ANON_KEY = typeof window !== 'undefined' && window.SUPABASE_ANON_KEY || '';
+// Note: SUPABASE_URL and SUPABASE_ANON_KEY are defined in supabase-config.js
 
 async function uploadToSupabaseStorage(file, progressCallback = null) {
     const user = await getCurrentUser();
