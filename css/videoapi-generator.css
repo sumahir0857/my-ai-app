@@ -37,6 +37,7 @@
 
 html, body {
     height: 100%;
+    height: 100dvh;
     background: var(--bg-base);
     color: var(--color-text);
     overflow: hidden;
@@ -143,6 +144,7 @@ html, body {
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh; /* Shrinks with keyboard on mobile */
     position: relative;
     z-index: 1;
 }
@@ -1325,7 +1327,7 @@ select optgroup { background-color: #08081a !important; color: var(--color-accen
         right: 0;
         bottom: 0;
         width: var(--sidebar-right-w);
-        z-index: 40;
+        z-index: 200; /* Above overlay (190) */
         transform: translateX(100%);
         transition: transform 0.3s ease;
         border-left: 1px solid var(--border-accent);
@@ -1357,7 +1359,7 @@ select optgroup { background-color: #08081a !important; color: var(--color-accen
         left: 0;
         bottom: 0;
         width: var(--sidebar-left-w);
-        z-index: 40;
+        z-index: 200; /* Above overlay (190) */
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         border-right: 1px solid var(--border-accent);
@@ -1392,6 +1394,25 @@ select optgroup { background-color: #08081a !important; color: var(--color-accen
     .ref-images-grid { grid-template-columns: repeat(4, 1fr); }
     .chat-input-bar { padding: 10px 12px; }
     .model-info-pill { display: none; }
+
+    /* Keep input area always visible above keyboard */
+    .input-area {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        /* Safe area for notched phones */
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    /* Prevent chat-feed from growing so tall input gets pushed off */
+    .chat-feed {
+        padding-bottom: 4px;
+    }
+    /* Prevent iOS bounce from hiding input */
+    .main-content {
+        overflow: hidden;
+        /* Use dvh so content shrinks when keyboard opens */
+        max-height: calc(100dvh - var(--header-h));
+    }
 }
 
 /* Sidebar overlay (mobile) */
@@ -1399,8 +1420,10 @@ select optgroup { background-color: #08081a !important; color: var(--color-accen
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 35;
-    backdrop-filter: blur(2px);
+    background: rgba(0,0,0,0.55);
+    /* NO backdrop-filter - it causes blur AND blocks touch events on siblings */
+    z-index: 190;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
 }
 .sidebar-overlay.active { display: block; }
