@@ -71,10 +71,10 @@ const MODEL_PRICING = {
 };
 
 const CREDIT_PACKAGES = [
-    { id:'starter',  name:'Starter', credits:1750,  price:25000,  pricePerCredit:14 },
-    { id:'creator',  name:'Creator', credits:3500,  price:45000,  pricePerCredit:13 },
-    { id:'pro',      name:'Pro',     credits:8750,  price:100000, pricePerCredit:11, popular:true },
-    { id:'studio',   name:'Studio',  credits:17500, price:180000, pricePerCredit:10, bestValue:true }
+    { id:'starter',  name:'Starter', credits:599,  price:25000,  pricePerCredit:14 },
+    { id:'creator',  name:'Creator', credits:2999,  price:45000,  pricePerCredit:13 },
+    { id:'pro',      name:'Pro',     credits:6999,  price:100000, pricePerCredit:11, popular:true },
+    { id:'studio',   name:'Studio',  credits:10000, price:180000, pricePerCredit:10, bestValue:true }
 ];
 
 // ============================================================
